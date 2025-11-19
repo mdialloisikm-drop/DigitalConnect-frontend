@@ -1,0 +1,413 @@
+<div class="min-h-screen bg-accent">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- En-tête -->
+    <div class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-secondary">Mes Candidatures</h1>
+          <p class="text-gray-600 mt-1">Gérez vos propositions et suivez leur statut</p>
+        </div>
+        <button
+          (click)="refresh()"
+          [disabled]="loading"
+          class="mt-4 sm:mt-0 bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+          <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'"></i>
+          <span>{{ loading ? 'Chargement...' : 'Actualiser' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="error" class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+      <div class="flex items-center">
+        <i class="fas fa-exclamation-circle text-red-500 text-xl mr-3"></i>
+        <p class="text-red-700">{{ error }}</p>
+      </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-sm font-medium">Total</p>
+            <p class="text-3xl font-bold text-secondary mt-1">{{ stats.total }}</p>
+          </div>
+          <div class="bg-blue-100 rounded-full p-3">
+            <i class="fas fa-file-alt text-primary text-2xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-sm font-medium">En attente</p>
+            <p class="text-3xl font-bold text-yellow-600 mt-1">{{ stats.pending }}</p>
+          </div>
+          <div class="bg-yellow-100 rounded-full p-3">
+            <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-sm font-medium">Acceptées</p>
+            <p class="text-3xl font-bold text-green-600 mt-1">{{ stats.accepted }}</p>
+          </div>
+          <div class="bg-green-100 rounded-full p-3">
+            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-sm font-medium">Taux d'acceptation</p>
+            <p class="text-3xl font-bold text-primary mt-1">{{ stats.acceptanceRate }}%</p>
+          </div>
+          <div class="bg-blue-100 rounded-full p-3">
+            <i class="fas fa-chart-line text-primary text-2xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <!-- Filtres de statut -->
+        <div class="flex flex-wrap gap-2">
+          <button
+            (click)="onFilterChange('all')"
+            [class.bg-primary]="selectedFilter === 'all'"
+            [class.text-white]="selectedFilter === 'all'"
+            [class.bg-gray-100]="selectedFilter !== 'all'"
+            [class.text-gray-700]="selectedFilter !== 'all'"
+            class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 hover:shadow-md">
+            Toutes ({{ stats.total }})
+          </button>
+          <button
+            (click)="onFilterChange('pending')"
+            [class.bg-yellow-500]="selectedFilter === 'pending'"
+            [class.text-white]="selectedFilter === 'pending'"
+            [class.bg-gray-100]="selectedFilter !== 'pending'"
+            [class.text-gray-700]="selectedFilter !== 'pending'"
+            class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 hover:shadow-md">
+            En attente ({{ stats.pending }})
+          </button>
+          <button
+            (click)="onFilterChange('accepted')"
+            [class.bg-green-500]="selectedFilter === 'accepted'"
+            [class.text-white]="selectedFilter === 'accepted'"
+            [class.bg-gray-100]="selectedFilter !== 'accepted'"
+            [class.text-gray-700]="selectedFilter !== 'accepted'"
+            class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 hover:shadow-md">
+            Acceptées ({{ stats.accepted }})
+          </button>
+          <button
+            (click)="onFilterChange('rejected')"
+            [class.bg-red-500]="selectedFilter === 'rejected'"
+            [class.text-white]="selectedFilter === 'rejected'"
+            [class.bg-gray-100]="selectedFilter !== 'rejected'"
+            [class.text-gray-700]="selectedFilter !== 'rejected'"
+            class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 hover:shadow-md">
+            Rejetées ({{ stats.rejected }})
+          </button>
+        </div>
+
+        <!-- Barre de recherche -->
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="Rechercher un projet..."
+            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent w-full lg:w-80">
+          <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des propositions -->
+    <div *ngIf="loading && !proposals.length" class="flex justify-center items-center py-20">
+      <div class="text-center">
+        <i class="fas fa-spinner fa-spin text-primary text-5xl mb-4"></i>
+        <p class="text-gray-600 text-lg">Chargement de vos candidatures...</p>
+      </div>
+    </div>
+
+    <!-- Message si aucune proposition -->
+    <div *ngIf="!loading && filteredProposals.length === 0" class="bg-white rounded-lg shadow-md p-12 text-center">
+      <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
+      <h3 class="text-xl font-semibold text-secondary mb-2">
+        {{ searchTerm ? 'Aucun résultat trouvé' : 'Aucune candidature' }}
+      </h3>
+      <p class="text-gray-600">
+        {{ searchTerm ? 'Essayez avec d\'autres mots-clés' : 'Vous n\'avez pas encore soumis de propositions pour des projets' }}
+      </p>
+    </div>
+
+    <!-- Grille de cartes de propositions -->
+    <div *ngIf="!loading && filteredProposals.length > 0"
+         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let proposal of filteredProposals"
+           class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+
+        <!-- En-tête de la carte -->
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-secondary mb-2 line-clamp-2">
+                {{ proposal.project?.title || 'Projet sans titre' }}
+              </h3>
+              <span
+                [class]="'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ' + getStatusBadgeClass(proposal.status)">
+                <i [class]="'fas ' + getStatusIcon(proposal.status) + ' mr-1'"></i>
+                {{ getStatusLabel(proposal.status) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Info client -->
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+              <span class="text-primary font-semibold text-sm">
+                {{ getClientInitials(proposal) }}
+              </span>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">{{ getClientName(proposal) }}</p>
+              <p class="text-xs text-gray-500">{{ getTimeAgo(proposal.created_at) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Corps de la carte -->
+        <div class="p-6">
+          <div class="space-y-3">
+            <!-- Montant proposé -->
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-600">Montant proposé</span>
+              <span class="text-lg font-bold text-primary">
+                {{ formatAmount(proposal.proposed_amount) }}
+              </span>
+            </div>
+
+            <!-- Durée proposée -->
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-600">Durée</span>
+              <span class="text-sm font-medium text-secondary">
+                {{ formatDuration(proposal.proposed_duration) }}
+              </span>
+            </div>
+
+            <!-- Lettre de motivation (aperçu) -->
+            <div class="mt-4">
+              <p class="text-xs text-gray-500 mb-1">Lettre de motivation</p>
+              <p class="text-sm text-gray-700 line-clamp-3">
+                {{ proposal.cover_letter }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-wrap gap-2">
+          <button
+            (click)="viewDetails(proposal)"
+            class="flex-1 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium text-sm">
+            <i class="fas fa-eye mr-2"></i>
+            Voir détails
+          </button>
+
+          <button
+            *ngIf="canCancel(proposal)"
+            (click)="openCancelModal(proposal)"
+            class="px-4 py-2 bg-red-50 border border-red-300 rounded-lg text-red-600 hover:bg-red-100 transition-colors duration-200 font-medium text-sm">
+            <i class="fas fa-times mr-2"></i>
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de détails -->
+<div *ngIf="showDetailsModal && selectedProposal"
+     class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+     (click)="closeDetailsModal()">
+  <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+       (click)="$event.stopPropagation()">
+
+    <!-- En-tête du modal -->
+    <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+      <h2 class="text-2xl font-bold text-secondary">Détails de la candidature</h2>
+      <button
+        (click)="closeDetailsModal()"
+        class="text-gray-400 hover:text-gray-600 transition-colors">
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Contenu du modal -->
+    <div class="p-6 space-y-6">
+      <!-- Statut -->
+      <div>
+        <span
+          [class]="'inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ' + getStatusBadgeClass(selectedProposal.status)">
+          <i [class]="'fas ' + getStatusIcon(selectedProposal.status) + ' mr-2'"></i>
+          {{ getStatusLabel(selectedProposal.status) }}
+        </span>
+      </div>
+
+      <!-- Informations du projet -->
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-secondary mb-3">
+          <i class="fas fa-project-diagram text-primary mr-2"></i>
+          Projet
+        </h3>
+        <h4 class="text-xl font-bold text-secondary mb-2">
+          {{ selectedProposal.project?.title }}
+        </h4>
+        <p class="text-gray-700">
+          {{ selectedProposal.project?.description }}
+        </p>
+      </div>
+
+      <!-- Client -->
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-secondary mb-3">
+          <i class="fas fa-user text-primary mr-2"></i>
+          Client
+        </h3>
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <span class="text-primary font-bold">
+              {{ getClientInitials(selectedProposal) }}
+            </span>
+          </div>
+          <div>
+            <p class="font-medium text-gray-900">{{ getClientName(selectedProposal) }}</p>
+            <p class="text-sm text-gray-500">{{ selectedProposal.project?.client?.user?.email }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Votre proposition -->
+      <div class="bg-blue-50 rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-secondary mb-4">
+          <i class="fas fa-file-alt text-primary mr-2"></i>
+          Votre proposition
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-white rounded-lg p-4">
+            <p class="text-sm text-gray-600 mb-1">Montant proposé</p>
+            <p class="text-2xl font-bold text-primary">
+              {{ formatAmount(selectedProposal.proposed_amount) }}
+            </p>
+          </div>
+
+          <div class="bg-white rounded-lg p-4">
+            <p class="text-sm text-gray-600 mb-1">Durée proposée</p>
+            <p class="text-xl font-bold text-secondary">
+              {{ formatDuration(selectedProposal.proposed_duration) }}
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg p-4">
+          <p class="text-sm text-gray-600 mb-2">Lettre de motivation</p>
+          <p class="text-gray-700 whitespace-pre-wrap">{{ selectedProposal.cover_letter }}</p>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <p class="text-gray-600">Date de soumission</p>
+          <p class="font-medium text-gray-900">{{ formatDate(selectedProposal.created_at) }}</p>
+        </div>
+        <div>
+          <p class="text-gray-600">Dernière modification</p>
+          <p class="font-medium text-gray-900">{{ formatDate(selectedProposal.updated_at) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions du modal -->
+    <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex flex-wrap gap-3 justify-end">
+      <button
+        (click)="closeDetailsModal()"
+        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium">
+        Fermer
+      </button>
+
+      <button
+        *ngIf="canCancel(selectedProposal)"
+        (click)="openCancelModal(selectedProposal); closeDetailsModal()"
+        class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium">
+        <i class="fas fa-times mr-2"></i>
+        Annuler la candidature
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmation d'annulation -->
+<div *ngIf="showCancelModal && proposalToCancel"
+     class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+     (click)="closeCancelModal()">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full"
+       (click)="$event.stopPropagation()">
+
+    <!-- En-tête du modal -->
+    <div class="bg-red-50 px-6 py-4 border-b border-red-200">
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+          <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+        </div>
+        <h2 class="text-xl font-bold text-red-900">Confirmer l'annulation</h2>
+      </div>
+    </div>
+
+    <!-- Contenu du modal -->
+    <div class="p-6">
+      <p class="text-gray-700 mb-2">
+        Êtes-vous sûr de vouloir annuler votre candidature pour le projet :
+      </p>
+      <p class="font-semibold text-secondary mb-4">
+        "{{ proposalToCancel.project?.title }}"
+      </p>
+      <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+        <p class="text-sm text-yellow-800">
+          <i class="fas fa-info-circle mr-2"></i>
+          Cette action est irréversible. Vous ne pourrez pas récupérer cette candidature.
+        </p>
+      </div>
+    </div>
+
+    <!-- Actions du modal -->
+    <div class="bg-gray-50 px-6 py-4 flex space-x-3 justify-end">
+      <button
+        (click)="closeCancelModal()"
+        [disabled]="cancelLoading"
+        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+        Annuler
+      </button>
+      <button
+        (click)="confirmCancel()"
+        [disabled]="cancelLoading"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+        <i [class]="cancelLoading ? 'fas fa-spinner fa-spin' : 'fas fa-trash-alt'"></i>
+        <span>{{ cancelLoading ? 'Annulation...' : 'Confirmer l\'annulation' }}</span>
+      </button>
+    </div>
+  </div>
+</div>

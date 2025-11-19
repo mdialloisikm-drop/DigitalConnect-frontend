@@ -1,0 +1,53 @@
+/* Animations pour les cartes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.grid > div {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Animation pour les chiffres */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+h3 {
+  animation: countUp 0.6s ease-out;
+}
+
+/* Responsive design optimisé */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Accessibilité */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Performance - Optimisation des transitions */
+.transition-shadow,
+.transition-colors,
+.transition-transform {
+  will-change: auto;
+}

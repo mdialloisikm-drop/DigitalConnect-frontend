@@ -1,0 +1,583 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Bouton Retour -->
+  <div class="mb-6 mt-8">
+    <button
+      routerLink="/freelance/dashboard"
+      class="inline-flex items-center text-gray-600 hover:text-primary transition-colors duration-200 font-medium group"
+    >
+      <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-200"></i>
+      Retour au dashboard
+    </button>
+  </div>
+
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-secondary mb-2">Mes Services</h1>
+        <p class="text-gray-600">Gérez vos services et offres</p>
+      </div>
+      <button
+        (click)="openCreateForm()"
+        class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium shadow-md flex items-center justify-center"
+      >
+        <i class="fas fa-plus mr-2"></i>
+        Nouveau service
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="mb-6">
+    <div class="relative">
+      <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="filterServices()"
+        placeholder="Rechercher un service..."
+        class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+      />
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+      <p class="text-gray-600">Chargement des services...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8"
+  >
+    <div class="flex items-start">
+      <i class="fas fa-exclamation-circle text-red-600 text-2xl mr-4 mt-1"></i>
+      <div>
+        <h3 class="text-red-800 font-semibold mb-1">Erreur</h3>
+        <p class="text-red-700">{{ errorMessage }}</p>
+        <button
+          (click)="loadServices()"
+          class="mt-3 text-red-600 hover:text-red-800 font-medium underline"
+        >
+          Réessayer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div
+    *ngIf="!isLoading && !errorMessage && filteredServices.length === 0 && services.length === 0"
+    class="text-center py-16"
+  >
+    <i class="fas fa-briefcase text-gray-300 text-6xl mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucun service</h3>
+    <p class="text-gray-500 mb-6">Commencez par créer votre premier service</p>
+    <button
+      (click)="openCreateForm()"
+      class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium shadow-md inline-flex items-center"
+    >
+      <i class="fas fa-plus mr-2"></i>
+      Créer un service
+    </button>
+  </div>
+
+  <!-- No Search Results -->
+  <div
+    *ngIf="!isLoading && !errorMessage && filteredServices.length === 0 && services.length > 0"
+    class="text-center py-16"
+  >
+    <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucun résultat</h3>
+    <p class="text-gray-500 mb-4">Aucun service ne correspond à votre recherche</p>
+    <button
+      (click)="searchTerm = ''; filterServices()"
+      class="text-primary hover:text-blue-600 font-medium underline"
+    >
+      Réinitialiser la recherche
+    </button>
+  </div>
+
+  <!-- Services Grid -->
+  <div
+    *ngIf="!isLoading && !errorMessage && filteredServices.length > 0"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+  >
+    <div
+      *ngFor="let service of filteredServices"
+      class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group border border-gray-100"
+      (click)="openServiceDetails(service)"
+    >
+      <!-- Image -->
+      <div class="relative h-48 overflow-hidden">
+        <img
+          [src]="getServiceImage(service)"
+          [alt]="service.title"
+          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+        />
+        <div class="absolute top-3 right-3">
+          <span
+            [ngClass]="getStatusBadge(service.status).class"
+            class="px-3 py-1 rounded-full text-xs font-semibold shadow-sm"
+          >
+            {{ getStatusBadge(service.status).label }}
+          </span>
+        </div>
+        <!-- Badge nombre d'images -->
+        <div *ngIf="service.images && service.images.length > 1" class="absolute bottom-3 left-3">
+          <span class="bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs flex items-center">
+            <i class="fas fa-images mr-1"></i>
+            {{ service.images.length }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="p-5">
+        <h3 class="text-lg font-bold text-secondary mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          {{ service.title }}
+        </h3>
+        <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+          {{ service.description }}
+        </p>
+
+        <!-- Meta Information -->
+        <div class="flex items-center justify-between text-sm mb-4">
+          <div class="flex items-center text-gray-500">
+            <i class="fas fa-tag mr-1.5"></i>
+            <span>{{ service.category?.name || 'Non spécifiée' }}</span>
+          </div>
+          <div class="flex items-center text-gray-500">
+            <i class="fas fa-clock mr-1.5"></i>
+            <span>{{ service.delivery_time }} jour{{ service.delivery_time > 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+
+        <!-- Price and Actions -->
+        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div class="text-xl font-bold text-primary">
+            {{ service.price | number:'1.0-0' }} FCFA
+          </div>
+          <div class="flex gap-2">
+            <button
+              (click)="$event.stopPropagation(); openEditForm(service)"
+              class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Modifier"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+            <button
+              (click)="$event.stopPropagation(); deleteService(service)"
+              class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Supprimer"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de détails du service -->
+<div
+  *ngIf="showModal && selectedService"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+  (click)="closeModal()"
+>
+  <div
+    class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div class="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+      <h2 class="text-2xl font-bold text-secondary">Détails du service</h2>
+      <button
+        (click)="closeModal()"
+        class="text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6">
+      <!-- Galerie d'images -->
+      <div *ngIf="selectedService.images && selectedService.images.length > 0" class="mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div *ngFor="let image of selectedService.images" class="relative aspect-square group">
+            <img
+              [src]="getImageUrl(image.image_path)"
+              [alt]="selectedService.title"
+              class="w-full h-full object-cover rounded-lg"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Title and Status -->
+      <div class="mb-4 flex items-start justify-between">
+        <h3 class="text-2xl font-bold text-secondary">{{ selectedService.title }}</h3>
+        <span
+          [ngClass]="getStatusBadge(selectedService.status).class"
+          class="px-3 py-1 rounded-full text-sm font-semibold"
+        >
+          {{ getStatusBadge(selectedService.status).label }}
+        </span>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-6">
+        <h4 class="font-semibold text-gray-700 mb-2">Description</h4>
+        <p class="text-gray-600 whitespace-pre-line">{{ selectedService.description }}</p>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div class="text-sm text-gray-500 mb-1">Prix</div>
+          <div class="text-xl font-bold text-primary">
+            {{ selectedService.price | number:'1.0-0' }} FCFA
+          </div>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div class="text-sm text-gray-500 mb-1">Délai de livraison</div>
+          <div class="text-xl font-bold text-secondary">
+            {{ selectedService.delivery_time }} jour{{ selectedService.delivery_time > 1 ? 's' : '' }}
+          </div>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Révisions incluses</p>
+          <p class="text-lg font-semibold text-gray-900">{{ selectedService.number_of_revisions }}</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div class="text-sm text-gray-500 mb-1">Catégorie</div>
+          <div class="text-lg font-semibold text-gray-700">
+            {{ selectedService.category?.name || 'Non spécifiée' }}
+          </div>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div class="text-sm text-gray-500 mb-1">Date de création</div>
+          <div class="text-lg font-semibold text-gray-700">
+            {{ selectedService.created_at | date:'dd/MM/yyyy' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3">
+        <button
+          (click)="closeModal(); openEditForm(selectedService)"
+          class="flex-1 bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+        >
+          <i class="fas fa-edit mr-2"></i>
+          Modifier
+        </button>
+        <button
+          (click)="deleteService(selectedService)"
+          class="px-6 py-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors font-medium"
+        >
+          <i class="fas fa-trash mr-2"></i>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de formulaire (Création/Modification) -->
+<div
+  *ngIf="showFormModal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+  (click)="closeFormModal()"
+>
+  <div
+    class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div class="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+      <h2 class="text-2xl font-bold text-secondary">
+        {{ isEditMode ? 'Modifier le service' : 'Nouveau service' }}
+      </h2>
+      <button
+        (click)="closeFormModal()"
+        class="text-gray-400 hover:text-gray-600 transition-colors"
+        [disabled]="isSubmitting"
+      >
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="submitForm()" class="p-6">
+      <!-- Titre du service -->
+      <div class="mb-6">
+        <label class="block text-gray-700 font-medium mb-2">
+          Titre du service <span class="text-red-600">*</span>
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="formData.title"
+          name="title"
+          placeholder="Ex: Développement d'application web"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          [class.border-red-500]="formErrors.title"
+          [disabled]="isSubmitting"
+          required
+        />
+        <p *ngIf="formErrors.title" class="text-red-600 text-sm mt-1">
+          {{ formErrors.title }}
+        </p>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-6">
+        <label class="block text-gray-700 font-medium mb-2">
+          Description <span class="text-red-600">*</span>
+        </label>
+        <textarea
+          [(ngModel)]="formData.description"
+          name="description"
+          rows="6"
+          placeholder="Décrivez votre service en détail..."
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+          [class.border-red-500]="formErrors.description"
+          [disabled]="isSubmitting"
+          required
+        ></textarea>
+        <div class="flex justify-between items-center mt-1">
+          <p *ngIf="formErrors.description" class="text-red-600 text-sm">
+            {{ formErrors.description }}
+          </p>
+          <p class="text-gray-500 text-sm text-right">
+            {{ formData.description.length }} / 5000 caractères
+          </p>
+        </div>
+      </div>
+
+      <!-- Prix et Délai (sur la même ligne en desktop) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Prix -->
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">
+            Prix (FCFA) <span class="text-red-600">*</span>
+          </label>
+          <input
+            type="number"
+            [(ngModel)]="formData.price"
+            name="price"
+            min="0"
+            placeholder="0"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            [class.border-red-500]="formErrors.price"
+            [disabled]="isSubmitting"
+            required
+          />
+          <p *ngIf="formErrors.price" class="text-red-600 text-sm mt-1">
+            {{ formErrors.price }}
+          </p>
+        </div>
+
+        <!-- Délai -->
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">
+            Délai (jours) <span class="text-red-600">*</span>
+          </label>
+          <input
+            type="number"
+            [(ngModel)]="formData.delivery_time"
+            name="delivery_time"
+            min="1"
+            placeholder="1"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            [class.border-red-500]="formErrors.delivery_time"
+            [disabled]="isSubmitting"
+            required
+          />
+          <p *ngIf="formErrors.delivery_time" class="text-red-600 text-sm mt-1">
+            {{ formErrors.delivery_time }}
+          </p>
+        </div>
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">
+            Révisions <span class="text-red-600">*</span>
+          </label>
+          <input
+            type="number"
+            [(ngModel)]="formData.number_of_revisions"
+            name="number_of_revisions"
+            min="1"
+            max="10"
+            placeholder="1"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            [class.border-red-500]="formErrors.number_of_revisions"
+            [disabled]="isSubmitting"
+            required
+          />
+          <p *ngIf="formErrors.number_of_revisions" class="text-red-600 text-sm mt-1">
+            {{ formErrors.number_of_revisions }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Catégorie -->
+      <div class="mb-6">
+        <label class="block text-gray-700 font-medium mb-2">
+          Catégorie <span class="text-red-600">*</span>
+        </label>
+
+        <!-- Loading state pour les catégories -->
+        <div *ngIf="isCategoriesLoading" class="text-center py-4">
+          <i class="fas fa-spinner fa-spin text-primary"></i>
+          <span class="ml-2 text-gray-600">Chargement des catégories...</span>
+        </div>
+
+        <!-- Select box stylisé -->
+        <div *ngIf="!isCategoriesLoading" class="relative">
+          <select
+            [(ngModel)]="formData.categorie_id"
+            name="categorie_id"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all cursor-pointer"
+            [class.border-red-500]="formErrors.categorie_id"
+            [disabled]="isSubmitting"
+            required
+          >
+            <option [ngValue]="0" disabled>Sélectionner une catégorie</option>
+            <option *ngFor="let category of categories" [ngValue]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+          <!-- Icône de flèche personnalisée -->
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
+            <i class="fas fa-chevron-down"></i>
+          </div>
+        </div>
+
+        <p *ngIf="formErrors.categorie_id" class="text-red-600 text-sm mt-1">
+          {{ formErrors.categorie_id }}
+        </p>
+      </div>
+
+      <!-- Section Images -->
+      <div class="mb-8">
+        <label class="block text-gray-700 font-medium mb-2">
+          Images <span class="text-red-600">*</span>
+          <span class="text-sm font-normal text-gray-500">
+            ({{ getTotalImages() }}/{{ maxImages }} - Max 2MB par image)
+          </span>
+        </label>
+
+        <!-- Images existantes (en mode édition) -->
+        <div *ngIf="isEditMode && existingImages.length > 0" class="mb-4">
+          <p class="text-sm text-gray-600 mb-3">Images actuelles :</p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div *ngFor="let image of existingImages" class="relative group">
+              <img
+                [src]="getImageUrl(image.image_path)"
+                alt="Image du service"
+                class="w-full h-32 object-cover rounded-lg"
+              />
+              <button
+                type="button"
+                (click)="deleteExistingImage(image.id)"
+                [disabled]="isDeletingImage"
+                class="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                title="Supprimer cette image"
+              >
+                <i class="fas fa-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview des nouvelles images sélectionnées -->
+        <div *ngIf="selectedImages.length > 0" class="mb-4">
+          <p class="text-sm text-gray-600 mb-3">
+            {{ isEditMode ? 'Nouvelles images à ajouter :' : 'Images sélectionnées :' }}
+          </p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div *ngFor="let image of selectedImages; let i = index" class="relative group">
+              <img
+                [src]="image.url"
+                alt="Preview"
+                class="w-full h-32 object-cover rounded-lg"
+              />
+              <button
+                type="button"
+                (click)="removeSelectedImage(i)"
+                class="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                title="Retirer cette image"
+              >
+                <i class="fas fa-times text-xs"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton d'upload -->
+        <div class="mt-4">
+          <input
+            #fileInput
+            type="file"
+            multiple
+            accept="image/jpeg,image/jpg,image/png,image/gif"
+            (change)="onImageSelected($event)"
+            class="hidden"
+            [disabled]="!canAddMoreImages() || isSubmitting"
+          />
+          <button
+            type="button"
+            (click)="fileInput.click()"
+            [disabled]="!canAddMoreImages() || isSubmitting"
+            class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary hover:bg-blue-50 transition-all text-gray-600 hover:text-primary font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="fas fa-cloud-upload-alt mr-2"></i>
+            {{ selectedImages.length === 0 ? 'Ajouter des images' : 'Ajouter plus d\'images' }}
+            ({{ getTotalImages() }}/{{ maxImages }})
+          </button>
+        </div>
+
+        <p *ngIf="formErrors.images" class="text-red-600 text-sm mt-1">
+          {{ formErrors.images }}
+        </p>
+
+        <!-- Informations sur les images -->
+        <div class="mt-3 text-sm text-gray-500">
+          <ul class="list-disc list-inside space-y-1">
+            <li>Formats acceptés : JPG, JPEG, PNG, GIF</li>
+            <li>Taille max par image : 2MB</li>
+            <li>Nombre max d'images : {{ maxImages }}</li>
+            <li *ngIf="!isEditMode">Au moins une image est requise</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 pt-4 border-t border-gray-200">
+        <button
+          type="button"
+          (click)="closeFormModal()"
+          class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          [disabled]="isSubmitting"
+        >
+          Annuler
+        </button>
+        <button
+          type="submit"
+          class="flex-1 px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          [disabled]="isSubmitting || !isFormValid()"
+        >
+          <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin mr-2"></i>
+          <i *ngIf="!isSubmitting" class="fas fa-save mr-2"></i>
+          {{ isSubmitting ? 'Enregistrement...' : (isEditMode ? 'Modifier' : 'Créer') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,90 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Navbar -->
+  <app-navbar></app-navbar>
+
+  <div class="flex mt-4">
+    <!-- Sidebar -->
+    <aside
+      [class.w-64]="isSidebarOpen"
+      [class.w-20]="!isSidebarOpen"
+      class="bg-white shadow-lg h-[calc(100vh-64px)] sticky top-16 transition-all duration-300 ease-in-out overflow-hidden"
+    >
+      <!-- Toggle Button -->
+      <div class="p-4 border-b border-gray-200 flex justify-end">
+        <button
+          (click)="toggleSidebar()"
+          class="text-secondary hover:text-primary transition-colors duration-200 focus:outline-none"
+          [attr.aria-label]="isSidebarOpen ? 'Fermer le menu' : 'Ouvrir le menu'"
+        >
+          <i [class]="isSidebarOpen ? 'fas fa-chevron-left text-xl' : 'fas fa-chevron-right text-xl'"></i>
+        </button>
+      </div>
+
+      <!-- User Info -->
+      <div class="p-4 border-b border-gray-200">
+        <div class="flex items-center space-x-3" *ngIf="isSidebarOpen">
+          <img
+            [src]="getUserAvatar()"
+            [alt]="currentUser?.full_name || 'Avatar'"
+            class="w-12 h-12 rounded-full object-cover border-2 border-primary"
+            (error)="onImageError($event)"
+          />
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-secondary truncate">
+              {{ currentUser?.full_name }}
+            </p>
+            <p class="text-xs text-gray-500">Freelance</p>
+          </div>
+        </div>
+        <div *ngIf="!isSidebarOpen" class="flex justify-center">
+          <img
+            [src]="getUserAvatar()"
+            [alt]="currentUser?.full_name || 'Avatar'"
+            class="w-10 h-10 rounded-full object-cover border-2 border-primary"
+            (error)="onImageError($event)"
+          />
+        </div>
+      </div>
+
+      <!-- Menu Items -->
+      <nav class="p-4 space-y-2">
+        <a
+          *ngFor="let item of menuItems"
+          [routerLink]="item.route"
+          [class.bg-blue-50]="item.active"
+          [class.text-primary]="item.active"
+          [class.text-secondary]="!item.active"
+          class="flex items-center px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-primary transition-all duration-200 group"
+          [attr.aria-label]="item.label"
+        >
+          <i [class]="item.icon + ' text-lg'" [class.w-6]="isSidebarOpen"></i>
+          <span
+            *ngIf="isSidebarOpen"
+            class="ml-3 font-medium whitespace-nowrap"
+          >
+            {{ item.label }}
+          </span>
+        </a>
+      </nav>
+
+      <!-- Footer -->
+      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
+        <a
+          routerLink="/"
+          class="flex items-center px-4 py-3 rounded-lg text-secondary hover:bg-blue-50 hover:text-primary transition-all duration-200"
+          [attr.aria-label]="'Retour à l\'accueil'"
+        >
+          <i class="fas fa-home text-lg" [class.w-6]="isSidebarOpen"></i>
+          <span *ngIf="isSidebarOpen" class="ml-3 font-medium whitespace-nowrap">
+            Accueil
+          </span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 overflow-auto">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

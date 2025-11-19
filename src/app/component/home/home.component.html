@@ -1,0 +1,152 @@
+<div class="min-h-screen">
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-r from-primary to-blue-600 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6">
+          Connectez-vous aux meilleurs <span class="text-yellow-300">Freelances</span>
+        </h1>
+        <p class="text-xl md:text-2xl mb-8 text-blue-100">
+          Trouvez des talents pour vos projets ou proposez vos services
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a routerLink="/projects" class="bg-white text-primary px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors duration-200 shadow-lg">
+            <i class="fas fa-search mr-2"></i>Parcourir les projets
+          </a>
+          <a routerLink="/services" class="bg-secondary text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-colors duration-200 shadow-lg">
+            <i class="fas fa-briefcase mr-2"></i>Découvrir les services
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-4xl font-bold text-center text-secondary mb-12">Pourquoi choisir DigitalConnect ?</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center p-6 rounded-lg hover:shadow-xl transition-shadow duration-200">
+          <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-users text-primary text-3xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-secondary mb-3">Talents Vérifiés</h3>
+          <p class="text-gray-600">Des freelances qualifiés et vérifiés pour garantir la qualité de vos projets</p>
+        </div>
+        <div class="text-center p-6 rounded-lg hover:shadow-xl transition-shadow duration-200">
+          <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-shield-alt text-primary text-3xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-secondary mb-3">Paiement Sécurisé</h3>
+          <p class="text-gray-600">Transactions sécurisées et protection pour les clients comme les freelances</p>
+        </div>
+        <div class="text-center p-6 rounded-lg hover:shadow-xl transition-shadow duration-200">
+          <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-headset text-primary text-3xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-secondary mb-3">Support 24/7</h3>
+          <p class="text-gray-600">Une équipe disponible pour vous accompagner à chaque étape</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Projects -->
+  <section class="py-16 bg-accent">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-secondary">Projets Récents</h2>
+        <a routerLink="/projects" class="text-primary hover:underline font-semibold">
+          Voir tous les projets <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+      </div>
+      <div *ngIf="loading" class="flex justify-center py-12">
+        <i class="fas fa-spinner fa-spin text-4xl text-primary"></i>
+      </div>
+      <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div *ngFor="let project of recentProjects" class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 p-6">
+          <div class="flex items-start justify-between mb-3">
+            <span class="bg-blue-100 text-primary px-3 py-1 rounded-full text-sm font-semibold">
+              {{project.category?.name || 'Non catégorisé'}}
+            </span>
+            <span class="text-sm text-gray-500">
+              <i class="far fa-clock mr-1"></i>{{project.created_at | date: 'dd/MM/yyyy'}}
+            </span>
+          </div>
+          <h3 class="text-xl font-bold text-secondary mb-2">{{project.title}}</h3>
+          <p class="text-gray-600 mb-4 line-clamp-2">{{project.description}}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-primary font-bold text-lg">
+              <i class="fas fa-dollar-sign"></i>{{project.budget || 'À négocier'}}
+            </span>
+            <a [routerLink]="['/projects', project.id]" class="text-primary hover:text-blue-600 font-semibold">
+              Voir détails <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Services -->
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-secondary">Services Populaires</h2>
+        <a routerLink="/services" class="text-primary hover:underline font-semibold">
+          Voir tous les services <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+      </div>
+      <div *ngIf="loading" class="flex justify-center py-12">
+        <i class="fas fa-spinner fa-spin text-4xl text-primary"></i>
+      </div>
+      <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div *ngFor="let service of recentServices" class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 overflow-hidden">
+          <div class="h-48 bg-gray-200 overflow-hidden">
+            <img *ngIf="service.images && service.images.length > 0" [src]="getImageUrl(service.images[0].image_path)"
+                 [alt]="service.title" class="w-full h-full object-cover">
+            <div *ngIf="!service.images || service.images.length === 0"
+                 class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
+              <i class="fas fa-image text-gray-400 text-5xl"></i>
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex items-center mb-3">
+              <div *ngIf="!service.freelance?.user?.avatar"
+                   class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold mr-3">
+                {{service.freelance?.user?.full_name?.charAt(0) || '?'}}
+              </div>
+              <div>
+                <p class="font-semibold text-secondary">{{service.freelance?.user?.full_name}}</p>
+                <p class="text-sm text-gray-500">{{service.freelance?.title}}</p>
+              </div>
+            </div>
+            <h3 class="text-lg font-bold text-secondary mb-2">{{service.title}}</h3>
+            <p class="text-gray-600 mb-4 line-clamp-2">{{service.description}}</p>
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-gray-500 text-sm">À partir de</span>
+                <p class="text-primary font-bold text-xl">${{service.price}}</p>
+              </div>
+              <a [routerLink]="['/services', service.id]"
+                 class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200">Voir</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 bg-secondary text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-4xl font-bold mb-6">Prêt à démarrer ?</h2>
+      <p class="text-xl mb-8 text-gray-300">
+        Rejoignez des milliers de professionnels qui font confiance à DigitalConnect
+      </p>
+      <button class="bg-primary text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-600 transition-colors duration-200 shadow-lg">
+        <i class="fas fa-user-plus mr-2"></i>Créer un compte
+      </button>
+    </div>
+  </section>
+</div>

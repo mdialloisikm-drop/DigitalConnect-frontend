@@ -1,0 +1,17 @@
+/* Mobile responsive */
+@media (max-width: 768px) {
+  aside {
+    width: 100%;
+  }
+}
+
+/* Smooth transitions */
+aside, .transition-all {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Sidebar hover effects */
+nav a:hover i {
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
+}

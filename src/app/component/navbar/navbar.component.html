@@ -1,0 +1,243 @@
+<nav *ngIf="shouldDisplayNavbar" class="bg-white shadow-lg sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <!-- Logo Section -->
+      <div class="flex items-center">
+        <a routerLink="/" class="flex items-center space-x-2">
+          <i class="fas fa-handshake text-primary text-2xl"></i>
+          <span class="text-2xl font-bold text-secondary">Digital<span class="text-primary">Connect</span></span>
+        </a>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center space-x-8">
+        <a routerLink="/"
+           routerLinkActive="text-primary"
+           [routerLinkActiveOptions]="{exact: true}"
+           class="text-secondary hover:text-primary transition-colors duration-200 font-medium">
+          <i class="fas fa-home mr-2"></i>Accueil
+        </a>
+        <a *ngIf="!isClient()"
+           routerLink="/projects"
+           routerLinkActive="text-primary"
+           class="text-secondary hover:text-primary transition-colors duration-200 font-medium">
+          <i class="fas fa-project-diagram mr-2"></i>Projets
+        </a>
+        <a *ngIf="!isFreelance()"
+           routerLink="/services"
+           routerLinkActive="text-primary"
+           class="text-secondary hover:text-primary transition-colors duration-200 font-medium">
+          <i class="fas fa-briefcase mr-2"></i>Services
+        </a>
+
+        <!-- Option Messages pour utilisateurs connectés -->
+        <a *ngIf="isAuthenticated"
+           routerLink="/messages"
+           routerLinkActive="text-primary"
+           class="text-secondary hover:text-primary transition-colors duration-200 font-medium relative">
+          <i class="fas fa-envelope mr-2"></i>Messages
+          <span *ngIf="unreadMessagesCount > 0"
+                class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg animate-pulse">
+            {{ unreadMessagesCount > 99 ? '99+' : unreadMessagesCount }}
+          </span>
+        </a>
+
+        <!-- Authentication Actions -->
+        <ng-container *ngIf="!isAuthenticated">
+          <a routerLink="/login"
+             class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium shadow-md">
+            <i class="fas fa-sign-in-alt mr-2"></i>Connexion
+          </a>
+        </ng-container>
+
+        <ng-container *ngIf="isAuthenticated">
+          <div class="relative">
+            <button
+              (click)="toggleUserMenu()"
+              class="flex items-center space-x-3 text-secondary hover:text-primary transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg px-2 py-1"
+            >
+              <img
+                [src]="getUserAvatar()"
+                [alt]="currentUser?.full_name || 'Avatar utilisateur'"
+                class="w-9 h-9 rounded-full object-cover border-2 border-primary shadow-sm"
+                (error)="onImageError($event)"
+              >
+              <i [class]="isUserMenuOpen ? 'fas fa-chevron-up text-sm' : 'fas fa-chevron-down text-sm'"></i>
+            </button>
+
+            <!-- User Dropdown Menu -->
+            <div
+              *ngIf="isUserMenuOpen"
+              class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 animate-fade-in"
+            >
+              <div class="px-4 py-3 border-b border-gray-200">
+                <div class="flex items-center space-x-3 mb-2">
+                  <img
+                    [src]="getUserAvatar()"
+                    [alt]="currentUser?.full_name || 'Avatar utilisateur'"
+                    class="w-12 h-12 rounded-full object-cover border-2 border-primary"
+                    (error)="onImageError($event)"
+                  >
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-secondary truncate">{{ currentUser?.full_name }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ currentUser?.email }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Menu Mon espace pour les freelances -->
+              <a
+                *ngIf="isFreelance() || isClient()"
+                [routerLink]="getDashboardRoute()"
+                (click)="closeUserMenu()"
+                class="flex items-center px-4 py-2 text-sm text-secondary hover:bg-blue-50 hover:text-primary transition-colors duration-200"
+              >
+                <i class="fas fa-briefcase mr-3 w-4 text-primary"></i>
+                Mon espace
+              </a>
+
+              <a
+                *ngIf="isFreelance()"
+                routerLink="/freelance/my-proposals"
+                (click)="closeUserMenu()"
+                class="flex items-center px-4 py-2 text-sm text-secondary hover:bg-blue-50 hover:text-primary transition-colors duration-200"
+              >
+                <i class="fas fa-paper-plane mr-3 w-4 text-primary"></i>
+                Mes candidatures
+              </a>
+
+              <a
+                routerLink="/profile"
+                (click)="closeUserMenu()"
+                class="flex items-center px-4 py-2 text-sm text-secondary hover:bg-blue-50 hover:text-primary transition-colors duration-200"
+              >
+                <i class="fas fa-user mr-3 w-4"></i>
+                Mon profil
+              </a>
+
+              <a
+                routerLink="/settings"
+                (click)="closeUserMenu()"
+                class="flex items-center px-4 py-2 text-sm text-secondary hover:bg-blue-50 hover:text-primary transition-colors duration-200"
+              >
+                <i class="fas fa-cog mr-3 w-4"></i>
+                Paramètres
+              </a>
+
+              <div class="border-t border-gray-200 my-2"></div>
+
+              <button
+                (click)="logout()"
+                class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+              >
+                <i class="fas fa-sign-out-alt mr-3 w-4"></i>
+                Déconnexion
+              </button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden flex items-center">
+        <button (click)="toggleMenu()" class="text-secondary hover:text-primary focus:outline-none">
+          <i [class]="isMenuOpen ? 'fas fa-times text-2xl' : 'fas fa-bars text-2xl'"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation Menu -->
+  <div *ngIf="isMenuOpen" class="md:hidden bg-white border-t border-gray-200">
+    <div class="px-4 pt-2 pb-4 space-y-3">
+      <a routerLink="/"
+         (click)="toggleMenu()"
+         routerLinkActive="text-primary bg-blue-50"
+         [routerLinkActiveOptions]="{exact: true}"
+         class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
+        <i class="fas fa-home mr-2"></i>Accueil
+      </a>
+      <a *ngIf="!isClient()"
+         routerLink="/projects"
+         (click)="toggleMenu()"
+         routerLinkActive="text-primary bg-blue-50"
+         class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
+        <i class="fas fa-project-diagram mr-2"></i>Projets
+      </a>
+      <a *ngIf="!isFreelance()"
+         routerLink="/services"
+         (click)="toggleMenu()"
+         routerLinkActive="text-primary bg-blue-50"
+         class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
+        <i class="fas fa-briefcase mr-2"></i>Services
+      </a>
+
+      <!-- Option Messages mobile -->
+      <a *ngIf="isAuthenticated"
+         routerLink="/messages"
+         (click)="toggleMenu()"
+         routerLinkActive="text-primary bg-blue-50"
+         class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium relative flex items-center">
+        <i class="fas fa-envelope mr-2"></i>Messages
+        <span *ngIf="unreadMessagesCount > 0"
+              class="ml-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 animate-pulse">
+          {{ unreadMessagesCount > 99 ? '99+' : unreadMessagesCount }}
+        </span>
+      </a>
+
+      <!-- Mobile Authentication Actions -->
+      <ng-container *ngIf="!isAuthenticated">
+        <a routerLink="/login"
+           (click)="toggleMenu()"
+           class="block text-center bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium shadow-md">
+          <i class="fas fa-sign-in-alt mr-2"></i>Connexion
+        </a>
+      </ng-container>
+
+      <ng-container *ngIf="isAuthenticated">
+        <div class="border-t border-gray-200 pt-3 mt-3">
+          <div class="px-4 py-3 bg-blue-50 rounded-lg mb-3">
+            <div class="flex items-center space-x-3">
+              <img
+                [src]="getUserAvatar()"
+                [alt]="currentUser?.full_name || 'Avatar utilisateur'"
+                class="w-12 h-12 rounded-full object-cover border-2 border-primary"
+                (error)="onImageError($event)"
+              >
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-secondary truncate">{{ currentUser?.full_name || currentUser?.email }}</p>
+                <p class="text-xs text-gray-500">{{ getUserTypeLabel() }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Menu Mon espace pour les freelances en mobile -->
+          <a
+            *ngIf="isFreelance() || isClient()"
+            [routerLink]="getDashboardRoute()"
+            (click)="toggleMenu()"
+            class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
+            <i class="fas fa-briefcase mr-2 text-primary"></i>Mon espace
+          </a>
+
+          <a routerLink="/profile"
+             (click)="toggleMenu()"
+             class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
+            <i class="fas fa-user mr-2"></i>Mon profil
+          </a>
+
+          <a routerLink="/settings"
+             (click)="toggleMenu()"
+             class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
+            <i class="fas fa-cog mr-2"></i>Paramètres
+          </a>
+
+          <button (click)="logout()"
+                  class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 font-medium mt-2">
+            <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</nav>

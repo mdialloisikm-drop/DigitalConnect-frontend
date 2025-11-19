@@ -1,0 +1,276 @@
+<div class="users-container">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Gestion des utilisateurs</h1>
+      <p class="page-description">
+        Gérez tous les utilisateurs de la plateforme
+      </p>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success" role="alert">
+    <i class="fas fa-check-circle"></i>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-primary">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.total }}</div>
+        <div class="stat-label">Total utilisateurs</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-client">
+        <i class="fas fa-briefcase"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.clients }}</div>
+        <div class="stat-label">Clients</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-freelance">
+        <i class="fas fa-laptop-code"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.freelances }}</div>
+        <div class="stat-label">Freelances</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-success">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.active }}</div>
+        <div class="stat-label">Actifs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres et recherche -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <!-- Recherche -->
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          [formControl]="searchControl"
+          placeholder="Rechercher par nom, email ou téléphone..."
+          class="search-input"
+        />
+      </div>
+
+      <!-- Filtre par type -->
+      <div class="filter-group">
+        <select
+          [(ngModel)]="selectedUserType"
+          (change)="onUserTypeChange(selectedUserType)"
+          class="filter-select"
+        >
+          <option *ngFor="let option of userTypeOptions" [ngValue]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Filtre par statut -->
+      <div class="filter-group">
+        <select
+          [(ngModel)]="selectedStatus"
+          (change)="onStatusChange(selectedStatus)"
+          class="filter-select"
+        >
+          <option *ngFor="let option of statusOptions" [ngValue]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Bouton réinitialiser -->
+      <button
+        *ngIf="hasActiveFilters"
+        (click)="resetFilters()"
+        class="btn btn-outline"
+        type="button"
+      >
+        <i class="fas fa-redo"></i>
+        Réinitialiser
+      </button>
+    </div>
+
+    <div class="results-count">
+      {{ filteredUsers.length }} utilisateur(s) trouvé(s)
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement des utilisateurs...</p>
+  </div>
+
+  <!-- Liste des utilisateurs -->
+  <div *ngIf="!isLoading && filteredUsers.length > 0" class="users-grid">
+    <div *ngFor="let user of filteredUsers" class="user-card">
+      <!-- Avatar et info principale -->
+      <div class="user-header">
+        <div class="user-avatar">
+          <img
+            *ngIf="user.avatar"
+            [src]="'http://localhost:8000/storage/avatars/' + user.avatar"
+            [alt]="user.full_name"
+          />
+          <div *ngIf="!user.avatar" class="avatar-placeholder">
+            {{ user.full_name.charAt(0).toUpperCase() }}
+          </div>
+        </div>
+        <div class="user-info">
+          <h3 class="user-name">{{ user.full_name }}</h3>
+          <p class="user-email">{{ user.email }}</p>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="user-badges">
+        <span [class]="'badge ' + getUserTypeBadgeClass(user.user_type)">
+          {{ getUserTypeLabel(user.user_type) }}
+        </span>
+        <span [class]="'badge ' + getStatusBadgeClass(user.status)">
+          {{ getStatusLabel(user.status) }}
+        </span>
+      </div>
+
+      <!-- Informations supplémentaires -->
+      <div class="user-details">
+        <div *ngIf="user.phone" class="detail-item">
+          <i class="fas fa-phone"></i>
+          <span>{{ user.phone }}</span>
+        </div>
+        <div *ngIf="user.city" class="detail-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>{{ user.city }}<span *ngIf="user.country">, {{ user.country }}</span></span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="user-actions">
+        <button
+          *ngIf="canSuspend(user)"
+          (click)="openConfirmModal('suspend', user)"
+          class="btn btn-warning btn-sm"
+          type="button"
+          title="Suspendre"
+        >
+          <i class="fas fa-ban"></i>
+          <span class="btn-text">Suspendre</span>
+        </button>
+
+        <button
+          *ngIf="canActivate(user)"
+          (click)="openConfirmModal('activate', user)"
+          class="btn btn-success btn-sm"
+          type="button"
+          title="Activer"
+        >
+          <i class="fas fa-check"></i>
+          <span class="btn-text">Activer</span>
+        </button>
+
+        <button
+          (click)="openConfirmModal('delete', user)"
+          class="btn btn-danger btn-sm"
+          type="button"
+          title="Supprimer"
+        >
+          <i class="fas fa-trash"></i>
+          <span class="btn-text">Supprimer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message vide -->
+  <div *ngIf="hasNoUsers" class="empty-state">
+    <i class="fas fa-users-slash empty-icon"></i>
+    <h3 class="empty-title">Aucun utilisateur trouvé</h3>
+    <p class="empty-description">
+      <span *ngIf="hasActiveFilters">
+        Essayez de modifier vos critères de recherche ou de réinitialiser les filtres.
+      </span>
+      <span *ngIf="!hasActiveFilters">
+        Il n'y a aucun utilisateur enregistré dans le système.
+      </span>
+    </p>
+  </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div *ngIf="showConfirmModal" class="modal-overlay" (click)="closeConfirmModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">{{ getModalTitle() }}</h2>
+      <button
+        (click)="closeConfirmModal()"
+        class="modal-close"
+        type="button"
+        aria-label="Fermer"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-icon" [ngClass]="{
+        'modal-icon-warning': modalAction === 'suspend',
+        'modal-icon-success': modalAction === 'activate',
+        'modal-icon-danger': modalAction === 'delete'
+      }">
+        <i class="fas" [ngClass]="{
+          'fa-ban': modalAction === 'suspend',
+          'fa-check': modalAction === 'activate',
+          'fa-trash': modalAction === 'delete'
+        }"></i>
+      </div>
+      <p class="modal-message">{{ getModalMessage() }}</p>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        (click)="closeConfirmModal()"
+        class="btn btn-secondary"
+        type="button"
+      >
+        Annuler
+      </button>
+      <button
+        (click)="confirmModalAction()"
+        class="btn"
+        [ngClass]="{
+          'btn-warning': modalAction === 'suspend',
+          'btn-success': modalAction === 'activate',
+          'btn-danger': modalAction === 'delete'
+        }"
+        type="button"
+      >
+        Confirmer
+      </button>
+    </div>
+  </div>
+</div>

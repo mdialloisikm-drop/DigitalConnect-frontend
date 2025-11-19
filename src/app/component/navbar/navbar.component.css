@@ -1,0 +1,34 @@
+/* Animation pour le dropdown */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Optimisation des transitions */
+.transition-colors {
+  transition-property: color, background-color, border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive - amélioration pour mobile */
+@media (max-width: 768px) {
+  nav {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Performance - GPU acceleration */
+.sticky {
+  will-change: transform;
+  transform: translateZ(0);
+}

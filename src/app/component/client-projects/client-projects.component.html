@@ -1,0 +1,379 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Mes Projets</h1>
+      <p class="text-gray-600 mt-1">Gérez tous vos projets</p>
+    </div>
+    <button (click)="createProject()"
+            class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2">
+      <i class="fas fa-plus"></i>
+      <span>Nouveau Projet</span>
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage"
+       class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-3">
+    <i class="fas fa-check-circle text-xl"></i>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <div *ngIf="errorMessage"
+       class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3">
+    <i class="fas fa-exclamation-circle text-xl"></i>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Search -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-search mr-2"></i>Rechercher
+        </label>
+        <input type="text"
+               [(ngModel)]="searchQuery"
+               placeholder="Rechercher un projet..."
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-filter mr-2"></i>Statut
+        </label>
+        <select [(ngModel)]="statusFilter"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+      <p class="text-gray-600">Chargement des projets...</p>
+    </div>
+  </div>
+
+  <!-- Projects List -->
+  <div *ngIf="!isLoading && filteredProjects.length > 0" class="space-y-4">
+    <div *ngFor="let project of filteredProjects"
+         (click)="manageProject(project.id)"
+         class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-4 sm:p-6 border border-gray-100 cursor-pointer">
+
+      <!-- Project Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+        <div class="flex-1">
+          <h3 class="text-xl font-bold text-gray-800 mb-2 hover:text-primary transition-colors">
+            {{ project.title }}
+          </h3>
+          <p class="text-gray-600 line-clamp-2">{{ project.description }}</p>
+        </div>
+        <span [class]="'px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ' + getStatusBadge(project.status).class">
+          {{ getStatusBadge(project.status).label }}
+        </span>
+      </div>
+
+      <!-- Project Details -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 text-sm">
+        <div class="flex items-center gap-2 text-gray-600">
+          <i class="fas fa-coins text-primary"></i>
+          <span class="font-medium">Budget:</span>
+          <span>{{ formatCurrency(project.budget) }}</span>
+        </div>
+        <div class="flex items-center gap-2 text-gray-600">
+          <i class="fas fa-clock text-primary"></i>
+          <span class="font-medium">Durée:</span>
+          <span>{{ formatDuration(project.duration) }}</span>
+        </div>
+        <div *ngIf="project.deadline" class="flex items-center gap-2 text-gray-600">
+          <i class="fas fa-calendar text-primary"></i>
+          <span class="font-medium">Deadline:</span>
+          <span>{{ formatDate(project.deadline) }}</span>
+        </div>
+        <div *ngIf="!project.deadline" class="flex items-center gap-2 text-gray-500 italic">
+          <i class="fas fa-calendar text-gray-400"></i>
+          <span class="font-medium">Deadline:</span>
+          <span>À définir</span>
+        </div>
+        <div class="flex items-center gap-2 text-gray-600">
+          <i class="fas fa-folder text-primary"></i>
+          <span class="font-medium">Catégorie:</span>
+          <span>{{ project.category?.name || 'Non définie' }}</span>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div *ngIf="project.skills && project.skills.length > 0" class="mb-4">
+        <div class="flex flex-wrap gap-2">
+          <span *ngFor="let skill of project.skills"
+                class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+            {{ skill.name }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="mb-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-sm font-medium text-gray-700">Progression</span>
+          <span class="text-sm font-semibold text-gray-900">{{ getProjectProgress(project) }}%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+          <div
+            [class]="'h-full rounded-full transition-all duration-500 ' + getProgressBarClass(getProjectProgress(project))"
+            [style.width.%]="getProjectProgress(project)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+        <button (click)="viewProject(project.id, $event)"
+                class="p-2 text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                title="Voir les détails">
+          <i class="fas fa-eye text-lg"></i>
+        </button>
+        <button (click)="editProject(project.id, $event)"
+                class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                title="Modifier">
+          <i class="fas fa-edit text-lg"></i>
+        </button>
+        <button (click)="deleteProject(project, $event)"
+                [disabled]="project.isDeleting"
+                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Supprimer">
+          <i class="fas" [class.fa-trash]="!project.isDeleting" [class.fa-spinner]="project.isDeleting" [class.fa-spin]="project.isDeleting"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && filteredProjects.length === 0"
+       class="bg-white rounded-xl shadow-md p-12 text-center border border-gray-100">
+    <i class="fas fa-folder-open text-6xl text-gray-300 mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-800 mb-2">Aucun projet trouvé</h3>
+    <p class="text-gray-600 mb-6">
+      {{ searchQuery || statusFilter !== 'all' ? 'Aucun projet ne correspond à vos critères.' : 'Commencez par créer votre premier projet.' }}
+    </p>
+    <button (click)="createProject()"
+            class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+      <i class="fas fa-plus mr-2"></i>
+      Créer un projet
+    </button>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && totalPages > 1"
+       class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white rounded-xl shadow-md p-4 border border-gray-100">
+    <p class="text-gray-600 text-sm">
+      Page {{ currentPage }} sur {{ totalPages }} ({{ totalProjects }} projets au total)
+    </p>
+    <div class="flex gap-2">
+      <button (click)="changePage(currentPage - 1)"
+              [disabled]="currentPage === 1"
+              class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button (click)="changePage(currentPage + 1)"
+              [disabled]="currentPage === totalPages"
+              class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de détails du projet -->
+<div *ngIf="showModal"
+     class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-fade-in"
+     (click)="closeModal()">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in"
+       (click)="$event.stopPropagation()">
+
+    <!-- Header Modal -->
+    <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center rounded-t-2xl">
+      <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+        <i class="fas fa-project-diagram text-primary"></i>
+        Détails du projet
+      </h2>
+      <button (click)="closeModal()"
+              class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+        <i class="fas fa-times text-xl text-gray-600"></i>
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoadingProjectDetails" class="flex justify-center items-center py-20">
+      <div class="text-center">
+        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+        <p class="text-gray-600">Chargement des détails...</p>
+      </div>
+    </div>
+
+    <!-- Content Modal -->
+    <div *ngIf="!isLoadingProjectDetails && selectedProject" class="p-6 space-y-6">
+
+      <!-- Titre et statut -->
+      <div class="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b border-gray-200">
+        <div class="flex-1">
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ selectedProject.title }}</h3>
+          <p class="text-gray-600 text-sm flex items-center gap-2">
+            <i class="fas fa-calendar-alt text-primary"></i>
+            Créé le {{ formatDate(selectedProject.created_at) }}
+          </p>
+        </div>
+        <span [class]="'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ' + getStatusBadge(selectedProject.status).class">
+          <i class="fas fa-circle text-xs mr-2"></i>
+          {{ getStatusBadge(selectedProject.status).label }}
+        </span>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <i class="fas fa-align-left text-primary"></i>
+          Description
+        </h4>
+        <p class="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">{{ selectedProject.description }}</p>
+      </div>
+
+      <!-- Informations principales -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Budget -->
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-primary text-white rounded-lg">
+              <i class="fas fa-coins text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 font-medium">Budget</p>
+              <p class="text-2xl font-bold text-gray-800">{{ formatCurrency(selectedProject.budget) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Durée -->
+        <div class="bg-purple-50 p-4 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-purple-600 text-white rounded-lg">
+              <i class="fas fa-clock text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 font-medium">Durée</p>
+              <p class="text-2xl font-bold text-gray-800">{{ formatDuration(selectedProject.duration) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date de début -->
+        <div class="bg-indigo-50 p-4 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-indigo-600 text-white rounded-lg">
+              <i class="fas fa-calendar-alt text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 font-medium">Date de début</p>
+              <p *ngIf="selectedProject.start_date" class="text-2xl font-bold text-gray-800">{{ formatDate(selectedProject.start_date) }}</p>
+              <p *ngIf="!selectedProject.start_date" class="text-lg italic text-gray-500">À définir</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deadline -->
+        <div class="bg-green-50 p-4 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-green-600 text-white rounded-lg">
+              <i class="fas fa-calendar-check text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 font-medium">Date limite</p>
+              <p *ngIf="selectedProject.deadline" class="text-2xl font-bold text-gray-800">{{ formatDate(selectedProject.deadline) }}</p>
+              <p *ngIf="!selectedProject.deadline" class="text-lg italic text-gray-500">À définir</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catégorie -->
+      <div *ngIf="selectedProject.category">
+        <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <i class="fas fa-folder text-primary"></i>
+          Catégorie
+        </h4>
+        <div class="bg-purple-50 px-4 py-3 rounded-lg inline-block">
+          <span class="text-purple-700 font-medium">{{ selectedProject.category.name }}</span>
+        </div>
+      </div>
+
+      <!-- Compétences requises -->
+      <div *ngIf="selectedProject.skills && selectedProject.skills.length > 0">
+        <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <i class="fas fa-cogs text-primary"></i>
+          Compétences requises
+          <span class="text-sm font-normal text-gray-500">({{ selectedProject.skills.length }})</span>
+        </h4>
+        <div class="flex flex-wrap gap-2">
+          <span *ngFor="let skill of selectedProject.skills"
+                class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-200 hover:bg-blue-100 transition-colors">
+            <i class="fas fa-check-circle mr-1"></i>
+            {{ skill.name }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Pièces jointes -->
+      <div *ngIf="selectedProject.attachments && selectedProject.attachments.length > 0">
+        <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <i class="fas fa-paperclip text-primary"></i>
+          Pièces jointes
+          <span class="text-sm font-normal text-gray-500">({{ selectedProject.attachments.length }})</span>
+        </h4>
+        <div class="space-y-2">
+          <div *ngFor="let attachment of selectedProject.attachments"
+               class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="p-2 bg-primary text-white rounded-lg">
+                <i class="fas" [class.fa-file]="attachment.format === 'file'" [class.fa-link]="attachment.format === 'link'"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-800 truncate">
+                  {{ attachment.format === 'file' ? attachment.file_name : 'Lien externe' }}
+                </p>
+              </div>
+            </div>
+            <a [href]="attachment.format === 'file' ? attachment.file_path : attachment.url"
+               target="_blank"
+               class="px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium whitespace-nowrap ml-3">
+              <i class="fas fa-download mr-1" *ngIf="attachment.format === 'file'"></i>
+              <i class="fas fa-external-link-alt mr-1" *ngIf="attachment.format === 'link'"></i>
+              {{ attachment.format === 'file' ? 'Télécharger' : 'Ouvrir' }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Modal -->
+    <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-2xl flex justify-end gap-3">
+      <button (click)="closeModal()"
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+        <i class="fas fa-times mr-2"></i>
+        Fermer
+      </button>
+      <button (click)="editProject(selectedProject!.id); closeModal()"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+        <i class="fas fa-edit mr-2"></i>
+        Modifier
+      </button>
+    </div>
+  </div>
+</div>

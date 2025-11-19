@@ -1,0 +1,21 @@
+<div class="messages-layout">
+  <!-- Colonne gauche: Liste des conversations -->
+  <div class="conversations-column" [class.hidden-mobile]="selectedConversationId">
+    <app-conversation-list></app-conversation-list>
+  </div>
+
+  <!-- Colonne droite: Messages de la conversation -->
+  <div class="messages-column" [class.hidden-desktop]="!selectedConversationId">
+    <!-- Message par défaut si aucune conversation sélectionnée -->
+    <div class="no-conversation-selected" *ngIf="!selectedConversationId">
+      <i class="fas fa-comments no-conversation-icon"></i>
+      <h2 class="no-conversation-title">Sélectionnez une conversation</h2>
+      <p class="no-conversation-text">
+        Choisissez une conversation dans la liste pour commencer à échanger
+      </p>
+    </div>
+
+    <!-- Conversation sélectionnée -->
+    <router-outlet *ngIf="selectedConversationId"></router-outlet>
+  </div>
+</div>

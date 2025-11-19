@@ -1,0 +1,115 @@
+<div class="min-h-screen bg-accent py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold text-secondary mb-2">
+        <i class="fas fa-briefcase text-primary mr-3"></i>Tous les Services
+      </h1>
+      <p class="text-gray-600">Explorez les services proposés par nos freelances</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="lg:col-span-2">
+          <label class="block text-sm font-semibold text-secondary mb-2">
+            <i class="fas fa-search mr-2"></i>Rechercher
+          </label>
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()"
+                 placeholder="Titre, description..."
+                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-secondary mb-2">
+            <i class="fas fa-folder mr-2"></i>Catégorie
+          </label>
+          <select [(ngModel)]="selectedCategory" (ngModelChange)="applyFilters()"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="">Toutes</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{category.name}}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-secondary mb-2">
+            <i class="fas fa-dollar-sign mr-2"></i>Budget max
+          </label>
+          <input type="number" [(ngModel)]="maxPrice" (ngModelChange)="applyFilters()" placeholder="Prix maximum"
+                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="flex justify-center py-20">
+      <i class="fas fa-spinner fa-spin text-5xl text-primary"></i>
+    </div>
+
+    <!-- Services Grid -->
+    <div *ngIf="!loading && filteredServices.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let service of filteredServices"
+           class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden group">
+        <div class="h-56 bg-gray-200 overflow-hidden relative">
+          <img *ngIf="service.images && service.images.length > 0"
+               [src]="getImageUrl(service.images[0].image_path)" [alt]="service.title"
+               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+          <div *ngIf="!service.images || service.images.length === 0"
+               class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
+            <i class="fas fa-image text-gray-400 text-6xl"></i>
+          </div>
+          <div class="absolute top-3 left-3">
+            <span class="bg-white text-primary px-3 py-1 rounded-full text-sm font-semibold shadow-md">
+              {{service.category?.name || 'Service'}}
+            </span>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center mb-3">
+            <img *ngIf="service.freelance?.user?.avatar"
+                 [src]="getAvatarUrl(service.freelance!.user!.avatar!)"
+                 [alt]="service.freelance?.user?.full_name || 'Freelance'"
+                 class="w-10 h-10 rounded-full mr-3 border-2 border-primary">
+            <div *ngIf="!service.freelance?.user?.avatar"
+                 class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold mr-3">
+              {{service.freelance?.user?.full_name?.charAt(0) || '?'}}
+            </div>
+            <div class="flex-1">
+              <p class="font-semibold text-secondary text-sm">{{service.freelance?.user?.full_name}}</p>
+              <p class="text-xs text-gray-500">{{service.freelance?.title}}</p>
+            </div>
+          </div>
+          <h3 class="text-lg font-bold text-secondary mb-2 line-clamp-2">{{service.title}}</h3>
+          <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{service.description}}</p>
+
+          <!-- Info supplémentaire avec révisions -->
+          <div class="flex items-center gap-3 mb-4 text-xs text-gray-600">
+            <span class="flex items-center">
+              <i class="far fa-clock mr-1 text-primary"></i>
+              {{service.delivery_time}} jours
+            </span>
+            <span class="flex items-center">
+              <i class="fas fa-redo-alt mr-1 text-primary"></i>
+              {{service.number_of_revisions === 0 ? 'Illimitées' : service.number_of_revisions + ' révision' + (service.number_of_revisions > 1 ? 's' : '')}}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+            <div>
+              <p class="text-xs text-gray-500">À partir de</p>
+              <p class="text-primary font-bold text-xl">${{service.price | number:'1.0-0'}}</p>
+            </div>
+            <div class="text-right">
+              <a [routerLink]="['/services', service.id]"
+                 class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium inline-block">
+                Voir détails
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && filteredServices.length === 0" class="text-center py-20">
+      <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+      <h3 class="text-2xl font-bold text-secondary mb-2">Aucun service trouvé</h3>
+      <p class="text-gray-600">Essayez de modifier vos filtres</p>
+    </div>
+  </div>
+</div>

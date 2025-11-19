@@ -1,0 +1,189 @@
+<div class="conversation-container">
+  <!-- Header -->
+  <div class="conversation-header">
+    <button class="back-btn" routerLink="/messages">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="header-info" *ngIf="conversation">
+      <div class="header-avatar">
+        <!-- Avatar avec photo -->
+        <img
+          *ngIf="hasAvatar(getOtherUser())"
+          [src]="getOtherUser()?.avatar"
+          [alt]="getOtherUser()?.full_name"
+          class="avatar-image"
+        />
+
+        <!-- Avatar avec initiales -->
+        <div
+          *ngIf="!hasAvatar(getOtherUser())"
+          class="avatar-initials"
+          [ngClass]="getAvatarColor(getOtherUser())">
+          {{ getInitials(getOtherUser()) }}
+        </div>
+      </div>
+
+      <div class="header-text">
+        <h3>{{ getOtherUser()?.full_name || 'Utilisateur inconnu' }}</h3>
+        <p class="project-info" *ngIf="conversation.project">
+          <i class="fas fa-folder"></i>
+          {{ conversation.project.title }}
+        </p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Actions supplémentaires -->
+    </div>
+  </div>
+
+  <!-- Messages Container -->
+  <div class="messages-container" #messagesContainer>
+    <!-- Loading -->
+    <div class="loading" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Chargement des messages...</p>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-list" *ngIf="!isLoading">
+      <!-- Message vide -->
+      <div class="empty-state" *ngIf="messages.length === 0">
+        <i class="fas fa-comment-dots empty-icon"></i>
+        <p class="empty-text">Aucun message</p>
+        <span class="empty-hint">Commencez la conversation !</span>
+      </div>
+
+      <!-- Liste des messages -->
+      <div class="message-wrapper"
+           *ngFor="let message of messages; let i = index"
+           [class.own-message]="isOwnMessage(message)"
+           [class.other-message]="!isOwnMessage(message)">
+
+        <!-- Date separator (si changement de jour) -->
+        <div class="date-separator" *ngIf="i === 0 || isDifferentDay(messages[i-1].created_at, message.created_at)">
+          <span>{{ formatDate(message.created_at) }}</span>
+        </div>
+
+        <div class="message" [class.own]="isOwnMessage(message)">
+          <!-- Avatar (pour les messages reçus) -->
+          <div class="message-avatar" *ngIf="!isOwnMessage(message)">
+            <!-- Avatar avec photo -->
+            <img
+              *ngIf="hasAvatar(message.sender)"
+              [src]="message.sender.avatar"
+              [alt]="message.sender.full_name"
+              class="avatar-image-small"
+            />
+
+            <!-- Avatar avec initiales -->
+            <div
+              *ngIf="!hasAvatar(message.sender)"
+              class="avatar-initials-small"
+              [ngClass]="getAvatarColor(message.sender)">
+              {{ getInitials(message.sender) }}
+            </div>
+          </div>
+
+          <div class="message-content">
+            <!-- Nom de l'expéditeur (pour les messages reçus) -->
+            <div class="message-sender" *ngIf="!isOwnMessage(message)">
+              {{ message.sender.full_name }}
+            </div>
+
+            <!-- Contenu du message -->
+            <div class="message-bubble" [class.own]="isOwnMessage(message)">
+              <!-- Message texte -->
+              <div class="message-text" *ngIf="message.message_type === 'text'">
+                {{ message.content }}
+              </div>
+
+              <!-- Message fichier -->
+              <div class="message-file" *ngIf="message.message_type === 'file'">
+                <i class="fas fa-file file-icon"></i>
+                <span class="file-name">{{ getFileName(message.content) }}</span>
+                <a [href]="message.content" target="_blank" class="file-download">
+                  <i class="fas fa-download"></i>
+                </a>
+              </div>
+
+              <!-- Message vocal -->
+              <div class="message-voice" *ngIf="message.message_type === 'voice'">
+                <i class="fas fa-microphone voice-icon"></i>
+                <span>Message vocal</span>
+                <audio [src]="message.content" controls class="voice-player"></audio>
+              </div>
+            </div>
+
+            <!-- Heure et statut -->
+            <div class="message-meta">
+              <span class="message-time">{{ formatTime(message.created_at) }}</span>
+              <i
+                *ngIf="isOwnMessage(message)"
+                class="fas message-status"
+                [class.fa-check]="!message.is_read"
+                [class.fa-check-double]="message.is_read"
+                [class.read]="message.is_read">
+              </i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Indicateur "typing" -->
+      <div class="typing-indicator" *ngIf="typingUsers.length > 0">
+        <div class="typing-avatar">
+          <div
+            class="avatar-initials-small"
+            [ngClass]="getAvatarColor(getOtherUser())">
+            {{ getInitials(getOtherUser()) }}
+          </div>
+        </div>
+        <div class="typing-bubble">
+          <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Input Area -->
+  <div class="message-input-area">
+    <input
+      type="file"
+      #fileInput
+      (change)="onFileSelected($event)"
+      style="display: none;"
+    />
+
+    <button class="attach-btn" (click)="openFileSelector()" title="Joindre un fichier">
+      <i class="fas fa-paperclip"></i>
+    </button>
+
+    <textarea
+      [(ngModel)]="messageContent"
+      (input)="onTyping()"
+      (keydown)="onKeyDown($event)"
+      placeholder="Écrivez votre message..."
+      rows="1"
+      class="message-input"
+      [disabled]="isSending">
+    </textarea>
+
+    <button
+      class="send-btn"
+      (click)="sendMessage()"
+      [disabled]="!messageContent.trim() || isSending">
+      <i
+        class="fas"
+        [class.fa-paper-plane]="!isSending"
+        [class.fa-spinner]="isSending"
+        [class.fa-spin]="isSending">
+      </i>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,133 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-secondary">Compétences</h1>
+      <p class="text-gray-600 mt-1">Gérez les compétences des freelances et projets</p>
+    </div>
+    <button (click)="addSkill()"
+            class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center space-x-2 shadow-md">
+      <i class="fas fa-plus"></i>
+      <span>Ajouter une compétence</span>
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="bg-white rounded-lg shadow-md p-4">
+    <div class="relative">
+      <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Rechercher une compétence..."
+        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <i class="fas fa-spinner fa-spin text-5xl text-primary"></i>
+  </div>
+
+  <!-- Skills Table -->
+  <div *ngIf="!loading" class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Empty State -->
+    <div *ngIf="filteredSkills.length === 0" class="text-center py-12">
+      <i class="fas fa-tools text-6xl text-gray-300 mb-4"></i>
+      <p class="text-gray-500 text-lg">
+        {{ searchTerm ? 'Aucune compétence trouvée' : 'Aucune compétence disponible' }}
+      </p>
+      <button *ngIf="!searchTerm" (click)="addSkill()"
+              class="mt-4 bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200">
+        Ajouter la première compétence
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div *ngIf="filteredSkills.length > 0" class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            ID
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            Nom
+          </th>
+          <th class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            Actions
+          </th>
+        </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let skill of filteredSkills"
+            class="hover:bg-gray-50 transition-colors duration-150">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="text-sm font-medium text-gray-900">#{{ skill.id }}</span>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-accent bg-opacity-10 flex items-center justify-center mr-3">
+                <i class="fas fa-tools text-accent"></i>
+              </div>
+              <span class="text-sm font-medium text-gray-900">{{ skill.name }}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-right whitespace-nowrap">
+            <button (click)="editSkill(skill.id)"
+                    class="text-primary hover:text-blue-700 mr-4 transition-colors duration-200"
+                    title="Modifier">
+              <i class="fas fa-edit text-lg"></i>
+            </button>
+            <button (click)="openDeleteModal(skill)"
+                    class="text-red-500 hover:text-red-700 transition-colors duration-200"
+                    title="Supprimer">
+              <i class="fas fa-trash text-lg"></i>
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Skills Count -->
+    <div *ngIf="filteredSkills.length > 0" class="bg-gray-50 px-6 py-3 border-t border-gray-200">
+      <p class="text-sm text-gray-600">
+        {{ filteredSkills.length }} compétence(s)
+        <span *ngIf="searchTerm"> trouvée(s)</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div *ngIf="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full transform transition-all">
+    <div class="p-6">
+      <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">
+        Confirmer la suppression
+      </h3>
+      <p class="text-gray-600 text-center mb-6">
+        Êtes-vous sûr de vouloir supprimer la compétence
+        <span class="font-semibold">{{ skillToDelete?.name }}</span> ?
+        Cette action est irréversible.
+      </p>
+      <div class="flex space-x-3">
+        <button (click)="closeDeleteModal()"
+                [disabled]="deleteLoading"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50">
+          Annuler
+        </button>
+        <button (click)="confirmDelete()"
+                [disabled]="deleteLoading"
+                class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:opacity-50 flex items-center justify-center">
+          <i *ngIf="deleteLoading" class="fas fa-spinner fa-spin mr-2"></i>
+          {{ deleteLoading ? 'Suppression...' : 'Supprimer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

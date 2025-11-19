@@ -1,0 +1,105 @@
+<div class="max-w-2xl mx-auto space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center space-x-4">
+    <button (click)="goBack()"
+            class="text-gray-600 hover:text-primary transition-colors duration-200">
+      <i class="fas fa-arrow-left text-2xl"></i>
+    </button>
+    <div>
+      <h1 class="text-3xl font-bold text-secondary">
+        {{ isEditMode ? 'Modifier la compétence' : 'Ajouter une compétence' }}
+      </h1>
+      <p class="text-gray-600 mt-1">
+        {{ isEditMode ? 'Modifiez les informations de la compétence' : 'Créez une nouvelle compétence' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <i class="fas fa-spinner fa-spin text-5xl text-primary"></i>
+  </div>
+
+  <!-- Form -->
+  <form *ngIf="!loading" (ngSubmit)="onSubmit()" class="bg-white rounded-lg shadow-md p-6 space-y-6">
+    <!-- Name Field -->
+    <div>
+      <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+        Nom de la compétence <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="text"
+        id="name"
+        [(ngModel)]="formData.name"
+        name="name"
+        [class.border-red-500]="formErrors.name"
+        placeholder="Ex: React, Node.js, Python, Design UI/UX..."
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+        [disabled]="submitLoading">
+      <p *ngIf="formErrors.name" class="mt-1 text-sm text-red-500">
+        <i class="fas fa-exclamation-circle mr-1"></i>{{ formErrors.name }}
+      </p>
+      <p class="mt-1 text-sm text-gray-500">
+        Le nom doit être clair et spécifique (ex: "React" plutôt que "Framework JavaScript")
+      </p>
+    </div>
+
+    <!-- Info Box -->
+    <div class="bg-blue-50 border-l-4 border-primary p-4 rounded">
+      <div class="flex">
+        <i class="fas fa-info-circle text-primary mt-1 mr-3"></i>
+        <div class="text-sm text-gray-700">
+          <p class="font-semibold mb-1">Information</p>
+          <p>Les compétences permettent aux freelances de mettre en avant leurs expertises et aux clients de trouver les bons profils pour leurs projets.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 pt-4">
+      <button type="button"
+              (click)="goBack()"
+              [disabled]="submitLoading"
+              class="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+        <i class="fas fa-times mr-2"></i>
+        Annuler
+      </button>
+      <button type="submit"
+              [disabled]="submitLoading"
+              class="flex-1 px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+        <i *ngIf="submitLoading" class="fas fa-spinner fa-spin mr-2"></i>
+        <i *ngIf="!submitLoading && isEditMode" class="fas fa-save mr-2"></i>
+        <i *ngIf="!submitLoading && !isEditMode" class="fas fa-plus mr-2"></i>
+        {{ submitLoading ? 'Enregistrement...' : (isEditMode ? 'Modifier' : 'Ajouter') }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Examples Section -->
+  <div *ngIf="!loading" class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+      <i class="fas fa-lightbulb text-accent mr-2"></i>
+      Exemples de compétences
+    </h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <h4 class="font-medium text-gray-700 mb-2">Développement</h4>
+        <ul class="space-y-1 text-sm text-gray-600">
+          <li><i class="fas fa-check text-green-500 mr-2"></i>React</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>Node.js</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>Python</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>Laravel</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-medium text-gray-700 mb-2">Design</h4>
+        <ul class="space-y-1 text-sm text-gray-600">
+          <li><i class="fas fa-check text-green-500 mr-2"></i>UI/UX Design</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>Adobe Photoshop</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>Figma</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>Illustration</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

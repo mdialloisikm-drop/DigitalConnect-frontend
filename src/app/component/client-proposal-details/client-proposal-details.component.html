@@ -1,0 +1,323 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center gap-4">
+    <button (click)="goBack()"
+            class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+      <i class="fas fa-arrow-left text-xl"></i>
+    </button>
+    <div class="flex-1">
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+        Candidatures pour "{{ project?.title || 'Chargement...' }}"
+      </h1>
+      <p class="text-gray-600 mt-1">Gérez les candidatures reçues pour ce projet</p>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage"
+       class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-3">
+    <i class="fas fa-check-circle text-xl"></i>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <div *ngIf="errorMessage"
+       class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3">
+    <i class="fas fa-exclamation-circle text-xl"></i>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Project Info Card -->
+  <div *ngIf="project && !isLoadingProject"
+       class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+          <i class="fas fa-coins text-primary text-xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Budget</p>
+          <p class="font-semibold text-gray-800">{{ formatCurrency(project.budget) }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
+          <i class="fas fa-hourglass-half text-orange-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Durée</p>
+          <p class="font-semibold text-gray-800">{{ formatDuration(project.duration) }}</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+          <i class="fas fa-folder text-green-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Catégorie</p>
+          <p class="font-semibold text-gray-800">{{ project.category?.name || 'Non définie' }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
+          <i class="fas fa-paper-plane text-yellow-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Candidatures</p>
+          <p class="font-semibold text-gray-800">{{ proposalStats.total }}</p>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="project.start_date" class="mt-4 pt-4 border-t border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
+          <i class="fas fa-calendar-check text-indigo-600"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Date de début</p>
+          <p class="font-semibold text-gray-800">{{ formatDate(project.start_date) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-yellow-700 font-medium">En attente</p>
+          <p class="text-2xl font-bold text-yellow-800">{{ proposalStats.pending }}</p>
+        </div>
+        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-clock text-yellow-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-green-700 font-medium">Acceptées</p>
+          <p class="text-2xl font-bold text-green-800">{{ proposalStats.accepted }}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-check-circle text-green-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-red-700 font-medium">Rejetées</p>
+          <p class="text-2xl font-bold text-red-800">{{ proposalStats.rejected }}</p>
+        </div>
+        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-times-circle text-red-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Sort -->
+  <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- Status Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-filter mr-2"></i>Statut
+        </label>
+        <select [(ngModel)]="statusFilter"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="all">Tous les statuts</option>
+          <option value="pending">En attente</option>
+          <option value="accepted">Acceptées</option>
+          <option value="rejected">Rejetées</option>
+        </select>
+      </div>
+
+      <!-- Sort By -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-sort mr-2"></i>Trier par
+        </label>
+        <select [(ngModel)]="sortBy"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="date">Date</option>
+          <option value="amount">Montant</option>
+          <option value="duration">Durée</option>
+        </select>
+      </div>
+
+      <!-- Sort Order -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-sort-amount-down mr-2"></i>Ordre
+        </label>
+        <select [(ngModel)]="sortOrder"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="desc">Décroissant</option>
+          <option value="asc">Croissant</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoadingProposals" class="flex justify-center items-center py-20">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+      <p class="text-gray-600">Chargement des candidatures...</p>
+    </div>
+  </div>
+
+  <!-- Proposals List -->
+  <div *ngIf="!isLoadingProposals && filteredAndSortedProposals.length > 0" class="space-y-4">
+    <div *ngFor="let proposal of filteredAndSortedProposals"
+         class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-6 border border-gray-100">
+
+      <!-- Proposal Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+        <div class="flex items-start gap-4 flex-1">
+          <!-- Freelance Avatar -->
+          <img [src]="proposal.freelance?.user?.avatar || 'https://ui-avatars.com/api/?name=' + (proposal.freelance?.user?.full_name || 'User')"
+               [alt]="proposal.freelance?.user?.full_name"
+               class="w-16 h-16 rounded-full object-cover border-2 border-primary">
+
+          <div class="flex-1">
+            <h3 class="text-lg font-bold text-gray-800">
+              {{ proposal.freelance?.user?.full_name || 'Freelance' }}
+            </h3>
+            <p class="text-sm text-gray-500">{{ proposal.freelance?.title || 'Professionnel' }}</p>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <span [class]="'px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ' + getStatusBadge(proposal.status).class">
+                <i [class]="'fas ' + getStatusBadge(proposal.status).icon"></i>
+                {{ getStatusBadge(proposal.status).label }}
+              </span>
+              <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                <i class="fas fa-calendar-alt mr-1"></i>
+                {{ formatDate(proposal.created_at) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div *ngIf="proposal.status === 'pending'" class="flex gap-2">
+          <button (click)="acceptProposal(proposal)"
+                  [disabled]="proposal.isAccepting"
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <i class="fas" [class.fa-check]="!proposal.isAccepting" [class.fa-spinner]="proposal.isAccepting" [class.fa-spin]="proposal.isAccepting"></i>
+            <span>Accepter</span>
+          </button>
+          <button (click)="openRejectModal(proposal.id)"
+                  [disabled]="proposal.isRejecting"
+                  class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <i class="fas fa-times"></i>
+            <span>Rejeter</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Proposal Details -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-coins text-primary"></i>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">Montant proposé</p>
+            <p class="font-bold text-gray-800">{{ formatCurrency(proposal.proposed_amount) }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-clock text-purple-600"></i>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">Durée proposée</p>
+            <p class="font-bold text-gray-800">{{ formatDuration(proposal.proposed_duration) }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-star text-green-600"></i>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">Expérience</p>
+            <p class="font-bold text-gray-800">{{ proposal.freelance?.experience_years || 0 }} ans</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cover Letter -->
+      <div class="border-t border-gray-200 pt-4">
+        <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          <i class="fas fa-envelope-open-text text-primary"></i>
+          Lettre de motivation
+        </h4>
+        <p class="text-gray-600 text-sm whitespace-pre-line">{{ proposal.cover_letter }}</p>
+      </div>
+
+      <!-- Freelance Skills -->
+      <div *ngIf="proposal.freelance?.skills && (proposal.freelance?.skills?.length || 0) > 0"
+           class="border-t border-gray-200 pt-4 mt-4">
+        <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          <i class="fas fa-cogs text-primary"></i>
+          Compétences
+        </h4>
+        <div class="flex flex-wrap gap-2">
+          <span *ngFor="let skill of proposal.freelance?.skills || []"
+                class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+            {{ skill.name }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoadingProposals && filteredAndSortedProposals.length === 0"
+       class="bg-white rounded-xl shadow-md p-12 text-center border border-gray-100">
+    <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-800 mb-2">Aucune candidature</h3>
+    <p class="text-gray-600">
+      {{ statusFilter !== 'all' ? 'Aucune candidature ne correspond à ce filtre.' : 'Aucune candidature n\'a encore été reçue pour ce projet.' }}
+    </p>
+  </div>
+</div>
+
+<!-- Modal de rejet -->
+<div *ngIf="showRejectModal"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+     (click)="closeRejectModal()">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+       (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-gray-800">Rejeter la candidature</h3>
+      <button (click)="closeRejectModal()"
+              class="text-gray-400 hover:text-gray-600 transition-colors">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <p class="text-gray-600 mb-4">
+      Souhaitez-vous ajouter une raison pour le rejet ? (Optionnel)
+    </p>
+
+    <textarea [(ngModel)]="rejectReason"
+              rows="4"
+              placeholder="Raison du rejet..."
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"></textarea>
+
+    <div class="flex gap-3 mt-6">
+      <button (click)="closeRejectModal()"
+              class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+        Annuler
+      </button>
+      <button (click)="confirmRejectProposal()"
+              class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+        Confirmer le rejet
+      </button>
+    </div>
+  </div>
+</div>

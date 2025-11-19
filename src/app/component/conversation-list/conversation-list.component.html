@@ -1,0 +1,143 @@
+<div class="conversation-list-container">
+  <!-- Header -->
+  <div class="header mb-3">
+    <h2>Messages</h2>
+    <button
+      class="refresh-btn"
+      (click)="refresh()"
+      title="Rafraîchir"
+      [disabled]="isLoading">
+      <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+    </button>
+  </div>
+
+  <!-- Badge compteur non lus -->
+  <div class="unread-badge mt-6" *ngIf="totalUnreadCount > 0">
+    <i class="fas fa-envelope"></i>
+    {{ totalUnreadCount }} message{{ totalUnreadCount > 1 ? 's' : '' }} non lu{{ totalUnreadCount > 1 ? 's' : '' }}
+  </div>
+
+  <!-- Barre de recherche -->
+  <div class="search-container mt-6">
+    <i class="fas fa-search search-icon"></i>
+    <input
+      type="text"
+      class="search-input"
+      [(ngModel)]="searchQuery"
+      (input)="onSearchInput()"
+      placeholder="Rechercher une conversation..."
+      [disabled]="isLoading"
+    />
+    <button
+      *ngIf="searchQuery"
+      class="clear-search-btn"
+      (click)="searchQuery = ''; onSearchInput()"
+      title="Effacer la recherche">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div class="error-message" *ngIf="hasError && !isLoading">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ errorMessage }}</p>
+    <button class="retry-btn" (click)="refresh()">
+      <i class="fas fa-redo"></i> Réessayer
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement des conversations...</p>
+  </div>
+
+  <!-- Liste des conversations -->
+  <div class="conversations-list" *ngIf="!isLoading && !hasError">
+    <!-- Message si aucune conversation -->
+    <div class="no-conversations" *ngIf="isEmpty">
+      <i class="fas fa-comments empty-icon"></i>
+      <p class="empty-text">{{ emptyMessage }}</p>
+      <p class="empty-subtitle" *ngIf="!searchQuery">
+        Commencez une conversation en postulant à un projet
+      </p>
+    </div>
+
+    <!-- Conversations -->
+    <div
+      class="conversation-item"
+      *ngFor="let conversation of filteredConversations"
+      [class.has-unread]="conversation.unread_count && conversation.unread_count > 0"
+      (click)="openConversation(conversation)"
+      role="button"
+      tabindex="0"
+      [attr.aria-label]="'Conversation avec ' + (getOtherUser(conversation)?.full_name || 'Utilisateur inconnu')"
+    >
+      <!-- Avatar -->
+      <div class="conversation-avatar">
+        <img
+          [src]="getUserAvatar(getOtherUser(conversation))"
+          [alt]="getOtherUser(conversation)?.full_name || 'Avatar utilisateur'"
+          class="avatar-image"
+          loading="lazy"
+        />
+        <div
+          class="avatar-initials"
+          [ngClass]="getAvatarColor(getOtherUser(conversation))"
+          style="display: none;">
+          {{ getInitials(getOtherUser(conversation)) }}
+        </div>
+      </div>
+
+      <!-- Infos conversation -->
+      <div class="conversation-info">
+        <div class="conversation-header">
+          <h3 class="user-name">
+            {{ getOtherUser(conversation)?.full_name || 'Utilisateur inconnu' }}
+          </h3>
+
+          <div class="header-right">
+            <span class="time" *ngIf="conversation.last_message_at">
+              {{ formatLastMessageTime(conversation.last_message_at) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="conversation-preview">
+          <!-- ✅ CORRECTION : Utiliser last_message (snake_case) au lieu de lastMessage -->
+          <ng-container *ngIf="getLastMessage(conversation) as lastMsg">
+            <p class="last-message">
+              <ng-container [ngSwitch]="lastMsg.message_type">
+                <span *ngSwitchCase="'text'">{{ lastMsg.content }}</span>
+                <span *ngSwitchCase="'file'"><i class="fas fa-file"></i> Fichier</span>
+                <span *ngSwitchCase="'voice'"><i class="fas fa-microphone"></i> Message vocal</span>
+              </ng-container>
+            </p>
+          </ng-container>
+
+          <!-- Fallback si pas de message -->
+          <p class="last-message" *ngIf="!getLastMessage(conversation)">
+            Aucun message
+          </p>
+
+          <span
+            class="unread-badge-count"
+            *ngIf="conversation.unread_count && conversation.unread_count > 0"
+            [attr.aria-label]="conversation.unread_count + ' message(s) non lu(s)'">
+            {{ conversation.unread_count > 99 ? '99+' : conversation.unread_count }}
+          </span>
+        </div>
+      </div>
+
+      <div class="conversation-actions" (click)="$event.stopPropagation()">
+        <button
+          class="action-btn archive-btn"
+          (click)="archiveConversation($event, conversation.id)"
+          title="Archiver la conversation"
+          aria-label="Archiver">
+          <i class="fas fa-archive"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

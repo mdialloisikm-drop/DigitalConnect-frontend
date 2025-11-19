@@ -1,0 +1,217 @@
+/* Styles personnalisés pour la scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Animation pour le chargement */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Limitation du nombre de lignes affichées */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Amélioration des checkboxes */
+input[type="checkbox"] {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="checkbox"]:hover {
+  transform: scale(1.1);
+}
+
+/* Amélioration des sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 5px;
+  background: #e5e7eb;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2563eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2563eb;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #1d4ed8;
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  background: #1d4ed8;
+  transform: scale(1.1);
+}
+
+/* Transitions douces pour les cartes */
+.bg-white {
+  transition: all 0.3s ease;
+}
+
+/* Amélioration du hover sur les cartes de projets */
+.bg-white:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .lg\:w-96 {
+    width: 100%;
+  }
+
+  .sticky {
+    position: relative;
+  }
+}
+
+@media (max-width: 768px) {
+  .text-4xl {
+    font-size: 2rem;
+  }
+
+  .text-xl {
+    font-size: 1.125rem;
+  }
+
+  .px-6 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .py-6 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .text-4xl {
+    font-size: 1.75rem;
+  }
+
+  .text-2xl {
+    font-size: 1.25rem;
+  }
+
+  /* Ajustement des boutons sur mobile */
+  .flex.items-center.justify-between {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  /* Budget sur mobile */
+  .text-2xl.whitespace-nowrap {
+    font-size: 1.5rem;
+  }
+
+  /* Ajustement des compétences sur mobile */
+  .flex.flex-wrap.gap-2 {
+    gap: 0.5rem;
+  }
+}
+
+/* Optimisation des performances - utiliser will-change pour les animations */
+.hover\:shadow-md,
+.hover\:bg-blue-700,
+.hover\:text-blue-700 {
+  will-change: box-shadow, background-color, color;
+}
+
+/* Éviter les repaint inutiles */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Améliorer les performances de scroll */
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Focus visible pour l'accessibilité */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Animation pour le bouton Voir les détails */
+a[routerLink] {
+  position: relative;
+  overflow: hidden;
+}
+
+a[routerLink]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: left 0.3s ease;
+}
+
+a[routerLink]:hover::before {
+  left: 100%;
+}
+
+/* Amélioration visuelle des badges de compétences */
+.bg-gray-100 {
+  transition: all 0.2s ease;
+}
+
+.bg-gray-100:hover {
+  background-color: #e5e7eb;
+  transform: scale(1.05);
+}

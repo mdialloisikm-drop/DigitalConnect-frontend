@@ -1,0 +1,75 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Dashboard</h1>
+      <p class="text-gray-600 mt-1">Vue d'ensemble de votre activité</p>
+    </div>
+    <button (click)="refreshData()"
+            [disabled]="isLoading"
+            class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+      <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+      <span>Actualiser</span>
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage"
+       class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3">
+    <i class="fas fa-exclamation-circle text-xl"></i>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading && !stats" class="flex justify-center items-center py-20">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+      <p class="text-gray-600">Chargement des statistiques...</p>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div *ngIf="!isLoading || stats"
+       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div *ngFor="let card of statCards"
+         class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-gray-100">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <p class="text-gray-600 text-sm font-medium mb-2">{{ card.title }}</p>
+          <p class="text-2xl sm:text-3xl font-bold text-gray-800"
+             [class.animate-pulse]="isLoading">
+            {{ card.value }}
+          </p>
+        </div>
+        <div [class]="'w-12 h-12 rounded-full flex items-center justify-center ' + card.bgColor">
+          <i [class]="'fas ' + card.icon + ' text-xl ' + card.color"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Actions Rapides</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <a routerLink="/client/projects/new"
+         class="flex items-center gap-3 p-4 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 group">
+        <i class="fas fa-plus-circle text-2xl group-hover:scale-110 transition-transform"></i>
+        <span class="font-medium">Nouveau Projet</span>
+      </a>
+
+      <a routerLink="/client/projects"
+         class="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 group">
+        <i class="fas fa-folder-open text-2xl group-hover:scale-110 transition-transform"></i>
+        <span class="font-medium">Mes Projets</span>
+      </a>
+
+      <a routerLink="/client/proposals"
+         class="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 group">
+        <i class="fas fa-file-alt text-2xl group-hover:scale-110 transition-transform"></i>
+        <span class="font-medium">Candidatures</span>
+      </a>
+    </div>
+  </div>
+
+</div>

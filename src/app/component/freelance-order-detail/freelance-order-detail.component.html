@@ -1,0 +1,322 @@
+<div class="max-w-7xl mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <button
+      (click)="goBack()"
+      class="text-gray-600 hover:text-gray-800 font-medium mb-4 flex items-center"
+    >
+      <i class="fas fa-arrow-left mr-2"></i>
+      Retour aux commandes
+    </button>
+
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-3xl font-bold text-secondary mb-2">Commande #{{ order?.id }}</h1>
+        <span
+          *ngIf="order"
+          [class]="getStatusClass(order.status)"
+          class="inline-block px-4 py-2 rounded-full text-sm font-semibold"
+        >
+          {{ getStatusLabel(order.status) }}
+        </span>
+      </div>
+
+      <!-- Actions pour commande en attente -->
+      <div *ngIf="order && isPending()" class="flex gap-3">
+        <button
+          (click)="acceptOrder()"
+          class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors duration-200 flex items-center"
+        >
+          <i class="fas fa-check mr-2"></i>
+          Accepter
+        </button>
+        <button
+          (click)="refuseOrder()"
+          class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors duration-200 flex items-center"
+        >
+          <i class="fas fa-times mr-2"></i>
+          Refuser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+      <p class="text-gray-600">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div
+    *ngIf="!isLoading && errorMessage"
+    class="bg-red-50 border border-red-200 rounded-lg p-6"
+  >
+    <div class="flex items-start">
+      <i class="fas fa-exclamation-circle text-red-600 text-2xl mr-4 mt-1"></i>
+      <div>
+        <h3 class="text-red-800 font-semibold mb-1">Erreur</h3>
+        <p class="text-red-700">{{ errorMessage }}</p>
+        <button
+          (click)="goBack()"
+          class="mt-3 text-red-600 hover:text-red-800 font-medium underline"
+        >
+          Retour
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading && !errorMessage && order" class="space-y-6">
+    <!-- Tabs -->
+    <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+      <div class="flex border-b border-gray-200">
+        <button
+          (click)="switchTab('details')"
+          [class]="activeTab === 'details'
+            ? 'bg-primary text-white'
+            : 'bg-white text-gray-600 hover:bg-gray-50'"
+          class="flex-1 px-6 py-4 font-semibold transition-colors duration-200"
+        >
+          <i class="fas fa-info-circle mr-2"></i>
+          Détails de la commande
+        </button>
+        <button
+          (click)="switchTab('deliverables')"
+          [class]="activeTab === 'deliverables'
+            ? 'bg-primary text-white'
+            : 'bg-white text-gray-600 hover:bg-gray-50'"
+          class="flex-1 px-6 py-4 font-semibold transition-colors duration-200"
+        >
+          <i class="fas fa-file-upload mr-2"></i>
+          Livrables
+          <span
+            *ngIf="hasDeliverables()"
+            class="ml-2 bg-green-500 text-white px-2 py-0.5 rounded-full text-sm"
+          >
+            {{ getDeliverables().length }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Tab: Détails -->
+      <div *ngIf="activeTab === 'details'" class="p-6">
+        <!-- Service Information -->
+        <div class="mb-6 pb-6 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-secondary mb-4">Service commandé</h2>
+          <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+            <!-- CORRECTION: Vérification complète avec && pour éviter les erreurs undefined -->
+            <div *ngIf="order.service && order.service.images && order.service.images.length > 0" class="flex-shrink-0">
+              <img
+                [src]="getImageUrl(order.service.images[0].image_path)"
+                [alt]="order.service.title || 'Service'"
+                class="w-24 h-24 object-cover rounded-lg"
+              />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-secondary mb-2">{{ order.service?.title }}</h3>
+              <p class="text-gray-600 mb-3">{{ order.service?.description }}</p>
+              <div class="flex flex-wrap gap-4 text-sm">
+                <span class="text-gray-700">
+                  <i class="fas fa-tag mr-1 text-primary"></i>
+                  {{ order.service?.category?.name }}
+                </span>
+                <span class="text-gray-700">
+                  <i class="fas fa-dollar-sign mr-1 text-green-600"></i>
+                  <strong>{{ formatAmount(order.amount) }}</strong>
+                </span>
+                <span class="text-gray-700">
+                  <i class="fas fa-clock mr-1 text-orange-600"></i>
+                  {{ order.service?.delivery_time }} jours
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Client Information -->
+        <div class="mb-6 pb-6 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-secondary mb-4">Informations du client</h2>
+          <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+            <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl">
+              {{ order.client?.user?.full_name?.charAt(0) || 'C' }}
+            </div>
+            <div>
+              <p class="text-lg font-semibold text-secondary">
+                {{ order.client?.user?.full_name || 'Client' }}
+              </p>
+              <p class="text-gray-600">
+                <i class="fas fa-envelope mr-2"></i>
+                {{ order.client?.user?.email || 'N/A' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Details -->
+        <div class="mb-6 pb-6 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-secondary mb-4">Détails de la commande</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 bg-blue-50 rounded-lg">
+              <p class="text-sm text-gray-600 mb-1">Date de commande</p>
+              <p class="font-semibold text-secondary">
+                <i class="fas fa-calendar mr-2 text-primary"></i>
+                {{ formatDate(order.created_at) }}
+              </p>
+            </div>
+            <div class="p-4 bg-orange-50 rounded-lg">
+              <p class="text-sm text-gray-600 mb-1">Date de livraison prévue</p>
+              <p class="font-semibold text-secondary">
+                <i class="fas fa-calendar-check mr-2 text-orange-600"></i>
+                {{ formatDate(order.due_date) }}
+              </p>
+            </div>
+            <div *ngIf="order.delivered_at" class="p-4 bg-green-50 rounded-lg">
+              <p class="text-sm text-gray-600 mb-1">Date de livraison réelle</p>
+              <p class="font-semibold text-secondary">
+                <i class="fas fa-check-circle mr-2 text-green-600"></i>
+                {{ formatDate(order.delivered_at) }}
+              </p>
+            </div>
+            <div class="p-4 bg-purple-50 rounded-lg">
+              <p class="text-sm text-gray-600 mb-1">Montant</p>
+              <p class="font-semibold text-secondary text-lg">
+                <i class="fas fa-dollar-sign mr-2 text-purple-600"></i>
+                {{ order.amount }} FCFA
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Requirements -->
+        <div *ngIf="order.requirements">
+          <h2 class="text-xl font-bold text-secondary mb-4">Exigences du client</h2>
+          <div class="p-4 bg-gray-50 rounded-lg">
+            <p class="text-gray-700 whitespace-pre-wrap">{{ order.requirements }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Livrables -->
+      <div *ngIf="activeTab === 'deliverables'" class="p-6">
+        <!-- Upload Section -->
+        <div *ngIf="canUploadDeliverables()" class="mb-6 p-6 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg">
+          <h3 class="text-lg font-bold text-secondary mb-4">
+            <i class="fas fa-cloud-upload-alt mr-2 text-primary"></i>
+            Téléverser des livrables
+          </h3>
+
+          <div class="mb-4">
+            <input
+              type="file"
+              id="fileInput"
+              (change)="onFileSelected($event)"
+              multiple
+              class="hidden"
+            />
+            <label
+              for="fileInput"
+              class="inline-block bg-white border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-200 font-medium"
+            >
+              <i class="fas fa-paperclip mr-2"></i>
+              Choisir des fichiers
+            </label>
+          </div>
+
+          <div *ngIf="selectedFiles.length > 0" class="mb-4">
+            <p class="font-medium text-gray-700 mb-2">Fichiers sélectionnés :</p>
+            <ul class="space-y-2">
+              <li *ngFor="let file of selectedFiles" class="flex items-center gap-2 text-sm text-gray-600">
+                <i class="fas fa-file"></i>
+                {{ file.name }} ({{ formatFileSize(file.size) }})
+              </li>
+            </ul>
+          </div>
+
+          <button
+            (click)="uploadDeliverables()"
+            [disabled]="selectedFiles.length === 0 || isUploading"
+            class="bg-primary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            <i [class]="isUploading ? 'fas fa-spinner fa-spin mr-2' : 'fas fa-upload mr-2'"></i>
+            {{ isUploading ? 'Upload en cours...' : 'Téléverser' }}
+          </button>
+
+          <div *ngIf="isUploading" class="mt-4">
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div
+                class="bg-primary h-2 rounded-full transition-all duration-300"
+                [style.width.%]="uploadProgress"
+              ></div>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">{{ uploadProgress }}% complété</p>
+          </div>
+        </div>
+
+        <!-- Deliverables List -->
+        <div>
+          <h3 class="text-lg font-bold text-secondary mb-4">
+            Livrables ({{ getDeliverables().length }})
+          </h3>
+
+          <div *ngIf="!hasDeliverables()" class="text-center py-12 bg-gray-50 rounded-lg">
+            <i class="fas fa-folder-open text-gray-300 text-6xl mb-4"></i>
+            <p class="text-gray-500">Aucun livrable n'a encore été ajouté.</p>
+          </div>
+
+          <div *ngIf="hasDeliverables()" class="space-y-3">
+            <div
+              *ngFor="let deliverable of getDeliverables()"
+              class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200"
+            >
+              <div class="flex items-center gap-4 flex-1">
+                <i [class]="'fas ' + getFileIcon(deliverable.file_name) + ' text-3xl'"></i>
+                <div class="flex-1">
+                  <p class="font-medium text-secondary">{{ deliverable.file_name }}</p>
+                  <p class="text-sm text-gray-600">
+                    Ajouté le {{ formatDate(deliverable.created_at) }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  (click)="downloadFile(deliverable.file_path)"
+                  class="text-primary hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
+                  title="Télécharger"
+                >
+                  <i class="fas fa-download"></i>
+                </button>
+                <button
+                  *ngIf="canUploadDeliverables()"
+                  (click)="deleteDeliverable(deliverable.id)"
+                  class="text-red-500 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200"
+                  title="Supprimer"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deliver Button -->
+        <div *ngIf="canUploadDeliverables() && hasDeliverables()" class="mt-6 pt-6 border-t border-gray-200">
+          <button
+            (click)="deliverOrder()"
+            class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-medium shadow-md transition-colors duration-200 flex items-center justify-center w-full md:w-auto"
+          >
+            <i class="fas fa-paper-plane mr-2"></i>
+            Livrer la commande
+          </button>
+          <p class="text-sm text-gray-600 mt-2">
+            <i class="fas fa-info-circle mr-1"></i>
+            Le client sera notifié et pourra accepter ou demander une révision.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

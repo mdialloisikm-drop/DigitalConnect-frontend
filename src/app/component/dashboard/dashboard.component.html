@@ -1,0 +1,126 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-secondary">Dashboard</h1>
+      <p class="text-gray-600 mt-1">Vue d'ensemble de la plateforme</p>
+    </div>
+    <button (click)="loadStats()"
+            [disabled]="loading"
+            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+      <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'"></i>
+      <span>Actualiser</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <i class="fas fa-spinner fa-spin text-5xl text-primary"></i>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+    <div class="flex items-center">
+      <i class="fas fa-exclamation-circle text-red-500 text-2xl mr-3"></i>
+      <div>
+        <p class="font-semibold text-red-800">Erreur</p>
+        <p class="text-red-600">{{ errorMessage }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div *ngIf="!loading && !error && stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div *ngFor="let card of statCards"
+         class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm font-medium mb-1">{{ card.label }}</p>
+          <p class="text-3xl font-bold" [class]="card.color">{{ card.value }}</p>
+        </div>
+        <div [class]="card.bgColor + ' w-16 h-16 rounded-full flex items-center justify-center'">
+          <i [class]="'fas ' + card.icon + ' text-2xl ' + card.color"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Info Cards -->
+  <div *ngIf="!loading && !error && stats" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+    <!-- Projects Overview -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold text-secondary mb-4 flex items-center">
+        <i class="fas fa-project-diagram text-primary mr-2"></i>
+        Aperçu des Projets
+      </h2>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+          <span class="text-gray-600">Total des projets</span>
+          <span class="font-bold text-secondary">{{ stats.total_projects }}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+          <span class="text-gray-600">Projets actifs</span>
+          <span class="font-bold text-green-600">{{ stats.active_projects }}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+          <span class="text-gray-600">Taux d'activité</span>
+          <span class="font-bold text-primary">
+            {{ stats.total_projects > 0 ? ((stats.active_projects / stats.total_projects) * 100).toFixed(1) : 0 }}%
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services Overview -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold text-secondary mb-4 flex items-center">
+        <i class="fas fa-briefcase text-primary mr-2"></i>
+        Aperçu des Services
+      </h2>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+          <span class="text-gray-600">Total des services</span>
+          <span class="font-bold text-secondary">{{ stats.total_services }}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+          <span class="text-gray-600">Services publiés</span>
+          <span class="font-bold text-green-600">{{ stats.published_services }}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+          <span class="text-gray-600">Taux de publication</span>
+          <span class="font-bold text-primary">
+            {{ stats.total_services > 0 ? ((stats.published_services / stats.total_services) * 100).toFixed(1) : 0 }}%
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Distribution -->
+  <div *ngIf="!loading && !error && stats" class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-bold text-secondary mb-4 flex items-center">
+      <i class="fas fa-users text-primary mr-2"></i>
+      Répartition des Utilisateurs
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="text-center p-4 bg-purple-50 rounded-lg">
+        <p class="text-gray-600 mb-2">Total Utilisateurs</p>
+        <p class="text-4xl font-bold text-purple-600">{{ stats.total_users }}</p>
+      </div>
+      <div class="text-center p-4 bg-orange-50 rounded-lg">
+        <p class="text-gray-600 mb-2">Freelances</p>
+        <p class="text-4xl font-bold text-orange-600">{{ stats.total_freelances }}</p>
+        <p class="text-sm text-gray-500 mt-1">
+          {{ stats.total_users > 0 ? ((stats.total_freelances / stats.total_users) * 100).toFixed(0) : 0 }}% du total
+        </p>
+      </div>
+      <div class="text-center p-4 bg-pink-50 rounded-lg">
+        <p class="text-gray-600 mb-2">Clients</p>
+        <p class="text-4xl font-bold text-pink-600">{{ stats.total_clients }}</p>
+        <p class="text-sm text-gray-500 mt-1">
+          {{ stats.total_users > 0 ? ((stats.total_clients / stats.total_users) * 100).toFixed(0) : 0 }}% du total
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,107 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Bouton Retour -->
+    <div class="mb-6 mt-8">
+      <button
+        routerLink="/freelance/dashboard"
+        class="inline-flex items-center text-gray-600 hover:text-primary transition-colors duration-200 font-medium group"
+      >
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-200"></i>
+        Retour au dashboard
+      </button>
+    </div>
+    <!-- En-tête -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Contrats Actifs</h1>
+      <p class="mt-2 text-gray-600">Gérez vos projets en cours et suivez leur avancement</p>
+    </div>
+
+    <!-- Loader -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="errorMessage && !isLoading" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+      <strong class="font-bold">Erreur!</strong>
+      <span class="block sm:inline"> {{ errorMessage }}</span>
+    </div>
+
+    <!-- Message si aucun contrat actif -->
+    <div *ngIf="!isLoading && activeContracts.length === 0 && !errorMessage" class="text-center py-12">
+      <div class="bg-white rounded-lg shadow-md p-8">
+        <i class="fas fa-folder-open text-gray-400 text-6xl mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucun contrat actif</h3>
+        <p class="text-gray-500">Vous n'avez pas encore de contrats actifs pour le moment.</p>
+      </div>
+    </div>
+
+    <!-- Grille de cards des contrats -->
+    <div *ngIf="!isLoading && activeContracts.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let contract of activeContracts"
+           (click)="viewContractDetails(contract.id)"
+           class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer overflow-hidden">
+        <!-- En-tête de la card -->
+        <div class="bg-gradient-to-r from-primary to-blue-600 p-4">
+          <h3 class="text-white font-semibold text-lg truncate">{{ contract.project.title }}</h3>
+          <div class="flex items-center justify-between mt-2">
+            <span class="text-blue-100 text-sm">
+              <i class="fas fa-folder mr-1"></i>
+              {{ contract.project.category?.name || 'Non catégorisé' }}
+            </span>
+            <span [ngClass]="getStatusClass(contract.status)" class="px-3 py-1 rounded-full text-xs font-medium">
+              {{ getStatusLabel(contract.status) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Corps de la card -->
+        <div class="p-4">
+          <!-- Client -->
+          <div class="mb-3">
+            <p class="text-sm text-gray-500 mb-1">Client</p>
+            <div class="flex items-center">
+              <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                <i class="fas fa-user text-gray-500 text-sm"></i>
+              </div>
+              <p class="font-medium text-gray-900">{{ contract.client?.user?.full_name }}</p>
+            </div>
+          </div>
+
+          <!-- Montant et durée -->
+          <div class="grid grid-cols-2 gap-4 mb-3">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">Montant</p>
+              <p class="font-semibold text-primary">{{ formatAmount(contract.amount) }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 mb-1">Durée</p>
+              <p class="font-semibold text-gray-900">{{ contract.duration }} jours</p>
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="border-t pt-3">
+            <div class="flex justify-between text-sm">
+              <div>
+                <p class="text-gray-500 mb-1">Début</p>
+                <p class="text-gray-900">{{ formatDate(contract.start_date) }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-gray-500 mb-1">Fin prévue</p>
+                <p class="text-gray-900">{{ formatDate(contract.end_date) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bouton d'action -->
+          <div class="mt-4">
+            <button class="w-full bg-primary hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors duration-200">
+              <i class="fas fa-eye mr-2"></i>Voir les détails
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

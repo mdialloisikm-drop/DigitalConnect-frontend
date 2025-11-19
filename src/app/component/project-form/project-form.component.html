@@ -1,0 +1,272 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center gap-4">
+    <button (click)="cancel()"
+            class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+      <i class="fas fa-arrow-left text-xl"></i>
+    </button>
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+        {{ isEditMode ? 'Modifier le projet' : 'Nouveau projet' }}
+      </h1>
+      <p class="text-gray-600 mt-1">
+        {{ isEditMode ? 'Modifiez les informations de votre projet' : 'Créez un nouveau projet pour trouver des freelances' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage"
+       class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3">
+    <i class="fas fa-exclamation-circle text-xl"></i>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+      <p class="text-gray-600">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form *ngIf="!isLoading"
+        [formGroup]="projectForm"
+        (ngSubmit)="onSubmit()"
+        class="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100 space-y-6">
+
+    <!-- Title -->
+    <div>
+      <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+        <i class="fas fa-heading mr-2 text-primary"></i>
+        Titre du projet *
+      </label>
+      <input type="text"
+             id="title"
+             formControlName="title"
+             placeholder="Ex: Développement d'une application mobile"
+             [class.border-red-500]="isFieldInvalid('title')"
+             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+      <p *ngIf="isFieldInvalid('title')" class="text-red-500 text-sm mt-1">
+        {{ getFieldError('title') }}
+      </p>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+        <i class="fas fa-align-left mr-2 text-primary"></i>
+        Description *
+      </label>
+      <textarea id="description"
+                formControlName="description"
+                rows="6"
+                placeholder="Décrivez votre projet en détail..."
+                [class.border-red-500]="isFieldInvalid('description')"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"></textarea>
+      <p *ngIf="isFieldInvalid('description')" class="text-red-500 text-sm mt-1">
+        {{ getFieldError('description') }}
+      </p>
+    </div>
+
+    <!-- Category and Budget Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Category -->
+      <div>
+        <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-folder mr-2 text-primary"></i>
+          Catégorie *
+        </label>
+        <select id="category_id"
+                formControlName="category_id"
+                [class.border-red-500]="isFieldInvalid('category_id')"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+          <option value="">Sélectionner une catégorie</option>
+          <option *ngFor="let category of categories" [value]="category.id">
+            {{ category.name }}
+          </option>
+        </select>
+        <p *ngIf="isFieldInvalid('category_id')" class="text-red-500 text-sm mt-1">
+          {{ getFieldError('category_id') }}
+        </p>
+      </div>
+
+      <!-- Budget -->
+      <div>
+        <label for="budget" class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-coins mr-2 text-primary"></i>
+          Budget ($)
+        </label>
+        <input type="number"
+               id="budget"
+               formControlName="budget"
+               placeholder="Ex: 500000"
+               min="0"
+               [class.border-red-500]="isFieldInvalid('budget')"
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+        <p *ngIf="isFieldInvalid('budget')" class="text-red-500 text-sm mt-1">
+          {{ getFieldError('budget') }}
+        </p>
+        <p class="text-gray-500 text-xs mt-1">Optionnel - Laissez vide si à négocier</p>
+      </div>
+    </div>
+
+    <!-- Duration -->
+    <div>
+      <label for="duration" class="block text-sm font-medium text-gray-700 mb-2">
+        <i class="fas fa-clock mr-2 text-primary"></i>
+        Durée du projet (en jours) *
+      </label>
+      <input type="number"
+             id="duration"
+             formControlName="duration"
+             placeholder="Ex: 30"
+             min="1"
+             [class.border-red-500]="isFieldInvalid('duration')"
+             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+      <p *ngIf="isFieldInvalid('duration')" class="text-red-500 text-sm mt-1">
+        {{ getFieldError('duration') }}
+      </p>
+    </div>
+
+
+    <!-- Skills Selection -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-3">
+        <i class="fas fa-cogs mr-2 text-primary"></i>
+        Compétences requises
+      </label>
+      <div *ngIf="skills.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+        <button *ngFor="let skill of skills"
+                type="button"
+                (click)="toggleSkill(skill.id)"
+                [class.bg-primary]="selectedSkills.includes(skill.id)"
+                [class.text-white]="selectedSkills.includes(skill.id)"
+                [class.bg-gray-100]="!selectedSkills.includes(skill.id)"
+                [class.text-gray-700]="!selectedSkills.includes(skill.id)"
+                class="px-3 py-2 rounded-lg text-sm font-medium hover:shadow-md transition-all duration-200">
+          {{ skill.name }}
+        </button>
+      </div>
+      <div *ngIf="skills.length === 0" class="text-gray-500 text-sm">
+        Aucune compétence disponible
+      </div>
+      <p class="text-gray-500 text-sm mt-2">
+        {{ selectedSkills.length }} compétence(s) sélectionnée(s)
+      </p>
+    </div>
+
+    <!-- File Upload -->
+    <div>
+      <label for="attachments" class="block text-sm font-medium text-gray-700 mb-2">
+        <i class="fas fa-paperclip mr-2 text-primary"></i>
+        Pièces jointes
+      </label>
+
+      <!-- Existing Attachments (Mode édition) -->
+      <div *ngIf="isEditMode && existingAttachments.length > 0" class="mb-4">
+        <p class="text-sm text-gray-600 mb-2">Pièces jointes existantes :</p>
+        <div class="space-y-2">
+          <div *ngFor="let attachment of existingAttachments; let i = index"
+               class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div class="flex items-center gap-3">
+              <i class="fas fa-file text-blue-600"></i>
+              <div>
+                <span class="text-sm text-gray-700 font-medium">{{ attachment.file_name }}</span>
+                <span *ngIf="attachment.file_size" class="text-xs text-gray-500 ml-2">
+                  ({{ (attachment.file_size / 1024).toFixed(1) }} KB)
+                </span>
+              </div>
+            </div>
+            <button type="button"
+                    (click)="removeExistingAttachment(i)"
+                    class="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors duration-200">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- New File Upload -->
+      <input type="file"
+             id="attachments"
+             multiple
+             (change)="onFileSelect($event)"
+             class="hidden"
+             #fileInput>
+      <button type="button"
+              (click)="fileInput.click()"
+              class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary transition-colors duration-200 text-gray-600 hover:text-primary">
+        <i class="fas fa-cloud-upload-alt text-2xl mb-2"></i>
+        <p class="text-sm">{{ isEditMode ? 'Ajouter de nouvelles pièces jointes' : 'Cliquez pour sélectionner des fichiers' }}</p>
+      </button>
+
+      <!-- Selected Files -->
+      <div *ngIf="selectedFiles.length > 0" class="mt-3 space-y-2">
+        <p class="text-sm text-gray-600 mb-2">Nouveaux fichiers à ajouter :</p>
+        <div *ngFor="let file of selectedFiles; let i = index"
+             class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-file text-green-600"></i>
+            <span class="text-sm text-gray-700">{{ file.name }}</span>
+            <span class="text-xs text-gray-500">({{ (file.size / 1024).toFixed(1) }} KB)</span>
+          </div>
+          <button type="button"
+                  (click)="removeFile(i)"
+                  class="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors duration-200">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
+      <button type="button"
+              (click)="cancel()"
+              [disabled]="isSubmitting"
+              class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+        <i class="fas fa-times mr-2"></i>
+        Annuler
+      </button>
+      <button type="submit"
+              [disabled]="isSubmitting || projectForm.invalid"
+              class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        <i class="fas" [class.fa-save]="!isSubmitting" [class.fa-spinner]="isSubmitting" [class.fa-spin]="isSubmitting"></i>
+        <span>{{ isEditMode ? 'Mettre à jour' : 'Créer le projet' }}</span>
+      </button>
+    </div>
+  </form>
+
+  <!-- Modal de confirmation d'annulation -->
+  <div *ngIf="showCancelConfirm"
+       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+       (click)="cancelConfirmation()">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4"
+         (click)="$event.stopPropagation()">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+          <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-800">Confirmer l'annulation</h3>
+          <p class="text-gray-600 text-sm">Les modifications non sauvegardées seront perdues</p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button (click)="cancelConfirmation()"
+                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+          <i class="fas fa-arrow-left mr-2"></i>
+          Continuer l'édition
+        </button>
+        <button (click)="confirmCancel()"
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+          <i class="fas fa-times mr-2"></i>
+          Annuler les modifications
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

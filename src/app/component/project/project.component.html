@@ -1,0 +1,202 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- En-tête -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">
+        <i class="fas fa-project-diagram text-blue-600 mr-3"></i>Explorez les missions
+      </h1>
+      <p class="text-gray-600">Trouvez votre prochaine opportunité parmi notre sélection de missions.</p>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- Sidebar des filtres -->
+      <aside class="lg:w-96 flex-shrink-0">
+        <div class="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+          <!-- En-tête des filtres -->
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-900">Filtres</h2>
+            <button
+              (click)="resetFilters()"
+              class="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+              type="button">
+              Réinitialiser
+            </button>
+          </div>
+
+          <!-- Barre de recherche -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">
+              <i class="fas fa-search mr-2"></i>Rechercher
+            </label>
+            <input
+              type="text"
+              [value]="filters.searchTerm"
+              (input)="onSearchChange($any($event.target).value)"
+              placeholder="Titre, description..."
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm transition-all">
+          </div>
+
+          <!-- Filtre par compétences -->
+          <div class="mb-6">
+            <button
+              (click)="toggleSection('competences')"
+              class="flex items-center justify-between w-full text-left text-sm font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors"
+              type="button">
+              <span><i class="fas fa-tools mr-2"></i>Compétences</span>
+              <i [class]="expandedSections.competences ? 'fas fa-chevron-up text-blue-600' : 'fas fa-chevron-down text-gray-400'"></i>
+            </button>
+            <div
+              *ngIf="expandedSections.competences"
+              class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+              <label
+                *ngFor="let skill of skills"
+                class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors group">
+                <input
+                  type="checkbox"
+                  [checked]="isSkillSelected(skill.id)"
+                  (change)="toggleSkill(skill.id)"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-600 focus:ring-2 cursor-pointer">
+                <span class="ml-3 text-sm text-gray-700 group-hover:text-gray-900">{{skill.name}}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Filtre par budget -->
+          <div class="mb-6">
+            <button
+              (click)="toggleSection('budget')"
+              class="flex items-center justify-between w-full text-left text-sm font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors"
+              type="button">
+              <span><i class="fa-solid fa-dollar-sign mr-2"></i>Budget</span>
+              <i [class]="expandedSections.budget ? 'fas fa-chevron-up text-blue-600' : 'fas fa-chevron-down text-gray-400'"></i>
+            </button>
+            <div *ngIf="expandedSections.budget" class="space-y-4">
+              <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+                <span>{{filters.minBudget}} $</span>
+                <span>{{filters.maxBudget}} $</span>
+              </div>
+              <input
+                type="range"
+                [(ngModel)]="filters.minBudget"
+                (ngModelChange)="onBudgetChange()"
+                [min]="0"
+                [max]="filters.maxBudget"
+                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+              <input
+                type="range"
+                [(ngModel)]="filters.maxBudget"
+                (ngModelChange)="onBudgetChange()"
+                [min]="filters.minBudget"
+                [max]="50000"
+                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+            </div>
+          </div>
+
+          <!-- Filtre par catégorie -->
+          <div class="mb-6">
+            <button
+              (click)="toggleSection('categorie')"
+              class="flex items-center justify-between w-full text-left text-sm font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors"
+              type="button">
+              <span><i class="fas fa-folder mr-2"></i>Catégorie</span>
+              <i [class]="expandedSections.categorie ? 'fas fa-chevron-up text-blue-600' : 'fas fa-chevron-down text-gray-400'"></i>
+            </button>
+            <select
+              *ngIf="expandedSections.categorie"
+              [(ngModel)]="filters.selectedCategory"
+              (ngModelChange)="onCategoryChange()"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm transition-all cursor-pointer">
+              <option value="">Toutes</option>
+              <option *ngFor="let category of categories" [value]="category.id">
+                {{category.name}}
+              </option>
+            </select>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- Contenu principal - Liste des projets -->
+      <main class="flex-1">
+        <!-- Indicateur de chargement -->
+        <div *ngIf="loading" class="flex justify-center items-center py-20">
+          <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-5xl text-blue-600 mb-4"></i>
+            <p class="text-gray-600">Chargement des missions...</p>
+          </div>
+        </div>
+
+        <!-- Liste des projets -->
+        <div *ngIf="!loading && filteredProjects.length > 0" class="space-y-6">
+          <div
+            *ngFor="let project of filteredProjects"
+            class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6">
+
+            <!-- En-tête du projet -->
+            <div class="flex items-start justify-between mb-4">
+              <h3 class="text-xl font-bold text-gray-900 flex-1 pr-4">
+                {{project.title}}
+              </h3>
+              <span class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-lg font-semibold whitespace-nowrap">
+                {{formatBudget(project.budget)}}
+              </span>
+            </div>
+
+            <!-- Description -->
+            <p class="text-gray-600 mb-4 line-clamp-3">
+              {{project.description}}
+            </p>
+
+            <!-- Compétences requises -->
+            <div class="mb-4">
+              <div *ngIf="project.skills && project.skills.length > 0" class="flex flex-wrap gap-2">
+        <span
+          *ngFor="let skill of project.skills"
+          class="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium">
+          {{skill.name}}
+        </span>
+              </div>
+              <div *ngIf="!project.skills || project.skills.length === 0" class="text-sm text-gray-400 italic">
+                Aucune compétence requise mentionnée
+              </div>
+            </div>
+
+            <!-- Pied de page -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+              <div class="flex items-center gap-4 text-sm text-gray-500">
+                <span class="flex items-center">
+                  <i class="far fa-clock mr-1.5"></i>
+                  publié le {{project.created_at | date: 'dd/MM/yyyy'}}
+                </span>
+                <span class="flex items-center">
+                  <i class="fas fa-hourglass-half mr-1.5"></i>
+                  Durée : {{ formatDuration(project.duration) }}
+                </span>
+
+              </div>
+              <a
+                [routerLink]="['/projects', project.id]"
+                class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm hover:shadow">
+                Voir les détails
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message aucun résultat -->
+        <div *ngIf="!loading && filteredProjects.length === 0" class="text-center py-20">
+          <div class="bg-white rounded-lg shadow-sm p-12">
+            <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Aucune mission trouvée</h3>
+            <p class="text-gray-600 mb-6">Essayez de modifier vos critères de recherche</p>
+            <button
+              (click)="resetFilters()"
+              class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm hover:shadow">
+              Réinitialiser les filtres
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+/* Animations pour le sidebar */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Smooth scrolling */
+main {
+  scroll-behavior: smooth;
+}
+
+/* Optimisation des performances */
+aside {
+  will-change: width;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  aside {
+    position: fixed;
+    z-index: 40;
+    height: 100vh;
+    top: 64px;
+  }
+
+  aside.w-20 {
+    transform: translateX(-100%);
+  }
+
+  main {
+    margin-left: 0;
+  }
+}
+
+/* Accessibilité - Focus visible */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Transitions optimisées */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
