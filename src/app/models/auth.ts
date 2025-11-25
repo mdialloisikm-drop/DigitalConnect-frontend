@@ -9,6 +9,39 @@ export interface LoginData {
 }
 
 /**
+ * Interface pour les données d'inscription
+ */
+export interface RegisterData {
+  full_name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  phone?: string;
+  city?: string;
+  country?: string;
+  user_type: 'client' | 'freelance';
+  avatar?: File;
+
+  // Pour les freelances
+  title?: string;
+  description?: string;
+  hourly_rate?: number;
+  experience_years?: number;
+
+  // Pour les clients
+  company_name?: string;
+  company_description?: string;
+}
+
+/**
+ * Interface pour la réponse d'inscription
+ */
+export interface RegisterResponse {
+  user: User;
+  message: string;
+}
+
+/**
  * Interface pour la réponse d'authentification du backend
  */
 export interface AuthResponse {
@@ -16,6 +49,21 @@ export interface AuthResponse {
   token: string;
   token_type: string;
   expires_in: number;
+}
+
+/**
+ * Interface pour la vérification d'email
+ */
+export interface VerifyEmailData {
+  email: string;
+  token: string;
+}
+
+/**
+ * Interface pour renvoyer l'email de vérification
+ */
+export interface ResendVerificationData {
+  email: string;
 }
 
 /**
@@ -33,25 +81,4 @@ export interface AuthError {
 export interface StoredAuth {
   token: string;
   expiresAt: number;
-}
-
-export interface RegisterData {
-  full_name: string;
-  email: string;
-  password: string;
-  password_confirmation: string;
-  phone?: string;
-  city?: string;
-  country?: string;
-  user_type: 'client' | 'freelance';
-
-  // Pour les freelances
-  title?: string;
-  description?: string;
-  hourly_rate?: number;
-  experience_years?: number;
-
-  // Pour les clients
-  company_name?: string;
-  company_description?: string;
 }

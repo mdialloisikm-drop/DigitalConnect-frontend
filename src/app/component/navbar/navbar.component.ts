@@ -19,21 +19,34 @@ export class NavbarComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   shouldDisplayNavbar = true;
   unreadMessagesCount = 0;
+  isAuthRoute = false; // 🔥 NOUVELLE PROPRIÉTÉ
 
   private readonly DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=User&background=3b82f6&color=fff&size=128';
   private readonly destroy$ = new Subject<void>();
   private readonly UNREAD_POLLING_INTERVAL = 30000;
 
+  // 🔥 ROUTES D'AUTHENTIFICATION - MISE À JOUR COMPLÈTE
+  private readonly AUTH_ROUTES = [
+    '/login',
+    '/register',
+    '/register/details',
+    '/register/verify-email',
+    '/auth/verify-email',
+    '/forgot-password',
+    '/reset-password'
+  ];
+
   constructor(
     private readonly authService: AuthService,
     private readonly messageHttpService: MessageHttpService,
-    private readonly fcmService: FcmService, // 🔥 Ajouter FcmService
+    private readonly fcmService: FcmService,
     private readonly router: Router
   ) {}
 
   ngOnInit(): void {
     this.initializeAuthenticationListener();
     this.initializeRouteListener();
+    this.checkAuthRoute(); // 🔥 Vérifier la route initiale
   }
 
   ngOnDestroy(): void {
@@ -106,26 +119,26 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.isUserMenuOpen = false;
   }
 
-  /**
-   * 🔥 MÉTHODE CORRIGÉE: Déconnexion avec suppression du token FCM
-   */
   async logout(): Promise<void> {
     if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
       return;
     }
 
     try {
-      // 1️⃣ Supprimer le token FCM AVANT la déconnexion (utilisateur encore authentifié)
       console.log('🔄 Suppression du token FCM...');
       await this.fcmService.deleteToken();
       console.log('✅ Token FCM supprimé');
     } catch (error) {
       console.warn('⚠️ Erreur lors de la suppression du token FCM (ignorée):', error);
-      // On continue même si FCM échoue
     }
 
-    // 2️⃣ Déconnexion backend et locale
     this.performLogout();
+  }
+
+  // 🔥 MÉTHODE POUR VÉRIFIER SI ON EST SUR UNE ROUTE D'AUTHENTIFICATION
+  private checkAuthRoute(): void {
+    const currentUrl = this.router.url.split('?')[0]; // Enlever les query params
+    this.isAuthRoute = this.AUTH_ROUTES.some(route => currentUrl.startsWith(route));
   }
 
   private initializeAuthenticationListener(): void {
@@ -159,6 +172,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         this.updateNavbarVisibility();
+        this.checkAuthRoute(); // 🔥 Vérifier la route à chaque navigation
       });
   }
 

@@ -35,6 +35,14 @@ import {ConversationListComponent} from "./component/conversation-list/conversat
 import {ConversationComponent} from "./component/conversation/conversation.component";
 import {MessagesLayoutComponent} from "./component/messages-layout/messages-layout.component";
 import {ProfileComponent} from "./component/profile/profile.component";
+import {RegisterAccountTypeComponent} from "./component/register-account-type/register-account-type.component";
+import {RegisterDetailsComponent} from "./component/register-details/register-details.component";
+import {VerifyEmailComponent} from "./component/verify-email/verify-email.component";
+import {EmailConfirmedComponent} from "./component/email-confirmed/email-confirmed.component";
+import {
+  PendingProjectDetailsComponent
+} from "./component/pending-projects-admin/pending-project-details/pending-project-details.component";
+import {PendingProjectsComponent} from "./component/pending-projects-admin/pending-projects/pending-projects.component";
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -42,6 +50,10 @@ const routes: Routes = [
     path: 'login',
     component: LoginComponent
   },
+  { path: 'register', component: RegisterAccountTypeComponent },
+  { path: 'register/details', component: RegisterDetailsComponent },
+  { path: 'register/verify-email', component: VerifyEmailComponent },
+  { path: 'auth/verify-email', component: EmailConfirmedComponent },
   { path: 'projects', component: ProjectComponent },
   { path: 'projects/:id', component: ProjectDetailComponent },
   { path: 'services', component: ServicesComponent },
@@ -69,7 +81,9 @@ const routes: Routes = [
       {
         path: 'users',
         component: UsersListComponent
-      }
+      },
+      { path: 'projects/pending', component: PendingProjectsComponent },
+      { path: 'projects/details/:id', component: PendingProjectDetailsComponent }
     ]
   },
 

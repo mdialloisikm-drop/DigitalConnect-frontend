@@ -35,6 +35,12 @@ export class AdminLayoutComponent {
       label: 'Utilisateurs',
       route: '/admin/users',
       active: false
+    },
+    {
+      icon: 'fa-project-diagram',
+      label: 'Projets en attente',
+      route: '/admin/projects/pending',
+      active: false
     }
   ];
 

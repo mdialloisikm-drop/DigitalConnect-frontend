@@ -19,6 +19,10 @@ export class TaskService {
     return this.http.get<Task[]>(`${this.apiUrl}/projects/${projectId}/tasks`);
   }
 
+  getProjectPendingTasks(projectId: number): Observable<Task[]> {
+    return this.http.get<Task[]>(`${this.apiUrl}/admin/projects/${projectId}/tasks`);
+  }
+
   /**
    * Récupérer les tâches triées par priorité
    */

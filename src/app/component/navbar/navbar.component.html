@@ -9,8 +9,8 @@
         </a>
       </div>
 
-      <!-- Desktop Navigation -->
-      <div class="hidden md:flex items-center space-x-8">
+      <!-- Desktop Navigation - 🔥 MASQUÉ SUR LES ROUTES D'AUTH -->
+      <div *ngIf="!isAuthRoute" class="hidden md:flex items-center space-x-8">
         <a routerLink="/"
            routerLinkActive="text-primary"
            [routerLinkActiveOptions]="{exact: true}"
@@ -138,8 +138,8 @@
         </ng-container>
       </div>
 
-      <!-- Mobile Menu Button -->
-      <div class="md:hidden flex items-center">
+      <!-- Mobile Menu Button - 🔥 MASQUÉ SUR LES ROUTES D'AUTH -->
+      <div *ngIf="!isAuthRoute" class="md:hidden flex items-center">
         <button (click)="toggleMenu()" class="text-secondary hover:text-primary focus:outline-none">
           <i [class]="isMenuOpen ? 'fas fa-times text-2xl' : 'fas fa-bars text-2xl'"></i>
         </button>
@@ -147,8 +147,8 @@
     </div>
   </div>
 
-  <!-- Mobile Navigation Menu -->
-  <div *ngIf="isMenuOpen" class="md:hidden bg-white border-t border-gray-200">
+  <!-- Mobile Navigation Menu - 🔥 MASQUÉ SUR LES ROUTES D'AUTH -->
+  <div *ngIf="isMenuOpen && !isAuthRoute" class="md:hidden bg-white border-t border-gray-200">
     <div class="px-4 pt-2 pb-4 space-y-3">
       <a routerLink="/"
          (click)="toggleMenu()"

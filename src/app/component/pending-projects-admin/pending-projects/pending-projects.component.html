@@ -1,0 +1,190 @@
+<div class="space-y-6">
+  <!-- En-tête -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-secondary">Projets en attente</h1>
+      <p class="text-gray-600 mt-1">Modérez les projets soumis par les clients</p>
+    </div>
+    <button (click)="loadPendingProjects()"
+            [disabled]="loading"
+            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50">
+      <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'"></i>
+      <span>Actualiser</span>
+    </button>
+  </div>
+
+  <!-- État de chargement -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <i class="fas fa-spinner fa-spin text-5xl text-primary"></i>
+  </div>
+
+  <!-- État d'erreur -->
+  <div *ngIf="error && !loading" class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+    <div class="flex items-center">
+      <i class="fas fa-exclamation-circle text-red-500 text-2xl mr-3"></i>
+      <div>
+        <p class="font-semibold text-red-800">Erreur</p>
+        <p class="text-red-600">{{ errorMessage }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des projets -->
+  <div *ngIf="!loading && !error" class="space-y-4">
+    <!-- Message si aucun projet -->
+    <div *ngIf="projects.length === 0" class="text-center py-12 bg-white rounded-lg shadow-md">
+      <i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>
+      <p class="text-gray-600 text-lg font-medium">Aucun projet en attente de modération</p>
+      <p class="text-gray-500 mt-2">Tous les projets ont été traités</p>
+    </div>
+
+    <!-- Cards des projets -->
+    <div *ngFor="let project of projects"
+         class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 p-6">
+
+      <!-- Titre du projet -->
+      <h3 class="text-xl font-bold text-secondary mb-3 line-clamp-1">
+        {{ project.title }}
+      </h3>
+
+      <!-- Description -->
+      <p class="text-gray-600 mb-4 line-clamp-1">
+        {{ truncateDescription(project.description, 120) }}
+      </p>
+
+      <!-- Informations du client -->
+      <div class="flex items-center mb-4 pb-4 border-b border-gray-200">
+        <img [src]="getAvatarUrl(project.client?.user?.avatar)"
+             [alt]="project.client?.user?.full_name"
+             class="w-10 h-10 rounded-full object-cover mr-3">
+        <div>
+          <p class="font-semibold text-gray-800">
+            {{ project.client?.user?.full_name }}
+          </p>
+          <p class="text-sm text-gray-500">Client</p>
+        </div>
+      </div>
+
+      <!-- Métadonnées supplémentaires -->
+      <div class="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
+        <div>
+          <p class="text-sm text-gray-500">Budget</p>
+          <p class="font-semibold text-gray-800">
+            {{ project.budget ? formatCurrency(project.budget) : 'Non défini' }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Date de création</p>
+          <p class="font-semibold text-gray-800">
+            {{ project.created_at | date:'dd/MM/yyyy' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end space-x-2">
+        <button (click)="viewProjectDetails(project.id)"
+                class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors duration-200 flex items-center space-x-2"
+                title="Voir les détails">
+          <i class="fas fa-eye"></i>
+          <span class="hidden sm:inline">Voir</span>
+        </button>
+
+        <button (click)="openApproveModal(project)"
+                class="bg-green-100 text-green-600 px-4 py-2 rounded-lg hover:bg-green-200 transition-colors duration-200 flex items-center space-x-2"
+                title="Approuver">
+          <i class="fas fa-check"></i>
+          <span class="hidden sm:inline">Valider</span>
+        </button>
+
+        <button (click)="openRejectModal(project)"
+                class="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors duration-200 flex items-center space-x-2"
+                title="Rejeter">
+          <i class="fas fa-times"></i>
+          <span class="hidden sm:inline">Rejeter</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmation d'approbation -->
+<div *ngIf="showApproveModal"
+     class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-modal">
+    <div class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mx-auto mb-4">
+      <i class="fas fa-check text-blue-600 text-2xl"></i>
+    </div>
+
+    <h3 class="text-xl font-bold text-center text-secondary mb-2">
+      Approuver le projet
+    </h3>
+
+    <p class="text-gray-600 text-center mb-6">
+      Êtes-vous sûr de vouloir approuver le projet
+      <span class="font-semibold">"{{ projectToApprove?.title }}"</span> ?
+      <br>
+      <span class="text-sm text-gray-500 mt-2 inline-block">
+        Le projet sera publié et visible par tous les freelances.
+      </span>
+    </p>
+
+    <div class="flex space-x-3">
+      <button (click)="closeApproveModal()"
+              [disabled]="approveLoading"
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50">
+        Annuler
+      </button>
+      <button (click)="confirmApprove()"
+              [disabled]="approveLoading"
+              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 flex items-center justify-center">
+        <i *ngIf="approveLoading" class="fas fa-spinner fa-spin mr-2"></i>
+        {{ approveLoading ? 'Approbation...' : 'Approuver' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de rejet -->
+<div *ngIf="showRejectModal"
+     class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-modal">
+    <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+      <i class="fas fa-times text-red-600 text-2xl"></i>
+    </div>
+
+    <h3 class="text-xl font-bold text-center text-secondary mb-2">
+      Rejeter le projet
+    </h3>
+
+    <p class="text-gray-600 text-center mb-4">
+      Vous êtes sur le point de rejeter le projet
+      <span class="font-semibold">"{{ projectToReject?.title }}"</span>
+    </p>
+
+    <div class="mb-6">
+      <label for="rejectReason" class="block text-sm font-medium text-gray-700 mb-2">
+        Raison du rejet (optionnel)
+      </label>
+      <textarea id="rejectReason"
+                [(ngModel)]="rejectReason"
+                rows="4"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="Expliquez pourquoi ce projet est rejeté..."></textarea>
+    </div>
+
+    <div class="flex space-x-3">
+      <button (click)="closeRejectModal()"
+              [disabled]="rejectLoading"
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50">
+        Annuler
+      </button>
+      <button (click)="confirmReject()"
+              [disabled]="rejectLoading"
+              class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 flex items-center justify-center">
+        <i *ngIf="rejectLoading" class="fas fa-spinner fa-spin mr-2"></i>
+        {{ rejectLoading ? 'Rejet...' : 'Rejeter' }}
+      </button>
+    </div>
+  </div>
+</div>

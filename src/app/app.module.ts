@@ -39,6 +39,12 @@ import { ConversationListComponent } from './component/conversation-list/convers
 import { ConversationComponent } from './component/conversation/conversation.component';
 import { MessagesLayoutComponent } from './component/messages-layout/messages-layout.component';
 import { ProfileComponent } from './component/profile/profile.component';
+import { RegisterAccountTypeComponent } from './component/register-account-type/register-account-type.component';
+import { RegisterDetailsComponent } from './component/register-details/register-details.component';
+import { VerifyEmailComponent } from './component/verify-email/verify-email.component';
+import { EmailConfirmedComponent } from './component/email-confirmed/email-confirmed.component';
+import { PendingProjectsComponent } from './component/pending-projects-admin/pending-projects/pending-projects.component';
+import { PendingProjectDetailsComponent } from './component/pending-projects-admin/pending-project-details/pending-project-details.component';
 
 @NgModule({
   declarations: [
@@ -76,6 +82,12 @@ import { ProfileComponent } from './component/profile/profile.component';
     ConversationComponent,
     MessagesLayoutComponent,
     ProfileComponent,
+    RegisterAccountTypeComponent,
+    RegisterDetailsComponent,
+    VerifyEmailComponent,
+    EmailConfirmedComponent,
+    PendingProjectsComponent,
+    PendingProjectDetailsComponent,
   ],
     imports: [
         BrowserModule,

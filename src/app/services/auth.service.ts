@@ -3,14 +3,21 @@ import {User} from "../models/user";
 import {environment} from "../../environments/environment";
 import {BehaviorSubject, catchError, finalize, Observable, tap, throwError} from "rxjs";
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
-import {AuthResponse, LoginData} from "../models/auth";
+import {
+  AuthResponse,
+  LoginData,
+  RegisterData,
+  RegisterResponse,
+  VerifyEmailData,
+  ResendVerificationData
+} from "../models/auth";
 import {Router} from "@angular/router";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = environment.apiUrl;
+  private readonly apiUrl = `${environment.apiUrl}`;
   private readonly tokenKey = 'auth_token';
   private readonly userKey = 'current_user';
   private readonly expiresAtKey = 'token_expires_at';
@@ -87,6 +94,60 @@ export class AuthService {
   public updateCurrentUser(user: User): void {
     this.saveUserToStorage(user);
     this.currentUserSubject.next(user);
+  }
+
+  /**
+   * ✅ Inscription d'un nouvel utilisateur
+   */
+  register(data: RegisterData): Observable<RegisterResponse> {
+    this.isLoadingSubject.next(true);
+
+    // ✅ Créer FormData pour supporter l'avatar
+    const formData = new FormData();
+
+    // Ajouter tous les champs
+    Object.keys(data).forEach(key => {
+      const value = (data as any)[key];
+      if (value !== undefined && value !== null) {
+        if (key === 'avatar' && value instanceof File) {
+          formData.append(key, value);
+        } else {
+          formData.append(key, value.toString());
+        }
+      }
+    });
+
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, formData)
+      .pipe(
+        catchError(error => this.handleError(error)),
+        finalize(() => this.isLoadingSubject.next(false))
+      );
+  }
+
+  /**
+   * ✅ Vérifier l'email avec le token
+   */
+  verifyEmail(data: VerifyEmailData): Observable<{ message: string }> {
+    this.isLoadingSubject.next(true);
+
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/verify-email`, data)
+      .pipe(
+        catchError(error => this.handleError(error)),
+        finalize(() => this.isLoadingSubject.next(false))
+      );
+  }
+
+  /**
+   * ✅ Renvoyer l'email de vérification
+   */
+  resendVerificationEmail(data: ResendVerificationData): Observable<{ message: string }> {
+    this.isLoadingSubject.next(true);
+
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/resend-verification-email`, data)
+      .pipe(
+        catchError(error => this.handleError(error)),
+        finalize(() => this.isLoadingSubject.next(false))
+      );
   }
 
   /**
@@ -239,7 +300,7 @@ export class AuthService {
   }
 
   /**
-   * Gère les erreurs HTTP
+   * ✅ Gère les erreurs HTTP - AMÉLIORÉ selon le backend
    */
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Une erreur est survenue';
@@ -250,10 +311,34 @@ export class AuthService {
     } else {
       // Erreur côté serveur
       if (error.status === 401) {
-        errorMessage = 'Identifiants invalides';
-        this.forceLogout();
+        // ✅ Erreur d'authentification
+        if (error.error?.error) {
+          errorMessage = error.error.error;
+        } else {
+          errorMessage = 'Identifiants invalides';
+        }
       } else if (error.status === 403) {
-        errorMessage = 'Accès refusé';
+        // ✅ Accès refusé ou email non vérifié
+        if (error.error?.error) {
+          errorMessage = error.error.error;
+        } else {
+          errorMessage = 'Accès refusé';
+        }
+      } else if (error.status === 422) {
+        // ✅ Erreurs de validation
+        if (error.error?.errors) {
+          const errors = Object.values(error.error.errors).flat();
+          errorMessage = errors.join(', ');
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        }
+      } else if (error.status === 400) {
+        // ✅ Erreur de requête
+        if (error.error?.error) {
+          errorMessage = error.error.error;
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        }
       } else if (error.status === 0) {
         errorMessage = 'Impossible de se connecter au serveur';
       } else if (error.error?.error) {
