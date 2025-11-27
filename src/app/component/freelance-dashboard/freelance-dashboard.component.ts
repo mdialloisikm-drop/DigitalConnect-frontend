@@ -1,6 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {FreelanceDashboardStats, FreelanceService} from "../../services/freelance.service";
+import {FreelanceService} from "../../services/freelance.service";
 import {finalize, Subject, takeUntil} from "rxjs";
+import {FreelanceDashboardStats} from "../../models/freelance-dashboard-stats";
 
 
 /**
@@ -126,14 +127,33 @@ export class FreelanceDashboardComponent implements OnInit, OnDestroy {
    */
   private getDefaultStats(): FreelanceDashboardStats {
     return {
+      // Services
       total_services: 0,
+      published_services: 0,
+      pending_services: 0,
+      archived_services: 0,
+
+      // Commandes
       total_orders: 0,
       active_orders: 0,
       completed_orders: 0,
+      delivered_orders: 0,
+      cancelled_orders: 0,
+
+      // Propositions
+      total_proposals: 0,
+      pending_proposals: 0,
+      accepted_proposals: 0,
+      rejected_proposals: 0,
+
+      // Contrats
       total_contracts: 0,
       active_contracts: 0,
+      completed_contracts: 0,
+
+      // Gains
       total_earnings: 0,
-      pending_earnings: 0
+      pending_earnings: 0,
     };
   }
 

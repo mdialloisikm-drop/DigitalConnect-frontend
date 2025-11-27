@@ -109,20 +109,20 @@
           <h2 class="text-xl font-bold text-secondary mb-4">Service commandé</h2>
           <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
             <!-- CORRECTION: Vérification complète avec && pour éviter les erreurs undefined -->
-            <div *ngIf="order.service && order.service.images && order.service.images.length > 0" class="flex-shrink-0">
+            <div *ngIf="hasServiceImage(order)" class="flex-shrink-0">
               <img
-                [src]="getImageUrl(order.service.images[0].image_path)"
-                [alt]="order.service.title || 'Service'"
-                class="w-24 h-24 object-cover rounded-lg"
+                [src]="getServiceImageUrl(order)"
+                [alt]="getServiceTitle(order)"
+                class="w-20 h-20 rounded-lg object-cover"
               />
             </div>
             <div class="flex-1">
-              <h3 class="text-lg font-semibold text-secondary mb-2">{{ order.service?.title }}</h3>
-              <p class="text-gray-600 mb-3">{{ order.service?.description }}</p>
+              <h3 class="text-lg font-semibold text-secondary mb-2">{{ order.serviceOffer?.service?.title }}</h3>
+              <p class="text-gray-600 mb-3">{{ order.serviceOffer?.service?.description }}</p>
               <div class="flex flex-wrap gap-4 text-sm">
                 <span class="text-gray-700">
                   <i class="fas fa-tag mr-1 text-primary"></i>
-                  {{ order.service?.category?.name }}
+                  {{ order.serviceOffer?.service?.category?.name }}
                 </span>
                 <span class="text-gray-700">
                   <i class="fas fa-dollar-sign mr-1 text-green-600"></i>
@@ -130,7 +130,7 @@
                 </span>
                 <span class="text-gray-700">
                   <i class="fas fa-clock mr-1 text-orange-600"></i>
-                  {{ order.service?.delivery_time }} jours
+                  {{ formatDeliveryDays(order) }}
                 </span>
               </div>
             </div>

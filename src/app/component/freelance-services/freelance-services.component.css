@@ -1,22 +1,16 @@
 /* freelance-services.component.css */
 
-/* Classes utilitaires personnalisées pour le composant */
-
-/* Animation pour le spinner de chargement */
+/* Animation pour le spinner */
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .fa-spin {
   animation: spin 1s linear infinite;
 }
 
-/* Limitation du nombre de lignes affichées */
+/* Limitation des lignes */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -24,80 +18,79 @@
   overflow: hidden;
 }
 
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Style personnalisé pour le select (fallback si Tailwind ne suffit pas) */
+/* Style du select */
 select {
-  background-image: none; /* Retirer la flèche par défaut du navigateur */
+  background-image: none;
 }
 
-/* Amélioration du focus pour l'accessibilité */
+/* Focus accessibility */
 *:focus-visible {
-  outline: 2px solid #3B82F6;
+  outline: 2px solid var(--primary-color, #3B82F6);
   outline-offset: 2px;
 }
 
-/* Smooth scroll */
-html {
-  scroll-behavior: smooth;
+/* Stepper styles */
+.stepper-line {
+  transition: background-color 0.3s ease;
 }
 
-/* Transition fluide pour les modals */
-.modal-enter {
-  opacity: 0;
-  transform: scale(0.95);
+/* Table des offres - masquer les spinners des inputs number */
+table input[type="number"]::-webkit-outer-spin-button,
+table input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.modal-enter-active {
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 200ms, transform 200ms;
+table input[type="number"] {
+  -moz-appearance: textfield;
 }
 
-.modal-exit {
-  opacity: 1;
-  transform: scale(1);
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.modal-exit-active {
-  opacity: 0;
-  transform: scale(0.95);
-  transition: opacity 200ms, transform 200ms;
+::-webkit-scrollbar-track {
+  background: #F3F4F6;
+  border-radius: 3px;
 }
 
-/* Style pour les tooltips (si nécessaire) */
-.tooltip {
-  position: relative;
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
 }
 
-.tooltip::before {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 0.5rem 0.75rem;
-  background-color: #1F2937;
-  color: white;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms;
-  margin-bottom: 0.5rem;
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
 }
 
-.tooltip:hover::before {
-  opacity: 1;
+/* Animation de transition pour les étapes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Style pour les cartes au survol */
+.step-content {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Style pour le toggle switch */
+.toggle-switch {
+  transition: background-color 0.2s ease;
+}
+
+.toggle-switch-dot {
+  transition: transform 0.2s ease;
+}
+
+/* Hover sur les cartes de service */
 .service-card {
   transition: all 0.3s ease;
 }
@@ -106,21 +99,7 @@ html {
   transform: translateY(-4px);
 }
 
-/* Animation de pulsation pour les états de chargement */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Style pour les badges de statut */
+/* Style pour les badges */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -130,142 +109,76 @@ html {
   font-weight: 600;
 }
 
-.badge-success {
-  background-color: #D1FAE5;
-  color: #065F46;
+/* Zone de drop pour les images */
+.drop-zone {
+  transition: all 0.2s ease;
 }
 
-.badge-danger {
-  background-color: #FEE2E2;
-  color: #991B1B;
+.drop-zone:hover {
+  border-color: var(--primary-color, #3B82F6);
+  background-color: rgba(59, 130, 246, 0.02);
 }
 
-.badge-warning {
-  background-color: #FEF3C7;
-  color: #92400E;
+.drop-zone.dragging {
+  border-color: var(--primary-color, #3B82F6);
+  background-color: rgba(59, 130, 246, 0.05);
 }
 
-.badge-info {
-  background-color: #DBEAFE;
-  color: #1E40AF;
+/* Aspect ratio pour les images */
+.aspect-square {
+  aspect-ratio: 1 / 1;
 }
 
-/* Scrollbar personnalisée */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #F3F4F6;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #9CA3AF;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #6B7280;
-}
-
-/* Style pour les inputs en erreur */
-input.error,
-textarea.error,
-select.error {
-  border-color: #EF4444 !important;
-  background-color: #FEF2F2;
-}
-
-input.error:focus,
-textarea.error:focus,
-select.error:focus {
-  ring-color: #EF4444 !important;
-}
-
-/* Animation pour les messages d'erreur/succès */
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.alert {
-  animation: slideInDown 0.3s ease-out;
-}
-
-/* Style pour les boutons désactivés */
+/* Style des boutons désactivés */
 button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-/* Style pour le loader de soumission */
-.btn-loading {
-  position: relative;
-  pointer-events: none;
+/* Animation pulse pour le loading */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-.btn-loading::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  top: 50%;
-  left: 50%;
-  margin-left: -8px;
-  margin-top: -8px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  border-top-color: transparent;
-  animation: spin 0.6s linear infinite;
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Responsive images */
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Style pour les placeholders d'images */
-.image-placeholder {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 3rem;
-}
-
-/* Ombres personnalisées */
+/* Ombres */
 .shadow-soft {
   box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07),
   0 10px 20px -2px rgba(0, 0, 0, 0.04);
 }
 
-.shadow-strong {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-  0 10px 10px -5px rgba(0, 0, 0, 0.04);
+/* Style pour les inputs en focus */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
 }
 
-/* Effet de glassmorphism (optionnel) */
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+/* Responsive table */
+@media (max-width: 640px) {
+  table {
+    font-size: 0.875rem;
+  }
+
+  table input,
+  table select {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
 }
 
-/* Style pour les dividers */
-.divider {
-  height: 1px;
-  background: linear-gradient(to right, transparent, #E5E7EB, transparent);
-  margin: 2rem 0;
+/* Modal backdrop blur */
+.modal-backdrop {
+  backdrop-filter: blur(2px);
+}
+
+/* Transitions fluides */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Print styles */
@@ -273,87 +186,4 @@ img {
   .no-print {
     display: none !important;
   }
-}
-
-/* Styles pour l'accessibilité */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-/* Focus visible pour la navigation au clavier */
-.focus-ring {
-  transition: box-shadow 0.2s;
-}
-
-.focus-ring:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-}
-
-/* Styles pour les états vides */
-.empty-state {
-  padding: 4rem 2rem;
-  text-align: center;
-}
-
-.empty-state-icon {
-  font-size: 4rem;
-  color: #D1D5DB;
-  margin-bottom: 1rem;
-}
-
-/* Animation de chargement du squelette */
-@keyframes shimmer {
-  0% {
-    background-position: -468px 0;
-  }
-  100% {
-    background-position: 468px 0;
-  }
-}
-
-.skeleton {
-  animation: shimmer 1.2s ease-in-out infinite;
-  background: linear-gradient(to right, #F3F4F6 4%, #E5E7EB 25%, #F3F4F6 36%);
-  background-size: 1000px 100%;
-}
-
-/* Style pour les grilles responsive */
-@media (max-width: 640px) {
-  .responsive-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 1024px) {
-  .responsive-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1025px) {
-  .responsive-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Amélioration des transitions */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Désactiver les transitions pendant le redimensionnement */
-.resize-animation-stopper * {
-  animation: none !important;
-  transition: none !important;
 }

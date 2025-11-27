@@ -6,6 +6,8 @@ import {Project} from "../models/project";
 import {Service} from "../models/service";
 import {Category} from "../models/category";
 import {Skill} from "../models/skill";
+import {PaginatedResponse} from "../models/paginated-response";
+import {map} from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +19,9 @@ export class ApiService {
 
   getProjects(): Observable<Project[]> {
     //return this.http.get<Project[]>(`${this.apiUrl}/projects`);
-    return this.http.get<Project[]>(`${this.apiUrl}/projects/open/list`);
+    return this.http.get<PaginatedResponse<Project>>(`${this.apiUrl}/projects/open/list`). pipe(
+      map(response => response.data || [])
+    );
   }
 
   getProject(id: number): Observable<Project> {
@@ -25,7 +29,9 @@ export class ApiService {
   }
 
   getServices(): Observable<Service[]> {
-    return this.http.get<Service[]>(`${this.apiUrl}/services`);
+    return this.http.get<PaginatedResponse<Service>>(`${this. apiUrl}/services`).pipe(
+      map(response => response.data || [])
+    );
   }
 
   getService(id: number): Observable<Service> {

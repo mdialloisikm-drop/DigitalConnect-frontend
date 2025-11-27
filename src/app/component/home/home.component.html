@@ -112,13 +112,13 @@
           </div>
           <div class="p-6">
             <div class="flex items-center mb-3">
-              <div *ngIf="!service.freelance?.user?.avatar"
+              <div *ngIf="!service.freelance.user?.avatar"
                    class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold mr-3">
-                {{service.freelance?.user?.full_name?.charAt(0) || '?'}}
+                {{service.freelance.user?.full_name?.charAt(0) || '?'}}
               </div>
               <div>
-                <p class="font-semibold text-secondary">{{service.freelance?.user?.full_name}}</p>
-                <p class="text-sm text-gray-500">{{service.freelance?.title}}</p>
+                <p class="font-semibold text-secondary">{{service.freelance.user?.full_name}}</p>
+                <p class="text-sm text-gray-500">{{service.freelance.title}}</p>
               </div>
             </div>
             <h3 class="text-lg font-bold text-secondary mb-2">{{service.title}}</h3>

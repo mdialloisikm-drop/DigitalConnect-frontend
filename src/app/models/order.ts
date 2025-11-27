@@ -1,6 +1,6 @@
-import { Service } from './service';
 import { Client } from './client';
 import {Attachement} from "./attachement";
+import {ServiceOffer} from "./service-offer";
 
 export interface Order {
   id: number;
@@ -13,8 +13,8 @@ export interface Order {
   status: 'pending' | 'in_progress' | 'delivered' | 'completed' | 'cancelled' | 'revision';
   created_at: string;
   updated_at: string;
-  service?: Service;
   client?: Client;
+  serviceOffer?: ServiceOffer;
   deliverables?: Attachement[];
   attachments?: Attachement[];
 }

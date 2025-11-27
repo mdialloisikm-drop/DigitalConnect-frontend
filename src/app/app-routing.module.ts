@@ -43,6 +43,7 @@ import {
   PendingProjectDetailsComponent
 } from "./component/pending-projects-admin/pending-project-details/pending-project-details.component";
 import {PendingProjectsComponent} from "./component/pending-projects-admin/pending-projects/pending-projects.component";
+import {PendingServicesComponent} from "./component/pending-services/pending-services.component";
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -83,7 +84,8 @@ const routes: Routes = [
         component: UsersListComponent
       },
       { path: 'projects/pending', component: PendingProjectsComponent },
-      { path: 'projects/details/:id', component: PendingProjectDetailsComponent }
+      { path: 'projects/details/:id', component: PendingProjectDetailsComponent },
+      { path: 'services/pending', component: PendingServicesComponent },
     ]
   },
 

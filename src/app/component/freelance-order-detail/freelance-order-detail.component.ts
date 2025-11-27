@@ -324,4 +324,63 @@ export class FreelanceOrderDetailComponent implements OnInit{
       currencyDisplay: 'narrowSymbol'
     }).format(amount);
   }
+
+  // ==================== MÉTHODES HELPER POUR LES COMMANDES ====================
+
+  /**
+   * Vérifie si la commande a une image de service
+   */
+  hasServiceImage(order: Order): boolean {
+    return !!(order.serviceOffer?.service?.images && order.serviceOffer.service.images.length > 0);
+  }
+
+  /**
+   * Récupère l'URL de la première image du service
+   */
+  getServiceImageUrl(order: Order): string {
+    if (this.hasServiceImage(order)) {
+      const imagePath = order.serviceOffer!.service!.images![0].image_path;
+      return this.getImageUrl(imagePath);
+    }
+    return 'https://via.placeholder.com/100x100?text=Service';
+  }
+
+  /**
+   * Récupère l'URL d'une image
+   */
+  // getImageUrl(path: string): string {
+  //   if (path.startsWith('http')) {
+  //     return path;
+  //   }
+  //   return `http://localhost:8000/storage/${path}`;
+  // }
+
+  /**
+   * Récupère le titre du service
+   */
+  getServiceTitle(order: Order): string {
+    return order.serviceOffer?.service?.title || 'Service inconnu';
+  }
+
+  /**
+   * Récupère le délai de livraison formaté
+   */
+  formatDeliveryDays(order: Order): string {
+    const days = order.serviceOffer?.delivery_days || 0;
+    return `${days} jour${days > 1 ? 's' : ''}`;
+  }
+
+  /**
+   * Récupère le titre de l'offre
+   */
+  getOfferTitle(order: Order): string {
+    return order.serviceOffer?.title || '';
+  }
+
+  /**
+   * Récupère le nombre de révisions
+   */
+  getRevisions(order: Order): number {
+    return order.serviceOffer?.number_of_revisions || 0;
+  }
 }

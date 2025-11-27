@@ -1,0 +1,402 @@
+<div class="space-y-6">
+  <!-- En-tête -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-secondary">Services en attente</h1>
+      <p class="text-gray-600 mt-1">Modérez les services soumis par les freelances</p>
+    </div>
+    <button
+      (click)="loadPendingServices()"
+      [disabled]="loading"
+      class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50"
+    >
+      <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'"></i>
+      <span>Actualiser</span>
+    </button>
+  </div>
+
+  <!-- État de chargement -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <i class="fas fa-spinner fa-spin text-5xl text-primary"></i>
+  </div>
+
+  <!-- État d'erreur -->
+  <div *ngIf="error && !loading" class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+    <div class="flex items-center">
+      <i class="fas fa-exclamation-circle text-red-500 text-2xl mr-3"></i>
+      <div>
+        <p class="font-semibold text-red-800">Erreur</p>
+        <p class="text-red-600">{{ errorMessage }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste vide -->
+  <div *ngIf="!loading && !error && services.length === 0" class="text-center py-12 bg-white rounded-lg shadow-md">
+    <i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>
+    <p class="text-gray-600 text-lg font-medium">Aucun service en attente de modération</p>
+    <p class="text-gray-500 mt-2">Tous les services ont été traités</p>
+  </div>
+
+  <!-- Grille des services -->
+  <div *ngIf="! loading && !error && services.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      *ngFor="let service of services"
+      class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group border border-gray-100"
+      (click)="openDetailModal(service)"
+    >
+      <!-- Carrousel d'images -->
+      <div class="relative h-48 overflow-hidden bg-gray-100">
+        <!-- Image actuelle -->
+        <img
+          [src]="getServiceImage(service)"
+          [alt]="service.title"
+          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+
+        <!-- Overlay gradient -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+        <!-- Contrôles du carrousel -->
+        <ng-container *ngIf="service.images && service.images.length > 1">
+          <!-- Bouton précédent -->
+          <button
+            (click)="prevImage(service.id, service.images.length, $event)"
+            class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md"
+          >
+            <i class="fas fa-chevron-left text-sm"></i>
+          </button>
+
+          <!-- Bouton suivant -->
+          <button
+            (click)="nextImage(service. id, service.images.length, $event)"
+            class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md"
+          >
+            <i class="fas fa-chevron-right text-sm"></i>
+          </button>
+
+          <!-- Indicateurs de pagination -->
+          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1. 5">
+            <button
+              *ngFor="let img of service.images; let i = index"
+              (click)="goToImage(service.id, i, $event)"
+              class="w-2 h-2 rounded-full transition-all"
+              [ngClass]="getCurrentImageIndex(service.id) === i ? 'bg-white w-4' : 'bg-white/60 hover:bg-white/80'"
+            ></button>
+          </div>
+        </ng-container>
+
+        <!-- Badge nombre d'images -->
+        <div *ngIf="service.images && service.images.length > 1" class="absolute top-3 left-3">
+          <span class="bg-black/70 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+            <i class="fas fa-images"></i>
+            {{ getCurrentImageIndex(service.id) + 1 }}/{{ service.images.length }}
+          </span>
+        </div>
+
+        <!-- Badge statut -->
+        <div class="absolute top-3 right-3">
+          <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">
+            En attente
+          </span>
+        </div>
+      </div>
+
+      <!-- Contenu -->
+      <div class="p-5">
+        <!-- Titre -->
+        <h3 class="text-lg font-bold text-secondary mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          {{ service. title }}
+        </h3>
+
+        <!-- Description -->
+        <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+          {{ truncateDescription(service.description, 100) }}
+        </p>
+
+        <!-- Freelance -->
+        <div class="flex items-center mb-4 pb-4 border-b border-gray-100">
+          <img
+            [src]="getAvatarUrl(service.freelance.user?.avatar, service.freelance.user?.full_name)"
+            [alt]="service.freelance.user?.full_name"
+            class="w-10 h-10 rounded-full object-cover mr-3 ring-2 ring-gray-100"
+          />
+          <div>
+            <p class="font-semibold text-gray-800 text-sm">
+              {{ service.freelance.user?.full_name || 'Freelance' }}
+            </p>
+            <p class="text-xs text-gray-500">Freelance</p>
+          </div>
+        </div>
+
+        <!-- Infos service -->
+        <div class="flex items-center justify-between text-sm mb-4">
+          <div class="flex items-center text-gray-500">
+            <i class="fas fa-tag mr-1. 5"></i>
+            <span>{{ service.category?. name || 'Non catégorisé' }}</span>
+          </div>
+          <div class="flex items-center text-gray-500">
+            <i class="fas fa-layer-group mr-1.5"></i>
+            <span>{{ service.offers?.length || 0 }} offre{{ (service.offers?.length || 0) > 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+
+        <!-- Prix et délai -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="text-lg font-bold text-primary">
+            À partir de ${{ formatPrice(getMinPrice(service)) }}
+          </div>
+          <div class="text-sm text-gray-500">
+            <i class="fas fa-clock mr-1"></i>
+            {{ getMinDeliveryDays(service) }} jour{{ getMinDeliveryDays(service) > 1 ?  's' : '' }}
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="flex gap-2 pt-4 border-t border-gray-100 justify-end">
+          <button
+            (click)="openApproveModal(service, $event)"
+            class="w-10 h-10 bg-primary hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center"
+            title="Approuver"
+          >
+            <i class="fas fa-check"></i>
+          </button>
+          <button
+            (click)="openRejectModal(service, $event)"
+            class="w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors flex items-center justify-center"
+            title="Rejeter"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL DE DÉTAILS ==================== -->
+<div
+  *ngIf="showDetailModal && selectedService"
+  class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm"
+  (click)="closeDetailModal()"
+>
+  <div
+    class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div class="sticky top-0 bg-white z-10 border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+      <h2 class="text-xl font-bold text-secondary">Détails du service</h2>
+      <button
+        (click)="closeDetailModal()"
+        class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+      >
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <div class="p-6">
+      <!-- Galerie d'images -->
+      <div *ngIf="selectedService.images && selectedService.images.length > 0" class="mb-6">
+        <h3 class="font-semibold text-gray-700 mb-3">Images du service</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div *ngFor="let image of selectedService.images" class="aspect-video rounded-lg overflow-hidden">
+            <img
+              [src]="getImageUrl(image. image_path)"
+              [alt]="selectedService.title"
+              class="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Titre et statut -->
+      <div class="mb-6">
+        <div class="flex items-start justify-between gap-4 mb-2">
+          <h3 class="text-2xl font-bold text-secondary">{{ selectedService.title }}</h3>
+          <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap">
+            En attente
+          </span>
+        </div>
+        <div class="flex items-center gap-4 text-sm text-gray-500">
+          <span><i class="fas fa-tag mr-1"></i> {{ selectedService.category?.name || 'Non catégorisé' }}</span>
+          <span><i class="fas fa-calendar mr-1"></i> {{ selectedService.created_at | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+
+      <!-- Freelance -->
+      <div class="bg-gray-50 rounded-xl p-4 mb-6">
+        <h4 class="font-semibold text-gray-700 mb-3">Freelance</h4>
+        <div class="flex items-center">
+          <img
+            [src]="getAvatarUrl(selectedService.freelance.user?. avatar, selectedService.freelance.user?.full_name)"
+            [alt]="selectedService.freelance.user?.full_name"
+            class="w-12 h-12 rounded-full object-cover mr-4 ring-2 ring-white shadow"
+          />
+          <div>
+            <p class="font-semibold text-gray-800">{{ selectedService.freelance.user?. full_name }}</p>
+            <p class="text-sm text-gray-500">{{ selectedService.freelance.user?.email }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-6">
+        <h4 class="font-semibold text-gray-700 mb-2">Description</h4>
+        <p class="text-gray-600 whitespace-pre-line leading-relaxed">{{ selectedService.description }}</p>
+      </div>
+
+      <!-- Offres -->
+      <div *ngIf="selectedService.offers && selectedService.offers.length > 0" class="mb-6">
+        <h4 class="font-semibold text-gray-700 mb-3">
+          Offres disponibles ({{ selectedService.offers.length }})
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div
+            *ngFor="let offer of selectedService.offers"
+            class="bg-white border-2 border-gray-100 rounded-xl p-5 hover:border-primary/30 transition-colors"
+          >
+            <!-- Badge titre -->
+            <div class="mb-3">
+              <span
+                class="px-3 py-1 rounded-full text-sm font-semibold"
+                [ngClass]="getOfferBadgeClass(offer. title)"
+              >
+                {{ offer.title }}
+              </span>
+            </div>
+
+            <!-- Prix -->
+            <div class="text-2xl font-bold text-secondary mb-4">
+              ${{ formatPrice(offer.price) }}
+            </div>
+
+            <!-- Détails -->
+            <div class="space-y-2 text-sm">
+              <div class="flex items-center text-gray-600">
+                <i class="fas fa-clock w-5 text-gray-400"></i>
+                <span>{{ offer.delivery_days }} jour{{ offer.delivery_days > 1 ? 's' : '' }} de livraison</span>
+              </div>
+              <div class="flex items-center text-gray-600">
+                <i class="fas fa-sync w-5 text-gray-400"></i>
+                <span>{{ offer.number_of_revisions }} révision{{ offer.number_of_revisions > 1 ? 's' : '' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="flex gap-3 pt-6 border-t border-gray-100 justify-end">
+        <button
+          (click)="openApproveModal(selectedService)"
+          class="w-12 h-12 bg-primary hover:bg-blue-600 text-white rounded-xl transition-colors flex items-center justify-center"
+          title="Approuver le service"
+        >
+          <i class="fas fa-check text-lg"></i>
+        </button>
+        <button
+          (click)="openRejectModal(selectedService)"
+          class="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors flex items-center justify-center"
+          title="Rejeter le service"
+        >
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL D'APPROBATION ==================== -->
+<div
+  *ngIf="showApproveModal && serviceToApprove"
+  class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm"
+  (click)="closeApproveModal()"
+>
+  <div
+    class="bg-white rounded-2xl max-w-md w-full p-6"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-check text-primary text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">Approuver ce service ? </h3>
+      <p class="text-gray-600">
+        Le service "<span class="font-semibold">{{ serviceToApprove.title }}</span>" sera publié et visible par tous les utilisateurs.
+      </p>
+    </div>
+
+    <div class="flex gap-3">
+      <button
+        (click)="closeApproveModal()"
+        class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+        [disabled]="approveLoading"
+      >
+        Annuler
+      </button>
+      <button
+        (click)="confirmApprove()"
+        class="flex-1 px-4 py-3 bg-primary text-white rounded-xl hover:bg-blue-600 transition-colors font-medium flex items-center justify-center gap-2"
+        [disabled]="approveLoading"
+      >
+        <i *ngIf="approveLoading" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!approveLoading" class="fas fa-check"></i>
+        {{ approveLoading ? 'Approbation...' : 'Confirmer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL DE REJET ==================== -->
+<div
+  *ngIf="showRejectModal && serviceToReject"
+  class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm"
+  (click)="closeRejectModal()"
+>
+  <div
+    class="bg-white rounded-2xl max-w-md w-full p-6"
+    (click)="$event. stopPropagation()"
+  >
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-times text-primary text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">Rejeter ce service ? </h3>
+      <p class="text-gray-600">
+        Le service "<span class="font-semibold">{{ serviceToReject.title }}</span>" sera rejeté et ne sera pas publié.
+      </p>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-gray-700 font-medium mb-2">
+        Raison du rejet <span class="text-gray-400">(optionnel)</span>
+      </label>
+      <textarea
+        [(ngModel)]="rejectReason"
+        rows="3"
+        placeholder="Expliquez pourquoi ce service est rejeté..."
+        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+      ></textarea>
+    </div>
+
+    <div class="flex gap-3">
+      <button
+        (click)="closeRejectModal()"
+        class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+        [disabled]="rejectLoading"
+      >
+        Annuler
+      </button>
+      <button
+        (click)="confirmReject()"
+        class="text-danger bg-neutral-primary border border-danger hover:bg-danger hover:text-white focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"
+        [disabled]="rejectLoading"
+      >
+        <i *ngIf="rejectLoading" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!rejectLoading" class="fas fa-times"></i>
+        {{ rejectLoading ? 'Rejet.. .' : 'Rejeter' }}
+      </button>
+    </div>
+  </div>
+</div>

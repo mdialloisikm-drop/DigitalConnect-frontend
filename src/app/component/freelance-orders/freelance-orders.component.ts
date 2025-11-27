@@ -3,6 +3,7 @@ import {OrderService} from "../../services/order.service";
 import {Order} from "../../models/order";
 import {Router} from "@angular/router";
 import {Subject, takeUntil} from "rxjs";
+import {Service} from "../../models/service";
 
 @Component({
   selector: 'app-freelance-orders',
@@ -279,6 +280,78 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
 
   getImageUrl(path: string): string {
     return `http://localhost:8000/storage/${path}`;
+  }
+
+  /**
+   * Récupère le service via l'offre
+   */
+  getService(order: Order): Service | undefined {
+    return order.serviceOffer?.service;
+  }
+
+  /**
+   * Récupère le délai de livraison de l'offre sélectionnée
+   */
+  getDeliveryDays(order: Order): number {
+    return order.serviceOffer?.delivery_days || 0;
+  }
+
+
+  /**
+   * Récupère le nombre de révisions de l'offre
+   */
+  getRevisions(order: Order): number {
+    return order.serviceOffer?.number_of_revisions || 0;
+  }
+
+  /**
+   * Récupère le titre de l'offre (Starter, Standard, Advanced)
+   */
+  getOfferTitle(order: Order): string {
+    return order.serviceOffer?.title || '';
+  }
+
+  /**
+   * Récupère le titre du service
+   */
+  getServiceTitle(order: Order): string {
+    return order.serviceOffer?.service?.title || 'Service inconnu';
+  }
+
+  /**
+   * Récupère la catégorie du service
+   */
+  getServiceCategory(order: Order): string {
+    return order.serviceOffer?.service?.category?.name || 'Non catégorisé';
+  }
+
+  // ==================== MÉTHODES HELPER POUR LES COMMANDES ====================
+
+  /**
+   * Vérifie si la commande a une image de service
+   */
+  hasServiceImage(order: Order): boolean {
+    return !!(order.serviceOffer?.service?.images && order.serviceOffer.service.images.length > 0);
+  }
+
+  /**
+   * Récupère l'URL de la première image du service
+   */
+  getServiceImageUrl(order: Order): string {
+    if (this.hasServiceImage(order)) {
+      const imagePath = order.serviceOffer!.service!.images![0].image_path;
+      return this.getImageUrl(imagePath);
+    }
+    return 'https://via.placeholder.com/100x100?text=Service';
+  }
+
+
+  /**
+   * Récupère le délai de livraison formaté
+   */
+  formatDeliveryDays(order: Order): string {
+    const days = order.serviceOffer?.delivery_days || 0;
+    return `${days} jour${days > 1 ? 's' : ''}`;
   }
 
 }

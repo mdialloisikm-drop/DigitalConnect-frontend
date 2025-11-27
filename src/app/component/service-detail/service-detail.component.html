@@ -1,8 +1,9 @@
-<div class="min-h-screen bg-accent py-8">
+<div class="min-h-screen bg-gray-50 py-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <!-- Bouton retour -->
-    <a routerLink="/services" class="inline-flex items-center text-primary hover:text-blue-600 mb-6 font-medium transition-colors">
-      <i class="fas fa-arrow-left mr-2"></i>Retour aux services
+    <a routerLink="/services" class="inline-flex items-center text-primary hover:text-blue-600 mb-6 font-medium transition-colors group">
+      <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"></i>
+      Retour aux services
     </a>
 
     <!-- État de chargement -->
@@ -27,193 +28,236 @@
     </div>
 
     <!-- Détails du service -->
-    <div *ngIf="service && !loading" class="bg-white rounded-lg shadow-lg overflow-hidden">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
-        <!-- Colonne gauche - Images -->
-        <div class="lg:col-span-2 bg-gray-100 p-4">
-          <!-- Image principale -->
-          <div class="relative h-96 lg:h-[500px] bg-gray-200 rounded-lg overflow-hidden mb-4">
-            <img *ngIf="service.images && service.images.length > 0"
-                 [src]="getImageUrl(service.images[currentImageIndex].image_path)"
-                 [alt]="service.title"
-                 class="w-full h-full object-cover">
-            <div *ngIf="!service.images || service.images.length === 0"
-                 class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
-              <i class="fas fa-image text-gray-400 text-8xl"></i>
+    <div *ngIf="service && !loading">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Colonne gauche - Images et Description -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Carrousel d'images -->
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <!-- Image principale -->
+            <div class="relative h-[400px] lg:h-[500px] bg-gray-100 overflow-hidden group">
+              <img *ngIf="service.images && service.images.length > 0"
+                   [src]="getImageUrl(service.images[currentImageIndex]. image_path)"
+                   [alt]="service.title"
+                   class="w-full h-full object-cover transition-opacity duration-300">
+              <div *ngIf="! service.images || service.images. length === 0"
+                   class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+                <i class="fas fa-image text-gray-300 text-8xl"></i>
+              </div>
+
+              <!-- Flèches de navigation (seulement si plusieurs images) -->
+              <ng-container *ngIf="service.images && service.images.length > 1">
+                <button (click)="previousImage()"
+                        type="button"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 w-10 h-10 rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <button (click)="nextImage()"
+                        type="button"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 w-10 h-10 rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <!-- Indicateurs de pagination -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                  <button *ngFor="let img of service.images; let i = index"
+                          (click)="selectImage(i)"
+                          class="w-2. 5 h-2.5 rounded-full transition-all"
+                          [ngClass]="currentImageIndex === i ? 'bg-white w-6' : 'bg-white/60 hover:bg-white/80'">
+                  </button>
+                </div>
+
+                <!-- Compteur d'images -->
+                <div class="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+                  {{ currentImageIndex + 1 }} / {{ service.images.length }}
+                </div>
+              </ng-container>
             </div>
 
-            <!-- Flèches de navigation -->
-            <div *ngIf="service.images && service.images.length > 1">
-              <button (click)="previousImage()"
-                      type="button"
-                      class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-secondary p-3 rounded-full shadow-lg transition-all">
-                <i class="fas fa-chevron-left"></i>
-              </button>
-              <button (click)="nextImage()"
-                      type="button"
-                      class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-secondary p-3 rounded-full shadow-lg transition-all">
-                <i class="fas fa-chevron-right"></i>
-              </button>
-            </div>
-
-            <!-- Compteur d'images -->
-            <div *ngIf="service.images && service.images.length > 1"
-                 class="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-              {{currentImageIndex + 1}} / {{service.images.length}}
+            <!-- Galerie de miniatures (seulement si plusieurs images) -->
+            <div *ngIf="service.images && service.images.length > 1" class="p-4 border-t border-gray-100">
+              <div class="flex gap-3 overflow-x-auto pb-2">
+                <button *ngFor="let image of service.images; let i = index"
+                        (click)="selectImage(i)"
+                        class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all"
+                        [ngClass]="i === currentImageIndex ? 'border-primary ring-2 ring-primary/30' : 'border-transparent hover:border-gray-300'">
+                  <img [src]="getImageUrl(image. image_path)"
+                       [alt]="service.title"
+                       class="w-full h-full object-cover">
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Galerie de miniatures -->
-          <div *ngIf="service.images && service.images.length > 1"
-               class="flex gap-3 overflow-x-auto pb-2">
-            <img *ngFor="let image of service.images; let i = index"
-                 [src]="getImageUrl(image.image_path)"
-                 [alt]="service.title"
-                 (click)="selectImage(i)"
-                 [class.ring-2]="i === currentImageIndex"
-                 [class.ring-primary]="i === currentImageIndex"
-                 class="w-24 h-24 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity flex-shrink-0">
+          <!-- Description du service -->
+          <div class="bg-white rounded-xl shadow-sm p-6 lg:p-8">
+            <h2 class="text-xl font-bold text-secondary mb-4 flex items-center">
+              <i class="fas fa-file-alt text-primary mr-3"></i>
+              À propos de ce service
+            </h2>
+            <p class="text-gray-700 leading-relaxed whitespace-pre-line">
+              {{ service.description }}
+            </p>
           </div>
-        </div>
-
-        <!-- Colonne droite - Informations -->
-        <div class="p-6 lg:p-8">
-          <!-- Badge catégorie -->
-          <span class="bg-blue-100 text-primary px-3 py-1 rounded-full text-sm font-semibold inline-block mb-4">
-            {{service.category?.name || 'Service'}}
-          </span>
-
-          <!-- Titre -->
-          <h1 class="text-2xl lg:text-3xl font-bold text-secondary mb-4">
-            {{service.title}}
-          </h1>
 
           <!-- Informations du freelance -->
-          <div class="flex items-center mb-6 pb-6 border-b border-gray-200">
-            <img *ngIf="service.freelance?.user?.avatar"
-                 [src]="getAvatarUrl(service.freelance!.user!.avatar!)"
-                 [alt]="service.freelance?.user?.full_name || 'Freelance'"
-                 class="w-12 h-12 lg:w-14 lg:h-14 rounded-full mr-4 border-2 border-primary">
-            <div *ngIf="!service.freelance?.user?.avatar"
-                 class="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg lg:text-xl mr-4">
-              {{service.freelance?.user?.full_name?.charAt(0) || '?'}}
-            </div>
-            <div class="flex-1">
-              <p class="font-bold text-secondary text-base lg:text-lg">
-                {{service.freelance?.user?.full_name}}
-              </p>
-              <p class="text-gray-600 text-sm">
-                {{service.freelance?.title}}
-              </p>
-              <div *ngIf="service.freelance?.user?.city || service.freelance?.user?.country"
-                   class="text-xs text-gray-500 mt-1">
-                <i class="fas fa-map-marker-alt mr-1"></i>
-                {{service.freelance?.user?.city}}{{service.freelance?.user?.city && service.freelance?.user?.country ? ', ' : ''}}{{service!.freelance?.user?.country}}
+          <div *ngIf="service.freelance" class="bg-white rounded-xl shadow-sm p-6 lg:p-8">
+            <h2 class="text-xl font-bold text-secondary mb-6 flex items-center">
+              <i class="fas fa-user-tie text-primary mr-3"></i>
+              À propos du freelance
+            </h2>
+
+            <!-- Profil freelance -->
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-gray-100">
+              <img *ngIf="service.freelance.user?.avatar"
+                   [src]="getAvatarUrl(service.freelance.user?.avatar || '')"
+                   [alt]="service.freelance.user?.full_name || 'Freelance'"
+                   class="w-16 h-16 rounded-full object-cover border-2 border-gray-100">
+              <div *ngIf="!service.freelance.user?.avatar"
+                   class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl">
+                {{ getFirstLetter(service.freelance.user?.full_name) }}
+              </div>
+              <div class="flex-1">
+                <h3 class="font-bold text-secondary text-lg">
+                  {{ service.freelance.user?.full_name }}
+                </h3>
+                <p class="text-gray-600">{{ service.freelance.title }}</p>
+                <div *ngIf="service.freelance.user?.city || service.freelance.user?.country"
+                     class="text-sm text-gray-500 mt-1">
+                  <i class="fas fa-map-marker-alt mr-1"></i>
+                  {{ service.freelance.user?.city }}{{ service.freelance.user?. city && service.freelance.user?.country ?  ', ' : '' }}{{ service!.freelance.user?.country }}
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Prix et délai de livraison -->
-          <div class="space-y-4 mb-6">
-            <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-              <div>
-                <p class="text-sm text-gray-600 mb-1">Prix</p>
-                <p class="text-2xl lg:text-3xl font-bold text-primary">
-                  ${{service.price | number:'1.0-0'}}
+            <!-- Stats du freelance -->
+            <div class="grid grid-cols-3 gap-4">
+              <div *ngIf="service.freelance.experience_years" class="text-center p-4 bg-gray-50 rounded-lg">
+                <p class="text-2xl font-bold text-primary">{{ service.freelance.experience_years }}+</p>
+                <p class="text-sm text-gray-600">Années d'exp. </p>
+              </div>
+              <div *ngIf="service.freelance.hourly_rate" class="text-center p-4 bg-gray-50 rounded-lg">
+                <p class="text-2xl font-bold text-primary">${{ service.freelance.hourly_rate }}</p>
+                <p class="text-sm text-gray-600">Taux horaire</p>
+              </div>
+              <div class="text-center p-4 bg-gray-50 rounded-lg">
+                <p class="text-2xl font-bold"
+                   [ngClass]="service.freelance.availability === 'available' ? 'text-primary' : 'text-orange-500'">
+                  <i [ngClass]="service.freelance.availability === 'available' ? 'fas fa-check-circle' : 'fas fa-clock'"></i>
+                </p>
+                <p class="text-sm text-gray-600">
+                  {{ service.freelance.availability === 'available' ? 'Disponible' : 'Occupé' }}
                 </p>
               </div>
-              <div class="text-right">
-                <p class="text-sm text-gray-600 mb-1">Livraison</p>
-                <p class="text-lg lg:text-xl font-semibold text-secondary">
-                  <i class="far fa-clock mr-1"></i>
-                  {{service.delivery_time}} jours
-                </p>
+            </div>
+
+            <p *ngIf="service.freelance.description" class="text-gray-700 mt-6 leading-relaxed">
+              {{ service.freelance.description }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Colonne droite - Offres et Actions -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden sticky top-4">
+            <!-- En-tête avec titre et catégorie -->
+            <div class="p-6 border-b border-gray-100">
+              <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold inline-block mb-3">
+                {{ service.category?. name || 'Service' }}
+              </span>
+              <h1 class="text-xl font-bold text-secondary leading-tight">
+                {{ service. title }}
+              </h1>
+
+              <!-- Freelance mini -->
+              <div class="flex items-center mt-4">
+                <img *ngIf="service.freelance.user?.avatar"
+                     [src]="getAvatarUrl(service.freelance.user?.avatar || '')"
+                     [alt]="service.freelance.user?.full_name || 'Freelance'"
+                     class="w-8 h-8 rounded-full object-cover mr-2">
+                <div *ngIf="!service.freelance.user?.avatar"
+                     class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm mr-2">
+                  {{ getFirstLetter(service.freelance.user?.full_name) }}
+                </div>
+                <span class="text-sm text-gray-600">{{ service.freelance.user?.full_name }}</span>
+              </div>
+            </div>
+
+            <!-- Sélection des offres -->
+            <div *ngIf="service.offers && service.offers.length > 0" class="p-6 border-b border-gray-100">
+              <!-- Tabs pour les offres (si plusieurs) -->
+              <div *ngIf="service.offers. length > 1" class="flex border-b border-gray-200 mb-4">
+                <button *ngFor="let offer of service.offers"
+                        (click)="selectOffer(offer)"
+                        type="button"
+                        class="flex-1 py-3 text-sm font-medium text-center transition-colors relative"
+                        [ngClass]="selectedOffer?. id === offer.id ? 'text-primary' : 'text-gray-500 hover:text-gray-700'">
+                  {{ offer.title }}
+                  <div *ngIf="selectedOffer?.id === offer.id"
+                       class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+                </button>
+              </div>
+
+              <!-- Titre de l'offre (si une seule) -->
+              <div *ngIf="service.offers.length === 1" class="mb-4">
+                <span class="text-sm font-medium text-gray-500">Offre {{ service.offers[0].title }}</span>
+              </div>
+
+              <!-- Détails de l'offre sélectionnée -->
+              <div *ngIf="selectedOffer" class="space-y-4">
+                <!-- Prix -->
+                <div class="flex items-baseline justify-between">
+                  <span class="text-3xl font-bold text-secondary">${{ selectedOffer.price | number:'1.0-0' }}</span>
+                </div>
+
+                <!-- Infos livraison et révisions -->
+                <div class="space-y-3">
+                  <div class="flex items-center text-gray-600">
+                    <i class="far fa-clock w-5 text-primary"></i>
+                    <span class="ml-2">Livraison en {{ selectedOffer.delivery_days }} jour{{ selectedOffer.delivery_days > 1 ? 's' : '' }}</span>
+                  </div>
+                  <div class="flex items-center text-gray-600">
+                    <i class="fas fa-sync-alt w-5 text-primary"></i>
+                    <span class="ml-2">{{ selectedOffer.number_of_revisions }} révision{{ selectedOffer.number_of_revisions > 1 ?  's' : '' }} incluse{{ selectedOffer.number_of_revisions > 1 ? 's' : '' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bouton Commander -->
+            <div class="p-6">
+              <button (click)="openOrderModal()"
+                      type="button"
+                      class="w-full bg-primary text-white py-4 rounded-xl hover:bg-blue-600 transition-colors font-bold text-lg shadow-lg flex items-center justify-center gap-2">
+                <i class="fas fa-shopping-cart"></i>
+                Commander
+              </button>
+              <p class="text-center text-xs text-gray-500 mt-3 flex items-center justify-center gap-1">
+                <i class="fas fa-lock"></i>
+                Paiement sécurisé
+              </p>
+            </div>
+
+            <!-- Avantages -->
+            <div class="px-6 pb-6">
+              <div class="space-y-3 pt-4 border-t border-gray-100">
+                <div class="flex items-center text-sm text-gray-600">
+                  <i class="fas fa-check-circle text-primary w-5"></i>
+                  <span class="ml-2">Satisfaction garantie</span>
+                </div>
+                <div class="flex items-center text-sm text-gray-600">
+                  <i class="fas fa-comments text-primary w-5"></i>
+                  <span class="ml-2">Communication directe</span>
+                </div>
+                <div class="flex items-center text-sm text-gray-600">
+                  <i class="fas fa-shield-alt text-primary w-5"></i>
+                  <span class="ml-2">Paiement sécurisé</span>
+                </div>
               </div>
             </div>
           </div>
-
-          <!-- Bouton Commander -->
-          <button (click)="openOrderModal()"
-                  type="button"
-                  class="w-full bg-primary text-white py-3 lg:py-4 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-bold text-base lg:text-lg shadow-lg mb-3">
-            <i class="fas fa-shopping-cart mr-2"></i>
-            Commander maintenant
-          </button>
-          <p class="text-center text-xs lg:text-sm text-gray-500">
-            <i class="fas fa-lock mr-1"></i>
-            Paiement sécurisé
-          </p>
-
-          <!-- Informations supplémentaires -->
-          <div class="mt-6 pt-6 border-t border-gray-200">
-            <div class="space-y-3">
-              <div class="flex items-center text-gray-600 text-sm">
-                <i class="fas fa-redo-alt text-primary w-6 mr-2"></i>
-                <span>
-                  {{ service.number_of_revisions === 0 ? 'Révisions illimitées' : service.number_of_revisions + ' révision' + (service.number_of_revisions > 1 ? 's' : '') + ' incluse' + (service.number_of_revisions > 1 ? 's' : '')}}
-                </span>
-              </div>
-              <div class="flex items-center text-gray-600 text-sm">
-                <i class="fas fa-comments text-primary w-6 mr-2"></i>
-                <span>Communication rapide</span>
-              </div>
-              <div class="flex items-center text-gray-600 text-sm">
-                <i class="fas fa-shield-alt mr-2 text-primary w-6"></i>
-                <span>Paiement sécurisé</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section Description -->
-      <div class="p-6 lg:p-8 border-t border-gray-200">
-        <h2 class="text-xl lg:text-2xl font-bold text-secondary mb-4 lg:mb-6 flex items-center">
-          <i class="fas fa-file-alt text-primary mr-3"></i>
-          À propos de ce service
-        </h2>
-        <p class="text-gray-700 leading-relaxed whitespace-pre-line text-sm lg:text-base">
-          {{ service.description }}
-        </p>
-      </div>
-
-      <!-- Détails du freelance -->
-      <div *ngIf="service.freelance"
-           class="p-6 lg:p-8 bg-gray-50 border-t border-gray-200">
-        <h2 class="text-xl lg:text-2xl font-bold text-secondary mb-4 lg:mb-6 flex items-center">
-          <i class="fas fa-user-tie text-primary mr-3"></i>
-          À propos du freelance
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-          <div *ngIf="service.freelance.experience_years"
-               class="text-center p-4 bg-white rounded-lg">
-            <i class="fas fa-briefcase text-primary text-2xl lg:text-3xl mb-2"></i>
-            <p class="text-xl lg:text-2xl font-bold text-secondary">
-              {{ service.freelance.experience_years }}+
-            </p>
-            <p class="text-gray-600 text-sm">Années d'expérience</p>
-          </div>
-          <div *ngIf="service.freelance.hourly_rate"
-               class="text-center p-4 bg-white rounded-lg">
-            <i class="fas fa-dollar-sign text-primary text-2xl lg:text-3xl mb-2"></i>
-            <p class="text-xl lg:text-2xl font-bold text-secondary">
-              ${{service.freelance.hourly_rate}}
-            </p>
-            <p class="text-gray-600 text-sm">Taux horaire</p>
-          </div>
-          <div class="text-center p-4 bg-white rounded-lg">
-            <i class="fas fa-check-circle text-primary text-2xl lg:text-3xl mb-2"></i>
-            <p class="text-xl lg:text-2xl font-bold text-secondary">
-              {{service.freelance.availability === 'available' ? 'Disponible' :
-              service.freelance.availability === 'busy' ? 'Occupé' : 'Indisponible'}}
-            </p>
-            <p class="text-gray-600 text-sm">Statut actuel</p>
-          </div>
-        </div>
-        <div *ngIf="service.freelance.description" class="mt-6">
-          <p class="text-gray-700 leading-relaxed text-sm lg:text-base">
-            {{service.freelance.description}}
-          </p>
         </div>
       </div>
     </div>
@@ -222,22 +266,22 @@
 
 <!-- Modal de commande -->
 <div *ngIf="showOrderModal"
-     class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+     class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto backdrop-blur-sm"
      (click)="closeOrderModal()">
-  <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full my-8"
+  <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full my-8"
        (click)="$event.stopPropagation()">
 
     <!-- En-tête du modal -->
-    <div class="flex items-center justify-between p-6 border-b border-gray-200">
-      <h3 class="text-xl lg:text-2xl font-bold text-secondary">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 class="text-xl font-bold text-secondary">
         <i class="fas fa-shopping-cart text-primary mr-2"></i>
-        Commander le service
+        Confirmer la commande
       </h3>
       <button (click)="closeOrderModal()"
               type="button"
               [disabled]="orderProcessing"
-              class="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50">
-        <i class="fas fa-times text-2xl"></i>
+              class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50">
+        <i class="fas fa-times text-xl"></i>
       </button>
     </div>
 
@@ -257,20 +301,24 @@
         {{ formErrors.general }}
       </div>
 
-      <!-- Résumé du service -->
-      <div *ngIf="service" class="mb-6 p-4 bg-blue-50 rounded-lg">
+      <!-- Résumé de la commande -->
+      <div *ngIf="service && selectedOffer" class="mb-6 p-4 bg-gray-50 rounded-xl">
         <div class="flex items-start gap-4">
           <img *ngIf="service.images && service.images.length > 0"
                [src]="getImageUrl(service.images[0].image_path)"
                [alt]="service.title"
                class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
           <div class="flex-1 min-w-0">
-            <h4 class="font-bold text-secondary mb-1 truncate">{{service.title}}</h4>
-            <p class="text-sm text-gray-600 mb-2">par {{service.freelance?.user?.full_name}}</p>
+            <h4 class="font-bold text-secondary mb-1 line-clamp-2">{{ service.title }}</h4>
+            <p class="text-sm text-gray-600 mb-2">par {{ service.freelance.user?. full_name }}</p>
             <div class="flex flex-wrap items-center gap-4 text-sm">
-              <span class="font-bold text-primary">${{service.price | number:'1.0-0'}}</span>
-              <span class="text-gray-600">
-                <i class="far fa-clock mr-1"></i>{{service.delivery_time}} jours
+              <span class="bg-primary/10 text-primary px-2 py-0.5 rounded font-medium">
+                {{ selectedOffer.title }}
+              </span>
+              <span class="font-bold text-primary">${{ selectedOffer.price | number:'1.0-0' }}</span>
+              <span class="text-gray-500">
+                <i class="far fa-clock mr-1"></i>
+                {{ selectedOffer.delivery_days }} jour{{ selectedOffer.delivery_days > 1 ? 's' : '' }}
               </span>
             </div>
           </div>
@@ -282,16 +330,16 @@
         <!-- Exigences -->
         <div class="mb-6">
           <label for="requirements" class="block text-sm font-semibold text-secondary mb-2">
-            Exigences du projet (optionnel)
+            Décrivez vos besoins <span class="text-gray-400 font-normal">(optionnel)</span>
           </label>
           <textarea
             id="requirements"
             [(ngModel)]="orderForm.requirements"
             name="requirements"
-            rows="5"
+            rows="4"
             [disabled]="orderProcessing"
             placeholder="Décrivez vos besoins et attentes pour ce service..."
-            class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             [class.border-red-300]="formErrors.requirements"
             maxlength="2000"></textarea>
           <div class="flex justify-between items-center mt-1">
@@ -299,8 +347,8 @@
               <i class="fas fa-exclamation-circle mr-1"></i>
               {{ formErrors.requirements }}
             </p>
-            <p class="text-gray-500 text-xs ml-auto">
-              {{orderForm.requirements.length}} / 2000
+            <p class="text-gray-400 text-xs ml-auto">
+              {{ orderForm.requirements.length }} / 2000
             </p>
           </div>
         </div>
@@ -308,76 +356,68 @@
         <!-- Upload de fichiers -->
         <div class="mb-6">
           <label class="block text-sm font-semibold text-secondary mb-2">
-            Pièces jointes (optionnel)
-            <span class="text-gray-500 font-normal ml-1">- Max {{maxFiles}} fichiers, 10 Mo chacun</span>
+            Pièces jointes <span class="text-gray-400 font-normal">(optionnel - Max {{ maxFiles }} fichiers)</span>
           </label>
 
-          <!-- Bouton d'upload -->
-          <div class="mb-3">
-            <label [class.opacity-50]="orderProcessing || orderForm.attachments.length >= maxFiles"
-                   [class.cursor-not-allowed]="orderProcessing || orderForm.attachments.length >= maxFiles"
-                   class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer border border-gray-300">
-              <i class="fas fa-paperclip mr-2"></i>
-              <span class="text-sm font-medium">Joindre des fichiers</span>
-              <input type="file"
-                     (change)="onFilesSelected($event)"
-                     [disabled]="orderProcessing || orderForm.attachments.length >= maxFiles"
-                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar"
-                     multiple
-                     class="hidden">
-            </label>
-          </div>
+          <!-- Zone d'upload -->
+          <label [class.opacity-50]="orderProcessing || orderForm.attachments.length >= maxFiles"
+                 [class.cursor-not-allowed]="orderProcessing || orderForm. attachments.length >= maxFiles"
+                 class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary hover:bg-gray-50 transition-all cursor-pointer">
+            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+            <span class="text-sm text-gray-500">Cliquez pour ajouter des fichiers</span>
+            <span class="text-xs text-gray-400 mt-1">PDF, DOC, JPG, PNG, ZIP (max 10 Mo)</span>
+            <input type="file"
+                   (change)="onFilesSelected($event)"
+                   [disabled]="orderProcessing || orderForm.attachments.length >= maxFiles"
+                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,. rar"
+                   multiple
+                   class="hidden">
+          </label>
 
           <!-- Message d'erreur -->
-          <p *ngIf="formErrors.attachments" class="text-red-600 text-sm mb-3">
+          <p *ngIf="formErrors.attachments" class="text-red-600 text-sm mt-2">
             <i class="fas fa-exclamation-circle mr-1"></i>
             {{ formErrors.attachments }}
           </p>
 
           <!-- Liste des fichiers -->
-          <div *ngIf="orderForm.attachments.length > 0" class="space-y-2">
+          <div *ngIf="orderForm. attachments.length > 0" class="space-y-2 mt-3">
             <div *ngFor="let file of orderForm.attachments; let i = index"
-                 class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                 class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div class="flex items-center gap-3 flex-1 min-w-0">
-                <i [class]="'fas ' + getFileIcon(file) + ' text-primary text-xl'"></i>
+                <i [class]="'fas ' + getFileIcon(file) + ' text-primary'"></i>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-secondary truncate">{{file.name}}</p>
-                  <p class="text-xs text-gray-500">{{formatFileSize(file.size)}}</p>
+                  <p class="text-sm font-medium text-secondary truncate">{{ file.name }}</p>
+                  <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
                 </div>
               </div>
               <button (click)="removeFile(i)"
                       type="button"
                       [disabled]="orderProcessing"
-                      class="ml-2 text-red-600 hover:text-red-700 transition-colors disabled:opacity-50">
+                      class="ml-2 text-red-500 hover:text-red-600 p-1 hover:bg-red-50 rounded transition-colors disabled:opacity-50">
                 <i class="fas fa-times"></i>
               </button>
             </div>
           </div>
-
-          <!-- Information sur les types acceptés -->
-          <p class="text-xs text-gray-500 mt-2">
-            <i class="fas fa-info-circle mr-1"></i>
-            Formats acceptés: PDF, DOC, DOCX, JPG, PNG, ZIP, RAR
-          </p>
         </div>
       </form>
     </div>
 
     <!-- Pied du modal -->
-    <div class="flex flex-col sm:flex-row gap-3 p-6 border-t border-gray-200 bg-gray-50">
+    <div class="flex flex-col sm:flex-row gap-3 p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
       <button (click)="closeOrderModal()"
               type="button"
               [disabled]="orderProcessing"
-              class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+              class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">
         Annuler
       </button>
       <button (click)="submitOrder()"
               type="button"
               [disabled]="orderProcessing"
-              class="flex-1 px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-        <i *ngIf="!orderProcessing" class="fas fa-check mr-2"></i>
-        <i *ngIf="orderProcessing" class="fas fa-spinner fa-spin mr-2"></i>
-        {{ orderProcessing ? 'Traitement...' : 'Confirmer la commande' }}
+              class="flex-1 px-6 py-3 bg-primary text-white rounded-xl hover:bg-blue-600 transition-colors font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        <i *ngIf="! orderProcessing" class="fas fa-check"></i>
+        <i *ngIf="orderProcessing" class="fas fa-spinner fa-spin"></i>
+        {{ orderProcessing ? 'Traitement.. .' : 'Confirmer' }}
       </button>
     </div>
   </div>

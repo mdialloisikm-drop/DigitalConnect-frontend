@@ -1,9 +1,11 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Service} from "../../models/service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {ApiService} from "../../services/api.service";
 import {AuthService} from "../../services/auth.service";
 import {OrderService} from "../../services/order.service";
+import {ServiceOffer} from "../../models/service-offer";
+import {interval, Subscription} from "rxjs";
 
 interface OrderFormData {
   requirements: string;
@@ -21,11 +23,18 @@ interface FormErrors {
   templateUrl: './service-detail.component.html',
   styleUrl: './service-detail.component.css'
 })
-export class ServiceDetailComponent implements OnInit{
+export class ServiceDetailComponent implements OnInit, OnDestroy {
   service?: Service;
   loading = true;
   error = false;
   currentImageIndex = 0;
+
+  // Offre sélectionnée
+  selectedOffer?: ServiceOffer;
+
+  // Carrousel automatique
+  private carouselSubscription?: Subscription;
+  private readonly carouselInterval = 5000;
 
   // État du modal de commande
   showOrderModal = false;
@@ -44,17 +53,23 @@ export class ServiceDetailComponent implements OnInit{
     general: ''
   };
 
-  // Messages de succès/erreur
+  // Messages
   successMessage = '';
   errorMessage = '';
 
   // Informations sur les fichiers
   readonly maxFiles = 5;
-  readonly maxFileSize = 10 * 1024 * 1024; // 10 MB
-  readonly allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'image/jpeg', 'image/jpg', 'image/png', 'application/zip', 'application/x-rar-compressed'];
-
-
+  readonly maxFileSize = 10 * 1024 * 1024;
+  readonly allowedTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'application/zip',
+    'application/x-rar-compressed'
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -69,12 +84,26 @@ export class ServiceDetailComponent implements OnInit{
     this.loadService(id);
   }
 
+  ngOnDestroy() {
+    this.stopCarousel();
+  }
+
   loadService(id: number) {
     this.loading = true;
     this.apiService.getService(id).subscribe({
       next: (service) => {
         this.service = service;
         this.loading = false;
+
+        // Sélectionner la première offre par défaut
+        if (service. offers && service.offers.length > 0) {
+          this. selectedOffer = service.offers[0];
+        }
+
+        // Démarrer le carrousel si plusieurs images
+        if (service.images && service.images.length > 1) {
+          this.startCarousel();
+        }
       },
       error: (error) => {
         console.error('Error loading service:', error);
@@ -84,36 +113,85 @@ export class ServiceDetailComponent implements OnInit{
     });
   }
 
-  /**
-   * Ouvre le modal de commande
-   */
+  // ==================== CARROUSEL ====================
+
+  private startCarousel(): void {
+    this.stopCarousel();
+    this.carouselSubscription = interval(this.carouselInterval). subscribe(() => {
+      this. nextImage();
+    });
+  }
+
+  private stopCarousel(): void {
+    if (this.carouselSubscription) {
+      this.carouselSubscription. unsubscribe();
+      this.carouselSubscription = undefined;
+    }
+  }
+
+  private resetCarouselTimer(): void {
+    if (this.service?.images && this.service.images.length > 1) {
+      this.startCarousel();
+    }
+  }
+
+  previousImage(): void {
+    if (this. service?.images && this.service.images.length > 0) {
+      this.currentImageIndex = (this.currentImageIndex - 1 + this.service.images.length) % this. service.images.length;
+      this.resetCarouselTimer();
+    }
+  }
+
+  nextImage(): void {
+    if (this.service?.images && this.service.images.length > 0) {
+      this.currentImageIndex = (this.currentImageIndex + 1) % this. service.images.length;
+    }
+  }
+
+  selectImage(index: number): void {
+    this.currentImageIndex = index;
+    this.resetCarouselTimer();
+  }
+
+  // ==================== OFFRES ====================
+
+  selectOffer(offer: ServiceOffer): void {
+    this.selectedOffer = offer;
+  }
+
+  // ==================== COMMANDE ====================
+
   openOrderModal(): void {
-    if (!this.authService.isAuthenticated) {
+    if (! this.authService.isAuthenticated) {
       this.router.navigate(['/login']);
       return;
     }
 
-    if (this.authService.currentUserValue?.user_type !== 'client') {
+    if (this.authService.currentUserValue?. user_type !== 'client') {
       this.errorMessage = 'Seuls les clients peuvent commander des services';
       setTimeout(() => this.errorMessage = '', 5000);
       return;
     }
 
+    if (! this.selectedOffer) {
+      this. errorMessage = 'Veuillez sélectionner une offre';
+      setTimeout(() => this. errorMessage = '', 5000);
+      return;
+    }
+
     this.showOrderModal = true;
     this.resetOrderForm();
+    this.stopCarousel();
   }
 
-  /**
-   * Ferme le modal de commande
-   */
   closeOrderModal(): void {
-    this.showOrderModal = false;
+    this. showOrderModal = false;
     this.resetOrderForm();
+    if (this.service?. images && this.service.images. length > 1) {
+      this.startCarousel();
+    }
   }
 
-  /**
-   * Réinitialise le formulaire de commande
-   */
   private resetOrderForm(): void {
     this.orderForm = {
       requirements: '',
@@ -125,79 +203,58 @@ export class ServiceDetailComponent implements OnInit{
       general: ''
     };
     this.successMessage = '';
-    this.errorMessage = '';
   }
 
-  /**
-   * Gère la sélection des fichiers
-   */
   onFilesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files) return;
+    if (! input.files) return;
 
     const files = Array.from(input.files);
     this.formErrors.attachments = '';
 
-    // Validation du nombre de fichiers
     if (this.orderForm.attachments.length + files.length > this.maxFiles) {
       this.formErrors.attachments = `Vous ne pouvez joindre que ${this.maxFiles} fichiers maximum`;
       return;
     }
 
-    // Validation de chaque fichier
     for (const file of files) {
-      // Vérifier le type
       if (!this.allowedTypes.includes(file.type)) {
         this.formErrors.attachments = `Le fichier ${file.name} n'est pas un format autorisé`;
         return;
       }
 
-      // Vérifier la taille
-      if (file.size > this.maxFileSize) {
-        this.formErrors.attachments = `Le fichier ${file.name} dépasse la taille maximale de 10 Mo`;
+      if (file. size > this.maxFileSize) {
+        this.formErrors. attachments = `Le fichier ${file.name} dépasse la taille maximale de 10 Mo`;
         return;
       }
 
       this.orderForm.attachments.push(file);
     }
 
-    // Réinitialiser l'input
     input.value = '';
   }
 
-  /**
-   * Supprime un fichier de la liste
-   */
   removeFile(index: number): void {
     this.orderForm.attachments.splice(index, 1);
     this.formErrors.attachments = '';
   }
 
-  /**
-   * Formate la taille d'un fichier
-   */
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math. pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
-  /**
-   * Obtient l'icône pour un type de fichier
-   */
   getFileIcon(file: File): string {
-    if (file.type.startsWith('image/')) return 'fa-file-image';
+    if (file.type. startsWith('image/')) return 'fa-file-image';
     if (file.type.includes('pdf')) return 'fa-file-pdf';
     if (file.type.includes('word') || file.type.includes('document')) return 'fa-file-word';
-    if (file.type.includes('zip') || file.type.includes('rar')) return 'fa-file-archive';
+    if (file. type.includes('zip') || file.type.includes('rar')) return 'fa-file-archive';
     return 'fa-file';
   }
 
-  /**
-   * Valide le formulaire
-   */
   private validateForm(): boolean {
     this.formErrors = {
       requirements: '',
@@ -207,7 +264,6 @@ export class ServiceDetailComponent implements OnInit{
 
     let isValid = true;
 
-    // Validation des requirements (optionnel mais max 2000 caractères)
     if (this.orderForm.requirements && this.orderForm.requirements.length > 2000) {
       this.formErrors.requirements = 'Les exigences ne doivent pas dépasser 2000 caractères';
       isValid = false;
@@ -216,25 +272,21 @@ export class ServiceDetailComponent implements OnInit{
     return isValid;
   }
 
-  /**
-   * Soumet la commande
-   */
   submitOrder(): void {
-    if (!this.validateForm() || !this.service) return;
+    if (! this.validateForm() || ! this.service || !this.selectedOffer) return;
 
     this.orderProcessing = true;
     this.formErrors.general = '';
 
     this.orderService.createOrder(
-      this.service.id,
-      this.orderForm.requirements,
+      this.selectedOffer.id! ,
+      this.orderForm. requirements,
       this.orderForm.attachments
     ).subscribe({
       next: (response: { message: string }) => {
         this.orderProcessing = false;
-        this.successMessage = response.message || 'Commande créée avec succès !';
+        this.successMessage = response.message || 'Commande créée avec succès! ';
 
-        // Fermer le modal après 2 secondes et rediriger
         setTimeout(() => {
           this.closeOrderModal();
           this.router.navigate(['/client/orders']);
@@ -248,35 +300,35 @@ export class ServiceDetailComponent implements OnInit{
     });
   }
 
+  // ==================== UTILITAIRES ====================
+
   getImageUrl(path: string): string {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
     return `http://localhost:8000/storage/${path}`;
   }
 
   getAvatarUrl(avatar: string): string {
-    if (!avatar) {
-      console.log('No avatar provided');
-      return '';
-    }
-
-    // Construire l'URL complète
-    const fullUrl = `http://localhost:8000/storage/avatars/${avatar}`;
-    console.log('Avatar URL constructed:', fullUrl);
-    return fullUrl;
+    if (!avatar) return '';
+    if (avatar.startsWith('http')) return avatar;
+    return `http://localhost:8000/storage/avatars/${avatar}`;
   }
 
-  previousImage() {
-    if (this.service?.images && this.service.images.length > 0) {
-      this.currentImageIndex = (this.currentImageIndex - 1 + this.service.images.length) % this.service.images.length;
-    }
+  getFirstLetter(name?: string): string {
+    return name?. charAt(0) || '?';
   }
 
-  nextImage() {
-    if (this.service?.images && this.service.images.length > 0) {
-      this.currentImageIndex = (this.currentImageIndex + 1) % this.service.images.length;
+  getMinPrice(service: Service): number {
+    if (service.offers && service.offers. length > 0) {
+      return Math.min(...service.offers.map(o => o.price));
     }
+    return 0;
   }
 
-  selectImage(index: number) {
-    this.currentImageIndex = index;
+  getMinDeliveryDays(service: Service): number {
+    if (service.offers && service.offers.length > 0) {
+      return Math.min(...service.offers. map(o => o.delivery_days));
+    }
+    return 0;
   }
 }

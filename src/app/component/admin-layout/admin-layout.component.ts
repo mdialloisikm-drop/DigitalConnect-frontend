@@ -19,7 +19,7 @@ export class AdminLayoutComponent {
       active: true
     },
     {
-      icon: 'fa-folder',
+      icon: 'fa-solid fa-layer-group',
       label: 'Catégories',
       route: '/admin/categories',
       active: false
@@ -37,9 +37,15 @@ export class AdminLayoutComponent {
       active: false
     },
     {
-      icon: 'fa-project-diagram',
+      icon: 'fa-solid fa-briefcase',
       label: 'Projets en attente',
       route: '/admin/projects/pending',
+      active: false
+    },
+    {
+      icon: 'fa-solid fa-boxes-packing',
+      label: 'Services en attente',
+      route: '/admin/services/pending',
       active: false
     }
   ];

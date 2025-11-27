@@ -1,6 +1,7 @@
 import {ServiceImage} from "./service_image";
 import {Category} from "./category";
 import {Freelance} from "./freelance";
+import {ServiceOffer} from "./service-offer";
 
 export interface Service {
   id: number;
@@ -9,11 +10,10 @@ export interface Service {
   description: string;
   categorie_id: number;
   price: number;
-  delivery_time: number;
-  number_of_revisions: number;
-  status: 'published' | 'archived';
+  status: 'published' | 'archived' | 'rejected';
   created_at: string;
-  freelance?: Freelance;
+  freelance: Freelance;
   category?: Category;
   images?: ServiceImage[];
+  offers?: ServiceOffer[];
 }
