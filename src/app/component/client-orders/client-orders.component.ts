@@ -1,16 +1,16 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {OrderService} from "../../services/order.service";
 import {Order} from "../../models/order";
-import {Router} from "@angular/router";
 import {Subject, takeUntil} from "rxjs";
+import {OrderService} from "../../services/order.service";
+import {Router} from "@angular/router";
 import {Service} from "../../models/service";
 
 @Component({
-  selector: 'app-freelance-orders',
-  templateUrl: './freelance-orders.component.html',
-  styleUrl: './freelance-orders.component.css'
+  selector: 'app-client-orders',
+  templateUrl: './client-orders.component.html',
+  styleUrl: './client-orders.component.css'
 })
-export class FreelanceOrdersComponent implements OnInit, OnDestroy {
+export class ClientOrdersComponent implements OnInit, OnDestroy {
   // Liste des commandes
   orders: Order[] = [];
   filteredOrders: Order[] = [];
@@ -20,10 +20,9 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
   error: string = '';
   selectedFilter: string = 'all';
 
-  // Modal de confirmation
-  showAcceptModal: boolean = false;
-  showRefuseModal: boolean = false;
-  orderToProcess: Order | null = null;
+  // Modal de confirmation d'annulation
+  showCancelModal: boolean = false;
+  orderToCancel: Order | null = null;
   actionLoading: boolean = false;
 
   // Statistiques
@@ -48,12 +47,12 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroy$. next();
+    this.destroy$. complete();
   }
 
   /**
-   * Charge toutes les commandes du freelance
+   * Charge toutes les commandes du client
    */
   loadOrders(forceRefresh: boolean = false): void {
     this.loading = true;
@@ -65,7 +64,7 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
         next: (orders: Order[]) => {
           this.orders = orders;
           this.applyFilters();
-          this.calculateStats();
+          this. calculateStats();
           this.loading = false;
         },
         error: (error: Error) => {
@@ -79,7 +78,7 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
    * Applique les filtres
    */
   applyFilters(): void {
-    let filtered = [...this.orders];
+    let filtered = [... this.orders];
 
     // Filtre par statut
     filtered = this.orderService.filterByStatus(filtered, this.selectedFilter);
@@ -104,42 +103,42 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Ouvre le modal de confirmation d'acceptation
+   * Ouvre le modal de confirmation d'annulation
    */
-  openAcceptModal(event: Event, order: Order): void {
+  openCancelModal(event: Event, order: Order): void {
     event.stopPropagation();
-    if (!this.orderService.canAcceptOrder(order)) {
-      this.error = 'Cette commande ne peut pas être acceptée';
+    if (! this.canCancelOrder(order)) {
+      this.error = 'Cette commande ne peut pas être annulée';
       return;
     }
-    this.orderToProcess = order;
-    this.showAcceptModal = true;
+    this.orderToCancel = order;
+    this.showCancelModal = true;
   }
 
   /**
-   * Ferme le modal d'acceptation
+   * Ferme le modal d'annulation
    */
-  closeAcceptModal(): void {
-    this.showAcceptModal = false;
-    this.orderToProcess = null;
+  closeCancelModal(): void {
+    this.showCancelModal = false;
+    this.orderToCancel = null;
     this.actionLoading = false;
   }
 
   /**
-   * Confirme l'acceptation d'une commande
+   * Confirme l'annulation d'une commande
    */
-  confirmAccept(): void {
-    if (!this.orderToProcess) return;
+  confirmCancel(): void {
+    if (! this.orderToCancel) return;
 
     this.actionLoading = true;
     this.error = '';
 
-    this.orderService.acceptOrder(this.orderToProcess.id)
-      .pipe(takeUntil(this.destroy$))
+    this.orderService.cancelOrder(this.orderToCancel.id)
+      . pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.loadOrders(true);
-          this.closeAcceptModal();
+          this.closeCancelModal();
         },
         error: (error: Error) => {
           this.error = error.message;
@@ -149,55 +148,17 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Ouvre le modal de confirmation de refus
+   * Vérifie si une commande peut être annulée
    */
-  openRefuseModal(event: Event, order: Order): void {
-    event.stopPropagation();
-    if (!this.orderService.canCancelOrder(order)) {
-      this.error = 'Cette commande ne peut pas être refusée';
-      return;
-    }
-    this.orderToProcess = order;
-    this.showRefuseModal = true;
-  }
-
-  /**
-   * Ferme le modal de refus
-   */
-  closeRefuseModal(): void {
-    this.showRefuseModal = false;
-    this.orderToProcess = null;
-    this.actionLoading = false;
-  }
-
-  /**
-   * Confirme le refus d'une commande
-   */
-  confirmRefuse(): void {
-    if (!this.orderToProcess) return;
-
-    this.actionLoading = true;
-    this.error = '';
-
-    this.orderService.cancelOrder(this.orderToProcess.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.loadOrders(true);
-          this.closeRefuseModal();
-        },
-        error: (error: Error) => {
-          this.error = error.message;
-          this.actionLoading = false;
-        }
-      });
+  canCancelOrder(order: Order): boolean {
+    return order.status === 'pending';
   }
 
   /**
    * Voir les détails d'une commande
    */
   viewOrderDetails(order: Order): void {
-    this.router.navigate(['/freelance/order', order.id]);
+    this.router.navigate(['/client/orders', order.id]);
   }
 
   /**
@@ -225,7 +186,7 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
    * Obtient l'icône du statut
    */
   getStatusIcon(status: string): string {
-    return this.orderService.getStatusIcon(status);
+    return this.orderService. getStatusIcon(status);
   }
 
   /**
@@ -233,6 +194,13 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
    */
   isPending(order: Order): boolean {
     return order.status === 'pending';
+  }
+
+  /**
+   * Vérifie si une commande est livrée (en attente de validation)
+   */
+  isDelivered(order: Order): boolean {
+    return order.status === 'delivered';
   }
 
   /**
@@ -253,7 +221,7 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
   formatDate(dateString: string | undefined): string {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fr-FR', {
+    return new Intl. DateTimeFormat('fr-FR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -261,21 +229,29 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Retourne les initiales du client
+   * Retourne les initiales du freelance
    */
-  getClientInitials(order: Order): string {
-    if (!order.client?.user) return '??';
-    const user = order.client.user;
-    const firstInitial = user.full_name?.charAt(0).toUpperCase() || '';
+  getFreelanceInitials(order: Order): string {
+    const freelance = order.service_offer?. service?.freelance;
+    if (!freelance?. user) return '?? ';
+    const firstInitial = freelance.user.full_name?. charAt(0).toUpperCase() || '';
     return firstInitial || '??';
   }
 
   /**
-   * Obtient le nom complet du client
+   * Obtient le nom complet du freelance
    */
-  getClientName(order: Order): string {
-    if (!order.client?.user) return 'Client inconnu';
-    return order.client.user.full_name?.trim() || 'Client';
+  getFreelanceName(order: Order): string {
+    const freelance = order.service_offer?.service?.freelance;
+    if (!freelance?.user) return 'Freelance inconnu';
+    return freelance.user.full_name?. trim() || 'Freelance';
+  }
+
+  /**
+   * Obtient l'email du freelance
+   */
+  getFreelanceEmail(order: Order): string {
+    return order.service_offer?.service?. freelance?.user?.email || 'N/A';
   }
 
   getImageUrl(path: string): string {
@@ -296,12 +272,11 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
     return order.service_offer?.delivery_days || 0;
   }
 
-
   /**
    * Récupère le nombre de révisions de l'offre
    */
   getRevisions(order: Order): number {
-    return order.service_offer?.number_of_revisions || 0;
+    return order.service_offer?. number_of_revisions || 0;
   }
 
   /**
@@ -322,16 +297,14 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
    * Récupère la catégorie du service
    */
   getServiceCategory(order: Order): string {
-    return order.service_offer?.service?.category?.name || 'Non catégorisé';
+    return order. service_offer?.service?.category?. name || 'Non catégorisé';
   }
-
-  // ==================== MÉTHODES HELPER POUR LES COMMANDES ====================
 
   /**
    * Vérifie si la commande a une image de service
    */
   hasServiceImage(order: Order): boolean {
-    return !!(order.service_offer?.service?.images && order.service_offer.service.images.length > 0);
+    return ! !(order.service_offer?.service?.images && order.service_offer. service.images.length > 0);
   }
 
   /**
@@ -342,9 +315,8 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
       const imagePath = order.service_offer!.service!.images![0].image_path;
       return this.getImageUrl(imagePath);
     }
-    return 'https://via.placeholder.com/100x100?text=Service';
+    return 'https://via.placeholder.com/100x100? text=Service';
   }
-
 
   /**
    * Récupère le délai de livraison formaté
@@ -353,5 +325,4 @@ export class FreelanceOrdersComponent implements OnInit, OnDestroy {
     const days = order.service_offer?.delivery_days || 0;
     return `${days} jour${days > 1 ? 's' : ''}`;
   }
-
 }

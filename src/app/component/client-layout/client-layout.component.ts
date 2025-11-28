@@ -33,6 +33,11 @@ export class ClientLayoutComponent implements OnInit  {
       label: 'Candidatures',
       route: '/client/proposals',
       icon: 'fa-file-alt'
+    },
+    {
+      label: 'Mes Commandes',
+      route: '/client/orders',
+      icon: 'fa-shopping-bag'
     }
   ];
 

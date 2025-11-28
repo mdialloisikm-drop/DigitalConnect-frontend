@@ -4,7 +4,7 @@ import {ServiceOffer} from "./service-offer";
 
 export interface Order {
   id: number;
-  service_id: number;
+  service_offer_id: number;
   client_id: number;
   amount: number;
   due_date?: string;
@@ -14,7 +14,7 @@ export interface Order {
   created_at: string;
   updated_at: string;
   client?: Client;
-  serviceOffer?: ServiceOffer;
+  service_offer?: ServiceOffer;
   deliverables?: Attachement[];
   attachments?: Attachement[];
 }
@@ -46,7 +46,7 @@ export interface Attachment {
 }
 
 export interface OrderCreateRequest {
-  service_id: number;
+  service_offer_id: number;
   requirements?: string;
   attachments?: File[];
 }

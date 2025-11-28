@@ -46,6 +46,8 @@ import { EmailConfirmedComponent } from './component/email-confirmed/email-confi
 import { PendingProjectsComponent } from './component/pending-projects-admin/pending-projects/pending-projects.component';
 import { PendingProjectDetailsComponent } from './component/pending-projects-admin/pending-project-details/pending-project-details.component';
 import { PendingServicesComponent } from './component/pending-services/pending-services.component';
+import { ClientOrdersComponent } from './component/client-orders/client-orders.component';
+import { ClientOrderDetailComponent } from './component/client-order-detail/client-order-detail.component';
 
 @NgModule({
   declarations: [
@@ -90,6 +92,8 @@ import { PendingServicesComponent } from './component/pending-services/pending-s
     PendingProjectsComponent,
     PendingProjectDetailsComponent,
     PendingServicesComponent,
+    ClientOrdersComponent,
+    ClientOrderDetailComponent,
   ],
     imports: [
         BrowserModule,

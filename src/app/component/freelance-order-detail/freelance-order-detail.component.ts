@@ -331,7 +331,7 @@ export class FreelanceOrderDetailComponent implements OnInit{
    * Vérifie si la commande a une image de service
    */
   hasServiceImage(order: Order): boolean {
-    return !!(order.serviceOffer?.service?.images && order.serviceOffer.service.images.length > 0);
+    return !!(order.service_offer?.service?.images && order.service_offer.service.images.length > 0);
   }
 
   /**
@@ -339,7 +339,7 @@ export class FreelanceOrderDetailComponent implements OnInit{
    */
   getServiceImageUrl(order: Order): string {
     if (this.hasServiceImage(order)) {
-      const imagePath = order.serviceOffer!.service!.images![0].image_path;
+      const imagePath = order.service_offer!.service!.images![0].image_path;
       return this.getImageUrl(imagePath);
     }
     return 'https://via.placeholder.com/100x100?text=Service';
@@ -359,28 +359,36 @@ export class FreelanceOrderDetailComponent implements OnInit{
    * Récupère le titre du service
    */
   getServiceTitle(order: Order): string {
-    return order.serviceOffer?.service?.title || 'Service inconnu';
+    return order.service_offer?.service?.title || 'Service inconnu';
   }
 
   /**
    * Récupère le délai de livraison formaté
    */
   formatDeliveryDays(order: Order): string {
-    const days = order.serviceOffer?.delivery_days || 0;
+    const days = order.service_offer?.delivery_days ??  0;
     return `${days} jour${days > 1 ? 's' : ''}`;
+  }
+
+  /**
+   * Récupère le nombre de révisions formaté
+   */
+  formatRevisions(order: Order): string {
+    const revisions = order.service_offer?.number_of_revisions ??  0;
+    return `${revisions} révision${revisions > 1 ? 's' : ''}`;
   }
 
   /**
    * Récupère le titre de l'offre
    */
   getOfferTitle(order: Order): string {
-    return order.serviceOffer?.title || '';
+    return order.service_offer?.title || '';
   }
 
   /**
    * Récupère le nombre de révisions
    */
   getRevisions(order: Order): number {
-    return order.serviceOffer?.number_of_revisions || 0;
+    return order.service_offer?.number_of_revisions || 0;
   }
 }

@@ -23,12 +23,12 @@ export class OrderService {
   /**
    * Crée une nouvelle commande pour un service
    */
-  createOrder(serviceId: number, requirements: string, attachments: File[]): Observable<{ message: string; order: Order }> {
+  createOrder(serviceOfferId: number, requirements: string, attachments: File[]): Observable<{ message: string; order: Order }> {
     const formData = new FormData();
-    formData.append('service_id', serviceId.toString());
+    formData.append('service_offer_id', serviceOfferId.toString());
 
     if (requirements && requirements.trim()) {
-      formData.append('requirements', requirements.trim());
+      formData.append('requirements', requirements. trim());
     }
 
     // Ajouter les fichiers joints (max 5)
@@ -40,7 +40,7 @@ export class OrderService {
 
     this.loadingSubject$.next(true);
 
-    return this.http.post<{ message: string; order: Order }>(this.apiUrl, formData).pipe(
+    return this. http.post<{ message: string; order: Order }>(this.apiUrl, formData). pipe(
       tap(() => {
         this.invalidateCache();
         this.loadingSubject$.next(false);
@@ -89,7 +89,7 @@ export class OrderService {
    * Annule une commande
    */
   cancelOrder(id: number): Observable<{ message: string; order: Order }> {
-    return this.http.put<{ message: string; order: Order }>(
+    return this.http.post<{ message: string; order: Order }>(
       `${this.apiUrl}/${id}/cancel`,
       {}
     ).pipe(
@@ -292,6 +292,36 @@ export class OrderService {
   deleteDeliverable(attachmentId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(
       `${environment.apiUrl}/attachments/${attachmentId}`
+    );
+  }
+
+  /**
+   * Accepter la livraison (client)
+   */
+  acceptDelivery(id: number): Observable<{ message: string; order: Order }> {
+    return this.http.put<{ message: string; order: Order }>(
+      `${this.apiUrl}/${id}/accept`,
+      {}
+    ). pipe(
+      tap(() => {
+        this.invalidateCache();
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Demander une révision (client)
+   */
+  requestRevision(id: number, revisionNotes: string): Observable<{ message: string; order: Order }> {
+    return this. http.put<{ message: string; order: Order }>(
+      `${this.apiUrl}/${id}/revision`,
+      { revision_notes: revisionNotes }
+    ).pipe(
+      tap(() => {
+        this.invalidateCache();
+      }),
+      catchError(this.handleError)
     );
   }
 }

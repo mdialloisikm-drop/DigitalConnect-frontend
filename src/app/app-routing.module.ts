@@ -44,6 +44,8 @@ import {
 } from "./component/pending-projects-admin/pending-project-details/pending-project-details.component";
 import {PendingProjectsComponent} from "./component/pending-projects-admin/pending-projects/pending-projects.component";
 import {PendingServicesComponent} from "./component/pending-services/pending-services.component";
+import {ClientOrdersComponent} from "./component/client-orders/client-orders.component";
+import {ClientOrderDetailComponent} from "./component/client-order-detail/client-order-detail.component";
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -129,6 +131,14 @@ const routes: Routes = [
         path: 'projects/:id/manage',
         component: ClientManageProjectComponent,
         canActivate: [AuthGuard, ClientGuard]
+      },
+      {
+        path: 'orders',
+        component: ClientOrdersComponent
+      },
+      {
+        path: 'orders/:id',
+        component: ClientOrderDetailComponent
       }
     ]
 
