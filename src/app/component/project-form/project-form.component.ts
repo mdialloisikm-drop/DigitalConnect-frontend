@@ -25,10 +25,15 @@ export class ProjectFormComponent implements OnInit, OnDestroy {
 
   categories: Category[] = [];
   skills: Skill[] = [];
-  selectedSkills: number[] = [];
+  selectedSkills: Skill[] = []; // Changé de number[] à Skill[]
   selectedFiles: File[] = [];
   existingAttachments: any[] = [];
   showCancelConfirm = false;
+
+  // Nouvelles propriétés pour la recherche de compétences
+  skillSearchTerm = '';
+  filteredSkills: Skill[] = [];
+  showSkillDropdown = false;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -57,8 +62,8 @@ export class ProjectFormComponent implements OnInit, OnDestroy {
       title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(255)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       category_id: ['', Validators.required],
-      budget: ['', [Validators.min(0)]], // Budget optionnel
-      duration: ['', [Validators.required, Validators.min(1)]] // Durée requise en jours
+      budget: ['', [Validators.min(0)]],
+      duration: ['', [Validators.required, Validators.min(1)]]
     });
   }
 
@@ -154,7 +159,7 @@ export class ProjectFormComponent implements OnInit, OnDestroy {
     });
 
     if (project.skills && project.skills.length > 0) {
-      this.selectedSkills = project.skills.map(s => s.id);
+      this.selectedSkills = project.skills;
       console.log('🎯 Compétences sélectionnées:', this.selectedSkills);
     }
 
@@ -173,16 +178,54 @@ export class ProjectFormComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Basculer la sélection d'une compétence
+   * Rechercher des compétences
    */
-  toggleSkill(skillId: number): void {
-    const index = this.selectedSkills.indexOf(skillId);
-    if (index > -1) {
-      this.selectedSkills.splice(index, 1);
+  onSkillSearch(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.skillSearchTerm = input.value.trim().toLowerCase();
+
+    if (this.skillSearchTerm.length > 0) {
+      this.filteredSkills = this.skills.filter(skill =>
+        skill.name.toLowerCase().includes(this.skillSearchTerm) &&
+        !this.selectedSkills.some(s => s.id === skill.id)
+      );
+      this.showSkillDropdown = this.filteredSkills.length > 0;
     } else {
-      this.selectedSkills.push(skillId);
+      this.filteredSkills = [];
+      this.showSkillDropdown = false;
     }
-    console.log('🎯 Compétences sélectionnées:', this.selectedSkills);
+  }
+
+  /**
+   * Sélectionner une compétence depuis la liste filtrée
+   */
+  selectSkill(skill: Skill): void {
+    if (!this.selectedSkills.some(s => s.id === skill.id)) {
+      this.selectedSkills.push(skill);
+      console.log('🎯 Compétence ajoutée:', skill.name);
+    }
+
+    // Réinitialiser la recherche
+    this.skillSearchTerm = '';
+    this.filteredSkills = [];
+    this.showSkillDropdown = false;
+  }
+
+  /**
+   * Retirer une compétence sélectionnée
+   */
+  removeSkill(skill: Skill): void {
+    this.selectedSkills = this.selectedSkills.filter(s => s.id !== skill.id);
+    console.log('🎯 Compétence retirée:', skill.name);
+  }
+
+  /**
+   * Fermer le dropdown de compétences
+   */
+  closeSkillDropdown(): void {
+    setTimeout(() => {
+      this.showSkillDropdown = false;
+    }, 200);
   }
 
   /**
@@ -270,8 +313,8 @@ export class ProjectFormComponent implements OnInit, OnDestroy {
 
     // Ajouter les compétences
     if (this.selectedSkills.length > 0) {
-      this.selectedSkills.forEach(skillId => {
-        formData.append('skills[]', skillId.toString());
+      this.selectedSkills.forEach(skill => {
+        formData.append('skills[]', skill.id.toString());
       });
     }
 

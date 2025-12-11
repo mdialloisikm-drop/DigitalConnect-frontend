@@ -1,441 +1,392 @@
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 font-sans">
   <div class="max-w-3xl w-full">
-    <!-- Card Container -->
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
-      <!-- Header -->
-      <div class="bg-gradient-to-r from-primary to-blue-600 px-8 py-6">
-        <div class="flex justify-center mb-4">
-          <div class="bg-white rounded-full p-3 shadow-lg">
-            <i class="fas fa-user-plus text-primary text-3xl"></i>
-          </div>
-        </div>
-        <h2 class="text-center text-2xl font-bold text-white">
-          Créer votre compte {{ accountType === 'client' ? 'Client' : 'Freelance' }}
-        </h2>
-        <p class="text-center text-blue-100 mt-2">
-          Rejoignez DigitalConnect dès aujourd'hui
-        </p>
-      </div>
 
-      <!-- Progress Steps -->
-      <div class="px-8 py-6 bg-gray-50 border-b border-gray-200">
-        <div class="flex items-center justify-between max-w-md mx-auto">
-          <!-- Step 1 -->
-          <div class="flex flex-col items-center flex-1">
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-extrabold text-gray-900 mb-2">
+        Création de compte <span class="text-primary capitalize">{{ accountType === 'client' ? 'Client' : 'Freelance' }}</span>
+      </h2>
+      <p class="text-gray-500">Complétez votre profil pour rejoindre la communauté.</p>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 animate-fade-in">
+
+      <div class="bg-gray-50/80 backdrop-blur border-b border-gray-100 px-8 py-6">
+        <div class="flex items-center justify-center max-w-md mx-auto relative">
+
+          <div class="absolute left-0 right-0 top-1/2 h-1 bg-gray-200 -z-0 rounded-full"></div>
+
+          <div
+            class="absolute left-0 top-1/2 h-1 bg-primary -z-0 rounded-full transition-all duration-500 ease-out"
+            [style.width]="currentStep === 1 ? '50%' : '100%'"
+          ></div>
+
+          <div class="relative z-10 flex flex-col items-center flex-1">
             <div
               [class.bg-primary]="currentStep >= 1"
               [class.text-white]="currentStep >= 1"
-              [class.bg-gray-300]="currentStep < 1"
-              [class.text-gray-600]="currentStep < 1"
-              class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 mb-2"
+              [class.bg-white]="currentStep < 1"
+              [class.border-primary]="currentStep < 1"
+              [class.text-primary]="currentStep < 1"
+              class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-md transition-all duration-300 border-2 border-transparent"
             >
               <i *ngIf="currentStep > 1" class="fas fa-check"></i>
               <span *ngIf="currentStep <= 1">1</span>
             </div>
-            <span class="text-xs font-medium text-gray-600 text-center">Informations<br>personnelles</span>
+            <span class="text-xs font-bold uppercase tracking-wider mt-2 text-primary">Compte</span>
           </div>
 
-          <!-- Connector -->
-          <div class="flex-1 h-1 mx-2 bg-gray-300 relative" style="top: -16px;">
-            <div
-              [class.w-full]="currentStep >= 2"
-              [class.w-0]="currentStep < 2"
-              class="h-full bg-primary transition-all duration-300"
-            ></div>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="flex flex-col items-center flex-1">
+          <div class="relative z-10 flex flex-col items-center flex-1">
             <div
               [class.bg-primary]="currentStep >= 2"
               [class.text-white]="currentStep >= 2"
-              [class.bg-gray-300]="currentStep < 2"
-              [class.text-gray-600]="currentStep < 2"
-              class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 mb-2"
+              [class.bg-white]="currentStep < 2"
+              [class.border-gray-300]="currentStep < 2"
+              [class.text-gray-400]="currentStep < 2"
+              class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-sm transition-all duration-300 border-2"
             >
               2
             </div>
-            <span class="text-xs font-medium text-gray-600 text-center">Informations<br>supplémentaires</span>
+            <span
+              [class.text-primary]="currentStep >= 2"
+              [class.text-gray-400]="currentStep < 2"
+              class="text-xs font-bold uppercase tracking-wider mt-2 transition-colors duration-300"
+            >
+              Détails
+            </span>
           </div>
         </div>
       </div>
 
-      <!-- Error Message -->
-      <div *ngIf="errorMessage" class="mx-8 mt-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg animate-slide-down">
-        <div class="flex items-start">
-          <i class="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-3 flex-shrink-0"></i>
-          <p class="text-red-700 text-sm">{{ errorMessage }}</p>
+      <div *ngIf="errorMessage" class="bg-red-50 border-l-4 border-red-500 p-4 mx-8 mt-6 rounded-r-lg animate-slide-down">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-red-700 font-medium">{{ errorMessage }}</p>
+          </div>
         </div>
       </div>
 
-      <!-- Forms -->
-      <div class="px-8 py-8">
-        <!-- Step 1: Personal Information -->
-        <form *ngIf="currentStep === 1" [formGroup]="personalInfoForm">
-          <div class="space-y-6">
-            <!-- Avatar -->
-            <div *ngIf="currentStep === 1" class="mb-6">
-              <!-- Avatar Upload -->
-              <div>
-                <label class="block text-sm font-semibold text-secondary mb-2">
-                  <i class="fas fa-camera mr-2 text-primary"></i>Photo de profil (optionnel)
-                </label>
+      <div class="p-8 md:p-10">
 
-                <div class="flex items-center space-x-4">
-                  <!-- Preview -->
-                  <div class="flex-shrink-0">
-                    <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                      <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Avatar" class="w-full h-full object-cover">
-                      <i *ngIf="!avatarPreview" class="fas fa-user text-gray-400 text-3xl"></i>
-                    </div>
-                  </div>
+        <form *ngIf="currentStep === 1" [formGroup]="personalInfoForm" class="space-y-6 animate-fade-in">
 
-                  <!-- Upload Button -->
-                  <div class="flex-1">
-                    <input
-                      type="file"
-                      id="avatar"
-                      accept="image/jpeg,image/png,image/jpg,image/gif"
-                      (change)="onAvatarSelected($event)"
-                      class="hidden"
-                    />
-                    <label
-                      for="avatar"
-                      class="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200"
-                    >
-                      <i class="fas fa-upload mr-2"></i>
-                      Choisir une image
-                    </label>
-
-                    <button
-                      *ngIf="avatarPreview"
-                      type="button"
-                      (click)="removeAvatar()"
-                      class="ml-2 inline-flex items-center px-3 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition-all duration-200"
-                    >
-                      <i class="fas fa-times mr-1"></i>
-                      Supprimer
-                    </button>
-
-                    <p class="mt-2 text-xs text-gray-500">
-                      JPG, PNG ou GIF. Maximum 2 Mo.
-                    </p>
-                  </div>
-                </div>
+          <div class="flex items-center gap-6 p-4 bg-blue-50/50 rounded-xl border border-blue-100 border-dashed">
+            <div class="relative group">
+              <div class="w-20 h-20 rounded-full bg-white shadow-md flex items-center justify-center overflow-hidden border-2 border-white">
+                <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Avatar" class="w-full h-full object-cover">
+                <i *ngIf="!avatarPreview" class="fas fa-user text-blue-200 text-4xl"></i>
+              </div>
+              <div class="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" (click)="fileInput.click()">
+                <i class="fas fa-camera text-white"></i>
               </div>
             </div>
-            <!-- Full Name -->
-            <div>
-              <label for="full_name" class="block text-sm font-semibold text-secondary mb-2">
-                <i class="fas fa-user mr-2 text-primary"></i>Nom complet *
-              </label>
+
+            <div class="flex-1">
+              <label class="block text-sm font-bold text-gray-700 mb-1">Photo de profil</label>
+              <p class="text-xs text-gray-500 mb-3">Recommandé. JPG, PNG ou GIF (Max 2 Mo).</p>
+
+              <div class="flex items-center gap-3">
+                <button type="button" (click)="fileInput.click()" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-primary hover:text-primary transition-all shadow-sm">
+                  <i class="fas fa-upload mr-2"></i> Choisir
+                </button>
+                <button *ngIf="avatarPreview" type="button" (click)="removeAvatar()" class="text-red-500 hover:text-red-700 text-sm font-medium px-2 transition-colors">
+                  Supprimer
+                </button>
+              </div>
+
+              <input #fileInput type="file" id="avatar" accept="image/jpeg,image/png,image/jpg,image/gif" (change)="onAvatarSelected($event)" class="hidden"/>
+            </div>
+          </div>
+
+          <div>
+            <label for="full_name" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Nom complet <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fas fa-user text-gray-400"></i>
+              </div>
               <input
                 type="text"
                 id="full_name"
                 formControlName="full_name"
+                [class.ring-red-500]="isFieldInvalid(personalInfoForm, 'full_name')"
                 [class.border-red-500]="isFieldInvalid(personalInfoForm, 'full_name')"
-                [class.border-green-500]="isFieldValid(personalInfoForm, 'full_name')"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
-                placeholder="Jean Dupont"
+                class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800 placeholder-gray-400"
+                placeholder="Ex: Jean Dupont"
               />
-              <div *ngIf="isFieldInvalid(personalInfoForm, 'full_name')" class="mt-2 animate-slide-down">
-                <p class="text-red-500 text-sm flex items-center">
-                  <i class="fas fa-exclamation-circle mr-1"></i>
-                  Le nom complet est requis (minimum 3 caractères)
-                </p>
-              </div>
             </div>
+            <p *ngIf="isFieldInvalid(personalInfoForm, 'full_name')" class="mt-1 text-sm text-red-500 ml-1">Le nom complet est requis (min 3 caractères)</p>
+          </div>
 
-
-            <!-- Email -->
-            <div>
-              <label for="email" class="block text-sm font-semibold text-secondary mb-2">
-                <i class="fas fa-envelope mr-2 text-primary"></i>Adresse email *
-              </label>
+          <div>
+            <label for="email" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Adresse email <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fas fa-envelope text-gray-400"></i>
+              </div>
               <input
                 type="email"
                 id="email"
                 formControlName="email"
+                [class.ring-red-500]="isFieldInvalid(personalInfoForm, 'email')"
                 [class.border-red-500]="isFieldInvalid(personalInfoForm, 'email')"
-                [class.border-green-500]="isFieldValid(personalInfoForm, 'email')"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
+                class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800 placeholder-gray-400"
                 placeholder="exemple@email.com"
               />
-              <div *ngIf="isFieldInvalid(personalInfoForm, 'email')" class="mt-2 animate-slide-down">
-                <p class="text-red-500 text-sm flex items-center">
-                  <i class="fas fa-exclamation-circle mr-1"></i>
-                  Veuillez entrer une adresse email valide
-                </p>
-              </div>
             </div>
+            <p *ngIf="isFieldInvalid(personalInfoForm, 'email')" class="mt-1 text-sm text-red-500 ml-1">Adresse email valide requise</p>
+          </div>
 
-            <!-- Phone -->
-            <div>
-              <label for="phone" class="block text-sm font-semibold text-secondary mb-2">
-                <i class="fas fa-phone mr-2 text-primary"></i>Téléphone
-              </label>
+          <div>
+            <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Téléphone</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fas fa-phone text-gray-400"></i>
+              </div>
               <input
                 type="tel"
                 id="phone"
                 formControlName="phone"
-                [class.border-red-500]="isFieldInvalid(personalInfoForm, 'phone')"
-                [class.border-green-500]="isFieldValid(personalInfoForm, 'phone')"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
+                class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800 placeholder-gray-400"
                 placeholder="+33 6 12 34 56 78"
               />
             </div>
+          </div>
 
-            <!-- City and Country -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label for="city" class="block text-sm font-semibold text-secondary mb-2">
-                  <i class="fas fa-city mr-2 text-primary"></i>Ville
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  formControlName="city"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
-                  placeholder="Paris"
-                />
-              </div>
-              <div>
-                <label for="country" class="block text-sm font-semibold text-secondary mb-2">
-                  <i class="fas fa-globe mr-2 text-primary"></i>Pays
-                </label>
-                <input
-                  type="text"
-                  id="country"
-                  formControlName="country"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
-                  placeholder="France"
-                />
-              </div>
-            </div>
-
-            <!-- Password -->
+          <div class="grid grid-cols-2 gap-5">
             <div>
-              <label for="password" class="block text-sm font-semibold text-secondary mb-2">
-                <i class="fas fa-lock mr-2 text-primary"></i>Mot de passe *
-              </label>
+              <label for="city" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Ville</label>
+              <input
+                type="text"
+                id="city"
+                formControlName="city"
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800"
+                placeholder="Paris"
+              />
+            </div>
+            <div>
+              <label for="country" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Pays</label>
+              <input
+                type="text"
+                id="country"
+                formControlName="country"
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800"
+                placeholder="France"
+              />
+            </div>
+          </div>
+
+          <div class="border-t border-gray-100 my-4"></div>
+
+          <div class="grid md:grid-cols-2 gap-5">
+            <div>
+              <label for="password" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Mot de passe <span class="text-red-500">*</span></label>
               <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <i class="fas fa-lock text-gray-400"></i>
+                </div>
                 <input
                   [type]="showPassword ? 'text' : 'password'"
                   id="password"
                   formControlName="password"
+                  [class.ring-red-500]="isFieldInvalid(personalInfoForm, 'password')"
                   [class.border-red-500]="isFieldInvalid(personalInfoForm, 'password')"
-                  [class.border-green-500]="isFieldValid(personalInfoForm, 'password')"
-                  class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
+                  class="w-full pl-11 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   (click)="togglePasswordVisibility()"
-                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary transition-colors duration-200 focus:outline-none"
-                  tabindex="-1"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors focus:outline-none p-1"
                 >
                   <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                 </button>
               </div>
-              <div *ngIf="isFieldInvalid(personalInfoForm, 'password')" class="mt-2 animate-slide-down">
-                <p class="text-red-500 text-sm flex items-center">
-                  <i class="fas fa-exclamation-circle mr-1"></i>
-                  Le mot de passe doit contenir au moins 8 caractères
-                </p>
-              </div>
+              <p *ngIf="isFieldInvalid(personalInfoForm, 'password')" class="mt-1 text-xs text-red-500 ml-1">Min. 8 caractères</p>
             </div>
 
-            <!-- Password Confirmation -->
             <div>
-              <label for="password_confirmation" class="block text-sm font-semibold text-secondary mb-2">
-                <i class="fas fa-lock mr-2 text-primary"></i>Confirmer le mot de passe *
-              </label>
+              <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Confirmation <span class="text-red-500">*</span></label>
               <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <i class="fas fa-lock text-gray-400"></i>
+                </div>
                 <input
                   [type]="showPasswordConfirmation ? 'text' : 'password'"
                   id="password_confirmation"
                   formControlName="password_confirmation"
+                  [class.ring-red-500]="isFieldInvalid(personalInfoForm, 'password_confirmation') || personalInfoForm.errors?.['passwordMismatch']"
                   [class.border-red-500]="isFieldInvalid(personalInfoForm, 'password_confirmation') || personalInfoForm.errors?.['passwordMismatch']"
-                  [class.border-green-500]="isFieldValid(personalInfoForm, 'password_confirmation') && !personalInfoForm.errors?.['passwordMismatch']"
-                  class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
+                  class="w-full pl-11 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   (click)="togglePasswordConfirmationVisibility()"
-                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary transition-colors duration-200 focus:outline-none"
-                  tabindex="-1"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors focus:outline-none p-1"
                 >
                   <i [class]="showPasswordConfirmation ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                 </button>
               </div>
-              <div *ngIf="personalInfoForm.errors?.['passwordMismatch'] && personalInfoForm.get('password_confirmation')?.touched" class="mt-2 animate-slide-down">
-                <p class="text-red-500 text-sm flex items-center">
-                  <i class="fas fa-exclamation-circle mr-1"></i>
-                  Les mots de passe ne correspondent pas
-                </p>
-              </div>
+              <p *ngIf="personalInfoForm.errors?.['passwordMismatch'] && personalInfoForm.get('password_confirmation')?.touched" class="mt-1 text-xs text-red-500 ml-1">Les mots de passe ne correspondent pas</p>
             </div>
-
-            <!-- Next Button -->
-            <button
-              type="button"
-              (click)="nextStep()"
-              [disabled]="personalInfoForm.invalid"
-              class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center group"
-            >
-              <span>Continuer</span>
-              <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-200"></i>
-            </button>
           </div>
+
+          <button
+            type="button"
+            (click)="nextStep()"
+            [disabled]="personalInfoForm.invalid"
+            class="w-full mt-6 bg-gradient-to-r from-primary to-blue-600 text-white py-4 px-6 rounded-xl font-bold shadow-lg hover:shadow-xl hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center group"
+          >
+            <span>Continuer</span>
+            <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-200"></i>
+          </button>
         </form>
 
-        <!-- Step 2: Additional Information -->
-        <form *ngIf="currentStep === 2" [formGroup]="additionalInfoForm" (ngSubmit)="onSubmit()">
-          <!-- Client Additional Info -->
+        <form *ngIf="currentStep === 2" [formGroup]="additionalInfoForm" (ngSubmit)="onSubmit()" class="animate-fade-in">
+
           <div *ngIf="accountType === 'client'" class="space-y-6">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p class="text-sm text-blue-800 flex items-start">
-                <i class="fas fa-info-circle mt-0.5 mr-2"></i>
-                <span>Ces informations sont facultatives mais elles permettent aux freelances de mieux comprendre vos besoins.</span>
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3">
+              <i class="fas fa-info-circle text-primary mt-1"></i>
+              <p class="text-sm text-blue-800">
+                Ces informations aident les freelances à mieux cerner votre identité et vos besoins.
               </p>
             </div>
 
-            <!-- Company Name -->
             <div>
-              <label for="company_name" class="block text-sm font-semibold text-secondary mb-2">
-                <i class="fas fa-building mr-2 text-primary"></i>Nom de l'entreprise
-              </label>
-              <input
-                type="text"
-                id="company_name"
-                formControlName="company_name"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
-                placeholder="Ma Société"
-              />
+              <label for="company_name" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Nom de l'entreprise</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <i class="fas fa-building text-gray-400"></i>
+                </div>
+                <input
+                  type="text"
+                  id="company_name"
+                  formControlName="company_name"
+                  class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800"
+                  placeholder="Ma Société"
+                />
+              </div>
             </div>
 
-            <!-- Company Description -->
             <div>
-              <label for="company_description" class="block text-sm font-semibold text-secondary mb-2">
-                <i class="fas fa-align-left mr-2 text-primary"></i>Description de l'entreprise
-              </label>
+              <label for="company_description" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Description de l'entreprise</label>
               <textarea
                 id="company_description"
                 formControlName="company_description"
-                rows="4"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none resize-none"
-                placeholder="Présentez votre entreprise, son secteur d'activité..."
+                rows="5"
+                class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800 resize-none"
+                placeholder="Présentez votre entreprise, son secteur d'activité, sa mission..."
               ></textarea>
             </div>
           </div>
 
-          <!-- Freelance Additional Info -->
           <div *ngIf="accountType === 'freelance'" class="space-y-6">
-            <!-- Title -->
-            <div>
-              <label for="title" class="block text-sm font-semibold text-secondary mb-2">
-                <i class="fas fa-briefcase mr-2 text-primary"></i>Titre professionnel *
-              </label>
-              <input
-                type="text"
-                id="title"
-                formControlName="title"
-                [class.border-red-500]="isFieldInvalid(additionalInfoForm, 'title')"
-                [class.border-green-500]="isFieldValid(additionalInfoForm, 'title')"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
-                placeholder="Ex: Développeur Web Full Stack, Designer UX/UI..."
-              />
-              <div *ngIf="isFieldInvalid(additionalInfoForm, 'title')" class="mt-2 animate-slide-down">
-                <p class="text-red-500 text-sm flex items-center">
-                  <i class="fas fa-exclamation-circle mr-1"></i>
-                  Le titre professionnel est requis
-                </p>
-              </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 mb-6">
+              <i class="fas fa-rocket text-primary mt-1"></i>
+              <p class="text-sm text-blue-800">
+                Mettez en avant vos atouts pour attirer les meilleurs clients dès votre inscription.
+              </p>
             </div>
 
-            <!-- Description -->
             <div>
-              <label for="description" class="block text-sm font-semibold text-secondary mb-2">
-                <i class="fas fa-align-left mr-2 text-primary"></i>Description
-              </label>
-              <textarea
-                id="description"
-                formControlName="description"
-                rows="4"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none resize-none"
-                placeholder="Présentez vos compétences, votre expérience, vos réalisations..."
-              ></textarea>
-            </div>
-
-            <!-- Hourly Rate and Experience Years -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label for="hourly_rate" class="block text-sm font-semibold text-secondary mb-2">
-                  <i class="fas fa-dollar-sign mr-2 text-primary"></i>Taux horaire (€)
-                </label>
+              <label for="title" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Titre professionnel <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <i class="fas fa-briefcase text-gray-400"></i>
+                </div>
                 <input
-                  type="number"
-                  id="hourly_rate"
-                  formControlName="hourly_rate"
-                  min="0"
-                  step="5"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
-                  placeholder="50"
+                  type="text"
+                  id="title"
+                  formControlName="title"
+                  [class.ring-red-500]="isFieldInvalid(additionalInfoForm, 'title')"
+                  [class.border-red-500]="isFieldInvalid(additionalInfoForm, 'title')"
+                  class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800"
+                  placeholder="Ex: Développeur Web Full Stack"
                 />
               </div>
+              <p *ngIf="isFieldInvalid(additionalInfoForm, 'title')" class="mt-1 text-sm text-red-500 ml-1">Ce champ est requis</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-5">
               <div>
-                <label for="experience_years" class="block text-sm font-semibold text-secondary mb-2">
-                  <i class="fas fa-calendar-alt mr-2 text-primary"></i>Années d'expérience
-                </label>
+                <label for="hourly_rate" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Taux horaire (€)</label>
+                <div class="relative">
+                  <input
+                    type="number"
+                    id="hourly_rate"
+                    formControlName="hourly_rate"
+                    min="0"
+                    step="5"
+                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800"
+                    placeholder="50"
+                  />
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">/h</span>
+                </div>
+              </div>
+              <div>
+                <label for="experience_years" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Expérience (années)</label>
                 <input
                   type="number"
                   id="experience_years"
                   formControlName="experience_years"
                   min="0"
                   max="50"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none"
+                  class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800"
                   placeholder="5"
                 />
               </div>
             </div>
+
+            <div>
+              <label for="description" class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Description / Bio</label>
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="5"
+                class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 outline-none text-gray-800 resize-none"
+                placeholder="Parlez de vos compétences clés, vos réalisations et ce qui vous passionne..."
+              ></textarea>
+            </div>
           </div>
 
-          <!-- Action Buttons -->
-          <div class="flex gap-4 mt-8">
+          <div class="flex gap-4 mt-8 pt-4 border-t border-gray-100">
             <button
               type="button"
               (click)="previousStep()"
-              class="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center group"
+              class="w-1/3 bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-bold hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-100 transition-all duration-200 shadow-sm flex items-center justify-center group"
             >
               <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-200"></i>
               <span>Retour</span>
             </button>
+
             <button
               type="submit"
               [disabled]="isLoading || personalInfoForm.invalid || additionalInfoForm.invalid"
-              class="flex-1 bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center group"
-              [class.animate-pulse]="isLoading"
+              class="flex-1 bg-gradient-to-r from-primary to-blue-600 text-white py-4 px-6 rounded-xl font-bold hover:shadow-lg hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center"
             >
-              <i *ngIf="!isLoading" class="fas fa-user-check mr-2"></i>
-              <i *ngIf="isLoading" class="fas fa-spinner fa-spin mr-2"></i>
-              <span>{{ isLoading ? 'Création en cours...' : 'Créer mon compte' }}</span>
+              <ng-container *ngIf="!isLoading">
+                <span>Finaliser mon inscription</span>
+                <i class="fas fa-check-circle ml-2"></i>
+              </ng-container>
+              <ng-container *ngIf="isLoading">
+                <i class="fas fa-circle-notch fa-spin mr-2"></i>
+                <span>Création en cours...</span>
+              </ng-container>
             </button>
           </div>
         </form>
 
-        <!-- Back to Login -->
-        <div class="text-center mt-6">
-          <p class="text-secondary text-sm">
+        <div class="text-center mt-8">
+          <p class="text-gray-500 text-sm">
             Vous avez déjà un compte ?
-            <a
-              routerLink="/login"
-              class="text-primary hover:text-blue-600 font-semibold transition-colors duration-200 hover:underline"
-            >
-              Se connecter
+            <a routerLink="/login" class="text-primary font-bold hover:underline hover:text-blue-700 transition-colors">
+              Connectez-vous ici
             </a>
           </p>
         </div>
+
       </div>
     </div>
   </div>

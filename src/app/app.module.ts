@@ -48,6 +48,7 @@ import { PendingProjectDetailsComponent } from './component/pending-projects-adm
 import { PendingServicesComponent } from './component/pending-services/pending-services.component';
 import { ClientOrdersComponent } from './component/client-orders/client-orders.component';
 import { ClientOrderDetailComponent } from './component/client-order-detail/client-order-detail.component';
+import { FreelancesComponent } from './component/freelances/freelances.component';
 
 @NgModule({
   declarations: [
@@ -94,6 +95,7 @@ import { ClientOrderDetailComponent } from './component/client-order-detail/clie
     PendingServicesComponent,
     ClientOrdersComponent,
     ClientOrderDetailComponent,
+    FreelancesComponent,
   ],
     imports: [
         BrowserModule,

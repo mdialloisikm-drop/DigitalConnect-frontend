@@ -34,14 +34,8 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // ✅ VÉRIFICATION : Est-ce que l'utilisateur est bien un client ?
-    console.log('👤 Utilisateur actuel:', this.authService.currentUserValue);
-    console.log('🔑 Token:', this.authService.token);
-    console.log('🔐 Est authentifié?', this.authService.isAuthenticated);
-    console.log('👨‍💼 Est client?', this.authService.isClient);
 
     if (!this.authService.isClient) {
-      console.error('❌ Utilisateur non autorisé (pas un client)');
       this.errorMessage = 'Vous n\'êtes pas autorisé à accéder à cette page';
       this.isLoading = false;
       this.router.navigate(['/']);
@@ -63,19 +57,15 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
 
-    console.log('📊 Chargement des statistiques du dashboard...');
-
     this.clientService.getDashboardStats()
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
           this.isLoading = false;
-          console.log('✅ Chargement terminé');
         })
       )
       .subscribe({
         next: (stats: ClientDashboardStats) => {
-          console.log('✅ Statistiques reçues:', stats);
           this.stats = stats;
           this.buildStatCards();
         },

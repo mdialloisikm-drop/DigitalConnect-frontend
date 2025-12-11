@@ -1,135 +1,192 @@
-<div class="min-h-screen">
-  <!-- Hero Section -->
-  <section class="bg-gradient-to-r from-primary to-blue-600 text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center">
-        <h1 class="text-5xl md:text-6xl font-bold mb-6">
-          Connectez-vous aux meilleurs <span class="text-yellow-300">Freelances</span>
+<div class="min-h-screen bg-gray-50 font-sans">
+
+  <section class="relative bg-gradient-to-br from-primary via-blue-700 to-blue-900 text-white overflow-hidden pb-20 pt-24 lg:pt-32">
+    <div class="absolute top-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-secondary opacity-10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center max-w-3xl mx-auto">
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
+          Transformez vos idées en <span class="text-yellow-400">réalité</span>
         </h1>
-        <p class="text-xl md:text-2xl mb-8 text-blue-100">
-          Trouvez des talents pour vos projets ou proposez vos services
+        <p class="text-lg md:text-xl text-blue-100 mb-10 font-light">
+          Accédez aux meilleurs talents freelances vérifiés pour vos projets,
+          ou proposez vos services à une communauté mondiale.
         </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <a routerLink="/projects" class="bg-white text-primary px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors duration-200 shadow-lg">
-            <i class="fas fa-search mr-2"></i>Parcourir les projets
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <a routerLink="/projects" class="px-8 py-4 bg-white text-primary rounded-full font-bold text-lg shadow-lg hover:bg-gray-100 hover:scale-105 transition-all duration-200">
+            <i class="fas fa-search mr-2"></i>Trouver un projet
           </a>
-          <a routerLink="/services" class="bg-secondary text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-colors duration-200 shadow-lg">
-            <i class="fas fa-briefcase mr-2"></i>Découvrir les services
+          <a routerLink="/services" class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-bold text-lg hover:bg-white/10 transition-all duration-200">
+            <i class="fas fa-briefcase mr-2"></i>Voir les services
           </a>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-6 text-sm font-medium text-blue-200">
+          <span class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-2"></i>Identité vérifiée</span>
+          <span class="flex items-center"><i class="fas fa-shield-alt text-green-400 mr-2"></i>Paiement sécurisé</span>
+          <span class="flex items-center"><i class="fas fa-star text-green-400 mr-2"></i>Talents notés</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 class="text-4xl font-bold text-center text-secondary mb-12">Pourquoi choisir DigitalConnect ?</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="text-center p-6 rounded-lg hover:shadow-xl transition-shadow duration-200">
-          <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-users text-primary text-3xl"></i>
-          </div>
-          <h3 class="text-xl font-semibold text-secondary mb-3">Talents Vérifiés</h3>
-          <p class="text-gray-600">Des freelances qualifiés et vérifiés pour garantir la qualité de vos projets</p>
-        </div>
-        <div class="text-center p-6 rounded-lg hover:shadow-xl transition-shadow duration-200">
-          <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-shield-alt text-primary text-3xl"></i>
-          </div>
-          <h3 class="text-xl font-semibold text-secondary mb-3">Paiement Sécurisé</h3>
-          <p class="text-gray-600">Transactions sécurisées et protection pour les clients comme les freelances</p>
-        </div>
-        <div class="text-center p-6 rounded-lg hover:shadow-xl transition-shadow duration-200">
-          <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-headset text-primary text-3xl"></i>
-          </div>
-          <h3 class="text-xl font-semibold text-secondary mb-3">Support 24/7</h3>
-          <p class="text-gray-600">Une équipe disponible pour vous accompagner à chaque étape</p>
-        </div>
+  <div class="bg-white shadow-md relative z-20 -mt-8 mx-4 md:mx-auto max-w-5xl rounded-xl">
+    <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+      <div *ngFor="let stat of stats" class="p-6 text-center">
+        <p class="text-3xl font-bold text-primary">{{stat.value}}</p>
+        <p class="text-gray-500 uppercase text-xs tracking-wider font-semibold mt-1">{{stat.label}}</p>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- Recent Projects -->
-  <section class="py-16 bg-accent">
+  <section class="py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center mb-8">
-        <h2 class="text-3xl font-bold text-secondary">Projets Récents</h2>
-        <a routerLink="/projects" class="text-primary hover:underline font-semibold">
-          Voir tous les projets <i class="fas fa-arrow-right ml-2"></i>
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-secondary">Explorez par catégorie</h2>
+        <p class="text-gray-500 mt-2">Trouvez l'expert qu'il vous faut dans tous les domaines</p>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <a *ngFor="let cat of categories" class="group block bg-white border border-gray-100 rounded-xl p-6 text-center hover:shadow-lg hover:border-primary transition-all duration-300 cursor-pointer">
+          <div class="w-14 h-14 mx-auto bg-blue-50 text-primary rounded-full flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors text-xl">
+            <i [class]="getCategoryIcon(cat.name)"></i>
+          </div>
+          <h3 class="font-semibold text-gray-700 group-hover:text-primary truncate">{{cat.name}}</h3>
         </a>
       </div>
-      <div *ngIf="loading" class="flex justify-center py-12">
-        <i class="fas fa-spinner fa-spin text-4xl text-primary"></i>
+    </div>
+  </section>
+
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center mb-10">
+        <div>
+          <h2 class="text-3xl font-bold text-secondary">Projets Récents</h2>
+          <p class="text-gray-500 mt-1">Postulez maintenant aux dernières offres</p>
+        </div>
+        <a routerLink="/projects" class="hidden md:flex items-center text-primary font-semibold hover:underline">
+          Tout voir <i class="fas fa-arrow-right ml-2"></i>
+        </a>
       </div>
-      <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div *ngFor="let project of recentProjects" class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 p-6">
-          <div class="flex items-start justify-between mb-3">
-            <span class="bg-blue-100 text-primary px-3 py-1 rounded-full text-sm font-semibold">
-              {{project.category?.name || 'Non catégorisé'}}
-            </span>
-            <span class="text-sm text-gray-500">
-              <i class="far fa-clock mr-1"></i>{{project.created_at | date: 'dd/MM/yyyy'}}
-            </span>
+
+      <div *ngIf="loading" class="flex justify-center py-20">
+        <i class="fas fa-circle-notch fa-spin text-4xl text-primary"></i>
+      </div>
+
+      <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div *ngFor="let project of recentProjects" class="flex flex-col bg-white rounded-2xl border border-gray-200 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+          <div class="p-6 flex-grow">
+            <div class="flex justify-between items-start mb-4">
+              <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase tracking-wide">
+                {{project.category?.name || 'Projet'}}
+              </span>
+              <span class="text-xs text-gray-400 flex items-center">
+                <i class="far fa-clock mr-1"></i> {{project.created_at | date:'dd/MM/yyyy'}}
+              </span>
+            </div>
+
+            <h3 class="text-xl font-bold text-secondary mb-3 hover:text-primary transition-colors">
+              <a [routerLink]="['/projects', project.id]">{{project.title}}</a>
+            </h3>
+            <p class="text-gray-600 text-sm line-clamp-3 mb-4">{{project.description}}</p>
+
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">Remote</span>
+              <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">Urgent</span>
+            </div>
           </div>
-          <h3 class="text-xl font-bold text-secondary mb-2">{{project.title}}</h3>
-          <p class="text-gray-600 mb-4 line-clamp-2">{{project.description}}</p>
-          <div class="flex items-center justify-between">
-            <span class="text-primary font-bold text-lg">
-              <i class="fas fa-dollar-sign"></i>{{project.budget || 'À négocier'}}
-            </span>
-            <a [routerLink]="['/projects', project.id]" class="text-primary hover:text-blue-600 font-semibold">
-              Voir détails <i class="fas fa-arrow-right ml-1"></i>
+
+          <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-500 font-medium uppercase">Budget</p>
+              <p class="text-lg font-bold text-primary">{{project.budget ? (project.budget | currency) : 'À négocier'}}</p>
+            </div>
+            <a [routerLink]="['/projects', project.id]" class="text-sm font-semibold text-secondary hover:text-primary">
+              Détails <i class="fas fa-chevron-right ml-1"></i>
             </a>
           </div>
         </div>
       </div>
+
+      <div class="mt-8 text-center md:hidden">
+        <a routerLink="/projects" class="inline-block px-6 py-3 border border-gray-300 rounded-lg text-secondary font-semibold">
+          Voir tous les projets
+        </a>
+      </div>
     </div>
   </section>
 
-  <!-- Recent Services -->
-  <section class="py-16 bg-white">
+  <section class="py-20 bg-secondary text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl font-bold mb-12">Comment ça marche ?</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div class="relative group">
+          <div class="w-20 h-20 mx-auto bg-primary rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
+            <i class="fas fa-user-plus"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3">1. Créez un compte</h3>
+          <p class="text-blue-200">Remplissez votre profil, ajoutez vos compétences et votre portfolio pour attirer l'attention.</p>
+        </div>
+        <div class="relative group">
+          <div class="w-20 h-20 mx-auto bg-primary rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg -rotate-3 group-hover:rotate-0 transition-transform">
+            <i class="fas fa-handshake"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3">2. Collaborez</h3>
+          <p class="text-blue-200">Discutez via notre messagerie sécurisée, définissez les étapes et lancez le projet.</p>
+        </div>
+        <div class="relative group">
+          <div class="w-20 h-20 mx-auto bg-primary rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3">3. Paiement Sécurisé</h3>
+          <p class="text-blue-200">L'argent est débloqué une fois le travail validé. Simple et sans risque.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center mb-8">
-        <h2 class="text-3xl font-bold text-secondary">Services Populaires</h2>
-        <a routerLink="/services" class="text-primary hover:underline font-semibold">
-          Voir tous les services <i class="fas fa-arrow-right ml-2"></i>
-        </a>
-      </div>
-      <div *ngIf="loading" class="flex justify-center py-12">
-        <i class="fas fa-spinner fa-spin text-4xl text-primary"></i>
-      </div>
-      <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div *ngFor="let service of recentServices" class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 overflow-hidden">
-          <div class="h-48 bg-gray-200 overflow-hidden">
-            <img *ngIf="service.images && service.images.length > 0" [src]="getImageUrl(service.images[0].image_path)"
-                 [alt]="service.title" class="w-full h-full object-cover">
-            <div *ngIf="!service.images || service.images.length === 0"
-                 class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
-              <i class="fas fa-image text-gray-400 text-5xl"></i>
+      <h2 class="text-3xl font-bold text-secondary mb-10 text-center">Services à la une</h2>
+
+      <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div *ngFor="let service of recentServices" class="bg-white rounded-xl shadow-sm hover:shadow-2xl transition-all duration-300 group overflow-hidden">
+          <div class="h-48 overflow-hidden relative bg-gray-200">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10"></div>
+            <img *ngIf="service.images?.length" [src]="getImageUrl(service.images?.[0]?.image_path)" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            <div *ngIf="!service.images?.length" class="w-full h-full flex items-center justify-center text-gray-400">
+              <i class="fas fa-image text-4xl"></i>
             </div>
           </div>
-          <div class="p-6">
-            <div class="flex items-center mb-3">
-              <div *ngIf="!service.freelance.user?.avatar"
-                   class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold mr-3">
-                {{service.freelance.user?.full_name?.charAt(0) || '?'}}
-              </div>
-              <div>
-                <p class="font-semibold text-secondary">{{service.freelance.user?.full_name}}</p>
-                <p class="text-sm text-gray-500">{{service.freelance.title}}</p>
+
+          <div class="p-6 relative">
+            <div class="absolute -top-10 right-6 w-16 h-16 rounded-full border-4 border-white bg-white shadow-md overflow-hidden">
+              <img *ngIf="service.freelance.user?.avatar" [src]="getImageUrl(service.freelance.user?.avatar)" class="w-full h-full object-cover">
+              <div *ngIf="!service.freelance.user?.avatar" class="w-full h-full bg-primary flex items-center justify-center text-white font-bold text-xl">
+                {{service.freelance.user?.full_name?.charAt(0) || 'F'}}
               </div>
             </div>
-            <h3 class="text-lg font-bold text-secondary mb-2">{{service.title}}</h3>
-            <p class="text-gray-600 mb-4 line-clamp-2">{{service.description}}</p>
-            <div class="flex items-center justify-between">
-              <div>
-                <span class="text-gray-500 text-sm">À partir de</span>
-                <p class="text-primary font-bold text-xl">${{service.price}}</p>
+
+            <p class="text-sm text-gray-500 mb-1">{{service.freelance.user?.full_name}}</p>
+            <h3 class="text-lg font-bold text-secondary mb-2 line-clamp-2 min-h-[3.5rem]">
+              <a [routerLink]="['/services', service.id]" class="hover:text-primary transition-colors">{{service.title}}</a>
+            </h3>
+
+            <div class="flex items-center text-yellow-400 text-xs mb-4">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+              <span class="text-gray-400 ml-1">(5.0)</span>
+            </div>
+
+            <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+              <div class="flex flex-col">
+                <span class="text-xs text-gray-400 uppercase">À partir de</span>
+                <span class="text-xl font-bold text-primary">${{ getMinPrice(service) | number:'1.0-0' }}</span>
               </div>
-              <a [routerLink]="['/services', service.id]"
-                 class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200">Voir</a>
+              <a [routerLink]="['/services', service.id]" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-primary hover:text-white transition-colors">
+                <i class="fas fa-arrow-right"></i>
+              </a>
             </div>
           </div>
         </div>
@@ -137,16 +194,50 @@
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="py-16 bg-secondary text-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h2 class="text-4xl font-bold mb-6">Prêt à démarrer ?</h2>
-      <p class="text-xl mb-8 text-gray-300">
-        Rejoignez des milliers de professionnels qui font confiance à DigitalConnect
-      </p>
-      <button class="bg-primary text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-600 transition-colors duration-200 shadow-lg">
-        <i class="fas fa-user-plus mr-2"></i>Créer un compte
+  <section class="py-16 bg-white border-y border-gray-100">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl font-bold text-secondary mb-12">Ils nous font confiance</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div *ngFor="let testimonial of testimonials" class="bg-gray-50 p-8 rounded-xl relative">
+          <i class="fas fa-quote-left text-4xl text-blue-100 absolute top-4 left-4"></i>
+          <p class="text-gray-700 italic relative z-10 mb-6">"{{testimonial.text}}"</p>
+          <div class="flex items-center justify-center">
+            <img [src]="testimonial.image" class="w-10 h-10 rounded-full mr-3" alt="Avatar">
+            <div class="text-left">
+              <p class="font-bold text-secondary text-sm">{{testimonial.name}}</p>
+              <p class="text-xs text-gray-500">{{testimonial.role}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-16 bg-gray-50">
+    <div class="max-w-3xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-center text-secondary mb-10">Questions Fréquentes</h2>
+      <div class="space-y-4">
+        <div *ngFor="let faq of faqs; let i = index" class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <button (click)="toggleFaq(i)" class="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+            <span class="font-semibold text-secondary">{{faq.question}}</span>
+            <i class="fas transition-transform duration-300" [ngClass]="activeFaq === i ? 'fa-chevron-up rotate-180' : 'fa-chevron-down'"></i>
+          </button>
+          <div *ngIf="activeFaq === i" class="px-6 py-4 text-gray-600 border-t border-gray-100 bg-blue-50/30">
+            {{faq.answer}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 bg-primary text-white text-center">
+    <div class="max-w-4xl mx-auto px-4">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">Prêt à démarrer votre prochain projet ?</h2>
+      <p class="text-xl text-blue-100 mb-8">Rejoignez une communauté grandissante de professionnels.</p>
+      <button class="bg-white text-primary px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-100 shadow-xl transition-all hover:-translate-y-1">
+        Créer un compte gratuitement
       </button>
     </div>
   </section>
+
 </div>

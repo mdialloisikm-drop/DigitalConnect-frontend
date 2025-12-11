@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
 @Component({

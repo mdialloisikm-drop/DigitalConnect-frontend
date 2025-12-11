@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {finalize, Subject, takeUntil} from "rxjs";
 import {Proposal} from "../../models/proposal";
 import {Project} from "../../models/project";
@@ -23,8 +23,8 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
   project: Project | null = null;
   proposals: ProposalWithActions[] = [];
 
-  isLoadingProject = false;
-  isLoadingProposals = false;
+  isLoadingProject = true;
+  isLoadingProposals = true;
   errorMessage = '';
   successMessage = '';
 
@@ -33,16 +33,22 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
   sortBy: 'date' | 'amount' | 'duration' = 'date';
   sortOrder: 'asc' | 'desc' = 'desc';
 
-  // Modal pour la raison du rejet
+  // Modal pour le rejet
   showRejectModal = false;
   selectedProposalId: number | null = null;
   rejectReason = '';
+
+  // Modal pour l'acceptation
+  showAcceptModal = false;
+  selectedProposal: ProposalWithActions | null = null;
+  isAccepting = false;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly clientService: ClientService,
-    private readonly projectService: ProjectService
+    private readonly projectService: ProjectService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -50,14 +56,22 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
         this.projectId = +params['id'];
-        this.loadProjectDetails();
-        this.loadProposals();
+        this.loadData();
       });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    document.body.style.overflow = '';
+  }
+
+  /**
+   * Charge toutes les données
+   */
+  private loadData(): void {
+    this.loadProjectDetails();
+    this.loadProposals();
   }
 
   /**
@@ -69,15 +83,19 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
     this.projectService.getProjectById(this.projectId)
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => this.isLoadingProject = false)
+        finalize(() => {
+          this.isLoadingProject = false;
+          this.cdr.markForCheck();
+        })
       )
       .subscribe({
         next: (project) => {
           this.project = project;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.errorMessage = error.message || 'Erreur lors du chargement du projet';
-          console.error('Erreur:', error);
+          this.cdr.markForCheck();
         }
       });
   }
@@ -92,45 +110,74 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
     this.clientService.getMyProposals(this.projectId)
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => this.isLoadingProposals = false)
+        finalize(() => {
+          this.isLoadingProposals = false;
+          this.cdr.markForCheck();
+        })
       )
       .subscribe({
         next: (proposals) => {
           this.proposals = proposals;
+          this.cdr.markForCheck();
         },
         error: (error) => {
-          this.errorMessage = error.message || 'Erreur lors du chargement des candidatures';
-          console.error('Erreur:', error);
+          this. errorMessage = error.message || 'Erreur lors du chargement des candidatures';
+          this.cdr.markForCheck();
         }
       });
   }
 
   /**
-   * Accepter une candidature
+   * Ouvrir le modal d'acceptation
    */
-  acceptProposal(proposal: ProposalWithActions): void {
-    if (!confirm(`Êtes-vous sûr de vouloir accepter la candidature de ${proposal.freelance?.user?.full_name || 'ce freelance'} ?\n\nCela créera automatiquement un contrat.`)) {
-      return;
-    }
+  openAcceptModal(proposal: ProposalWithActions): void {
+    this.selectedProposal = proposal;
+    this. showAcceptModal = true;
+    document.body.style.overflow = 'hidden';
+    this.cdr.markForCheck();
+  }
 
-    proposal.isAccepting = true;
+  /**
+   * Fermer le modal d'acceptation
+   */
+  closeAcceptModal(): void {
+    this.showAcceptModal = false;
+    this.selectedProposal = null;
+    this.isAccepting = false;
+    document.body.style. overflow = '';
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Confirmer l'acceptation
+   */
+  confirmAcceptProposal(): void {
+    if (!this.selectedProposal) return;
+
+    this.isAccepting = true;
     this.errorMessage = '';
     this.successMessage = '';
+    this.cdr.markForCheck();
 
-    this.clientService.acceptProposal(proposal.id)
+    this.clientService.acceptProposal(this. selectedProposal.id)
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => proposal.isAccepting = false)
+        finalize(() => {
+          this.isAccepting = false;
+          this.cdr.markForCheck();
+        })
       )
       .subscribe({
         next: (response) => {
           this.successMessage = response.message || 'Candidature acceptée avec succès';
-          this.loadProposals();
-          setTimeout(() => this.successMessage = '', 5000);
+          this.closeAcceptModal();
+          this. loadProposals();
+          this.autoCloseMessage();
         },
         error: (error) => {
-          this.errorMessage = error.message || 'Erreur lors de l\'acceptation';
-          console.error('Erreur:', error);
+          this.errorMessage = error. message || 'Erreur lors de l\'acceptation';
+          this.closeAcceptModal();
+          this. cdr.markForCheck();
         }
       });
   }
@@ -142,6 +189,8 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
     this.selectedProposalId = proposalId;
     this.showRejectModal = true;
     this.rejectReason = '';
+    document.body.style.overflow = 'hidden';
+    this.cdr.markForCheck();
   }
 
   /**
@@ -151,20 +200,23 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
     this.showRejectModal = false;
     this.selectedProposalId = null;
     this.rejectReason = '';
+    document. body.style.overflow = '';
+    this.cdr.markForCheck();
   }
 
   /**
-   * Rejeter une candidature
+   * Confirmer le rejet
    */
   confirmRejectProposal(): void {
-    if (!this.selectedProposalId) return;
+    if (!this. selectedProposalId) return;
 
-    const proposal = this.proposals.find(p => p.id === this.selectedProposalId);
+    const proposal = this.proposals.find(p => p.id === this. selectedProposalId);
     if (!proposal) return;
 
     proposal.isRejecting = true;
     this.errorMessage = '';
     this.successMessage = '';
+    this.cdr.markForCheck();
 
     this.clientService.rejectProposal(this.selectedProposalId, this.rejectReason)
       .pipe(
@@ -172,19 +224,46 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
         finalize(() => {
           proposal.isRejecting = false;
           this.closeRejectModal();
+          this.cdr.markForCheck();
         })
       )
       .subscribe({
         next: (response) => {
           this.successMessage = response.message || 'Candidature rejetée';
           this.loadProposals();
-          setTimeout(() => this.successMessage = '', 5000);
+          this.autoCloseMessage();
         },
         error: (error) => {
-          this.errorMessage = error.message || 'Erreur lors du rejet';
-          console.error('Erreur:', error);
+          this.errorMessage = error. message || 'Erreur lors du rejet';
+          this. cdr.markForCheck();
         }
       });
+  }
+
+  /**
+   * Ferme automatiquement les messages après 5s
+   */
+  private autoCloseMessage(): void {
+    setTimeout(() => {
+      this.successMessage = '';
+      this.cdr.markForCheck();
+    }, 5000);
+  }
+
+  /**
+   * Fermer le message de succès
+   */
+  closeSuccessMessage(): void {
+    this.successMessage = '';
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Fermer le message d'erreur
+   */
+  closeErrorMessage(): void {
+    this.errorMessage = '';
+    this.cdr.markForCheck();
   }
 
   /**
@@ -193,24 +272,22 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
   get filteredAndSortedProposals(): ProposalWithActions[] {
     let filtered = [...this.proposals];
 
-    // Filtrer par statut
     if (this.statusFilter !== 'all') {
       filtered = filtered.filter(p => p.status === this.statusFilter);
     }
 
-    // Trier
     filtered.sort((a, b) => {
       let comparison = 0;
 
       switch (this.sortBy) {
         case 'date':
-          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          comparison = new Date(a.created_at).getTime() - new Date(b. created_at).getTime();
           break;
         case 'amount':
           comparison = Number(a.proposed_amount) - Number(b.proposed_amount);
           break;
         case 'duration':
-          comparison = a.proposed_duration - b.proposed_duration;
+          comparison = a. proposed_duration - b.proposed_duration;
           break;
       }
 
@@ -251,11 +328,9 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
   formatDate(dateString: string | null): string {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      month: 'short',
+      year: 'numeric'
     });
   }
 
@@ -264,30 +339,28 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
    */
   formatDuration(days: number): string {
     if (!days) return 'Non définie';
-
-    if (days < 7) {
-      return `${days} jour${days > 1 ? 's' : ''}`;
-    } else if (days < 30) {
+    if (days < 7) return `${days} jour${days > 1 ? 's' : ''}`;
+    if (days < 30) {
       const weeks = Math.floor(days / 7);
       return `${weeks} semaine${weeks > 1 ? 's' : ''}`;
-    } else if (days < 365) {
+    }
+    if (days < 365) {
       const months = Math.floor(days / 30);
       return `${months} mois`;
-    } else {
-      const years = Math.floor(days / 365);
-      return `${years} an${years > 1 ? 's' : ''}`;
     }
+    const years = Math.floor(days / 365);
+    return `${years} an${years > 1 ? 's' : ''}`;
   }
 
   /**
-   * Retourner à la liste des candidatures
+   * Retourner à la liste
    */
   goBack(): void {
     this.router.navigate(['/client/proposals']);
   }
 
   /**
-   * Obtenir les statistiques des candidatures
+   * Statistiques des candidatures
    */
   get proposalStats() {
     return {
@@ -296,5 +369,33 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
       accepted: this.proposals.filter(p => p.status === 'accepted').length,
       rejected: this.proposals.filter(p => p.status === 'rejected').length
     };
+  }
+
+  /**
+   * TrackBy pour ngFor
+   */
+  trackByProposalId(index: number, proposal: ProposalWithActions): number {
+    return proposal.id;
+  }
+
+  /**
+   * TrackBy pour skills
+   */
+  trackBySkillId(index: number, skill: any): number {
+    return skill. id || index;
+  }
+
+  /**
+   * Obtenir l'avatar du freelance
+   */
+  getFreelanceAvatar(proposal: ProposalWithActions): string {
+    if (proposal.freelance?.user?.avatar) {
+      if (proposal.freelance.user. avatar.startsWith('http')) {
+        return proposal.freelance. user.avatar;
+      }
+      return `http://localhost:8000/storage/avatars/${proposal.freelance.user.avatar}`;
+    }
+    const name = proposal.freelance?.user?. full_name || 'User';
+    return `https://ui-avatars.com/api/? name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
   }
 }

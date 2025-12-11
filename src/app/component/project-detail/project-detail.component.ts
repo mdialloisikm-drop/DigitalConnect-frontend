@@ -23,6 +23,13 @@ export class ProjectDetailComponent implements OnInit{
   hasAlreadyApplied = false;
   checkingProposal = false;
 
+  /**
+   * TrackBy pour les skills (optimisation ngFor)
+   */
+  trackBySkillId(index: number, skill: any): number {
+    return skill.id || index;
+  }
+
   // Subject pour la désinscription
   private destroy$ = new Subject<void>();
 

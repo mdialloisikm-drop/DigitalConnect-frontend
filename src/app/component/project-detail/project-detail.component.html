@@ -1,19 +1,19 @@
 <div class="min-h-screen bg-gray-50">
   <!-- Alert Notification -->
-  <div *ngIf="alert.show"
+  <div *ngIf="alert. show"
        class="fixed top-4 right-4 z-50 max-w-md w-full animate-slide-in">
     <div [ngClass]="{
       'bg-green-50 border-green-400 text-green-800': alert.type === 'success',
-      'bg-red-50 border-red-400 text-red-800': alert. type === 'error',
+      'bg-red-50 border-red-400 text-red-800': alert.type === 'error',
       'bg-yellow-50 border-yellow-400 text-yellow-800': alert.type === 'warning',
       'bg-blue-50 border-blue-400 text-blue-800': alert.type === 'info'
     }" class="border-l-4 rounded-lg shadow-lg p-4">
       <div class="flex items-start">
         <div class="flex-shrink-0">
           <i *ngIf="alert.type === 'success'" class="fas fa-check-circle text-green-500 text-xl"></i>
-          <i *ngIf="alert. type === 'error'" class="fas fa-times-circle text-red-500 text-xl"></i>
-          <i *ngIf="alert.type === 'warning'" class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
-          <i *ngIf="alert. type === 'info'" class="fas fa-info-circle text-blue-500 text-xl"></i>
+          <i *ngIf="alert.type === 'error'" class="fas fa-times-circle text-red-500 text-xl"></i>
+          <i *ngIf="alert. type === 'warning'" class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+          <i *ngIf="alert.type === 'info'" class="fas fa-info-circle text-blue-500 text-xl"></i>
         </div>
         <div class="ml-3 flex-1">
           <p class="font-semibold">{{ alert.title }}</p>
@@ -34,10 +34,106 @@
       Retour aux projets
     </a>
 
-    <!-- État de chargement -->
-    <div *ngIf="loading" class="flex flex-col justify-center items-center py-20">
-      <i class="fas fa-spinner fa-spin text-5xl text-primary mb-4"></i>
-      <p class="text-gray-600">Chargement du projet... </p>
+    <!-- État de chargement avec Skeleton Loader -->
+    <div *ngIf="loading" class="animate-pulse">
+      <!-- Header Skeleton -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div class="p-6 sm:p-8">
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div class="flex-1">
+              <!-- Badge skeleton -->
+              <div class="flex gap-3 mb-4">
+                <div class="h-8 w-32 bg-gray-200 rounded-full"></div>
+              </div>
+              <!-- Titre skeleton -->
+              <div class="h-10 bg-gray-200 rounded-lg w-3/4 mb-3"></div>
+              <!-- Date skeleton -->
+              <div class="h-5 bg-gray-200 rounded w-48"></div>
+            </div>
+            <!-- Budget card skeleton -->
+            <div class="bg-blue-50 rounded-xl p-6 min-w-[200px] border border-blue-100">
+              <div class="h-4 bg-blue-200 rounded w-16 mx-auto mb-2"></div>
+              <div class="h-8 bg-blue-200 rounded w-24 mx-auto"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Skeleton -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Description skeleton -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+            <div class="h-7 bg-gray-200 rounded w-48 mb-4"></div>
+            <div class="space-y-3">
+              <div class="h-4 bg-gray-200 rounded w-full"></div>
+              <div class="h-4 bg-gray-200 rounded w-full"></div>
+              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+              <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          </div>
+
+          <!-- Skills skeleton -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+            <div class="h-7 bg-gray-200 rounded w-56 mb-4"></div>
+            <div class="flex flex-wrap gap-2">
+              <div class="h-10 w-24 bg-gray-200 rounded-lg"></div>
+              <div class="h-10 w-32 bg-gray-200 rounded-lg"></div>
+              <div class="h-10 w-28 bg-gray-200 rounded-lg"></div>
+              <div class="h-10 w-20 bg-gray-200 rounded-lg"></div>
+            </div>
+          </div>
+
+          <!-- Candidature skeleton -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+            <div class="h-7 bg-gray-200 rounded w-48 mb-3"></div>
+            <div class="h-5 bg-gray-200 rounded w-3/4 mb-6"></div>
+            <div class="h-12 bg-gray-200 rounded-xl w-56"></div>
+          </div>
+        </div>
+
+        <!-- Sidebar skeleton -->
+        <div class="space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <div class="h-6 bg-gray-200 rounded w-24 mb-4"></div>
+            <div class="flex items-center">
+              <div class="w-14 h-14 bg-gray-200 rounded-full flex-shrink-0"></div>
+              <div class="ml-4 flex-1">
+                <div class="h-5 bg-gray-200 rounded w-32 mb-2"></div>
+                <div class="h-4 bg-gray-200 rounded w-24"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <div class="h-6 bg-gray-200 rounded w-40 mb-4"></div>
+            <div class="space-y-4">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                <div class="ml-3 flex-1">
+                  <div class="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                  <div class="h-5 bg-gray-200 rounded w-20"></div>
+                </div>
+              </div>
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                <div class="ml-3 flex-1">
+                  <div class="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+                  <div class="h-5 bg-gray-200 rounded w-28"></div>
+                </div>
+              </div>
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                <div class="ml-3 flex-1">
+                  <div class="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+                  <div class="h-5 bg-gray-200 rounded w-32"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- État d'erreur -->
@@ -118,7 +214,7 @@
               Compétences requises
             </h2>
             <div class="flex flex-wrap gap-2">
-              <span *ngFor="let skill of project.skills"
+              <span *ngFor="let skill of project.skills; trackBy: trackBySkillId"
                     class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm border border-gray-200 hover:bg-gray-200 transition-colors duration-200">
                 {{ skill. name }}
               </span>
@@ -153,7 +249,7 @@
             </div>
 
             <!-- Freelance déjà candidaté -->
-            <div *ngIf="project?.status === 'open' && isFreelance && hasAlreadyApplied && !checkingProposal"
+            <div *ngIf="project?. status === 'open' && isFreelance && hasAlreadyApplied && !checkingProposal"
                  class="bg-green-50 border border-green-200 rounded-xl p-6">
               <div class="flex items-start">
                 <div class="flex-shrink-0">
@@ -174,11 +270,11 @@
             </div>
 
             <!-- Non connecté ou non freelance -->
-            <div *ngIf="project?.status === 'open' && !isFreelance && !checkingProposal"
+            <div *ngIf="project?.status === 'open' && !isFreelance && ! checkingProposal"
                  class="text-center py-4">
               <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
                 <i class="fas fa-user-lock text-gray-400 text-4xl mb-4"></i>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">Intéressé par ce projet ? </h3>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Intéressé par ce projet ?</h3>
                 <p class="text-gray-600 mb-4">
                   Connectez-vous en tant que freelance pour soumettre votre proposition.
                 </p>
@@ -188,6 +284,18 @@
                   <i class="fas fa-sign-in-alt mr-2"></i>
                   Se connecter
                 </a>
+              </div>
+            </div>
+
+            <!-- Projet fermé -->
+            <div *ngIf="project?.status !== 'open' && ! checkingProposal"
+                 class="text-center py-4">
+              <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <i class="fas fa-lock text-gray-400 text-4xl mb-4"></i>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Projet fermé aux candidatures</h3>
+                <p class="text-gray-600">
+                  Ce projet n'accepte plus de nouvelles propositions.
+                </p>
               </div>
             </div>
           </div>
@@ -202,23 +310,24 @@
               Client
             </h3>
             <div class="flex items-center">
-              <div *ngIf="!project.client?.user?.avatar"
+              <div *ngIf="! project. client?. user?. avatar"
                    class="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
                 {{ getClientInitials() }}
               </div>
               <img *ngIf="project.client?.user?.avatar"
                    [src]="getImageUrl(project.client! .user! .avatar! )"
-                   [alt]="project.client?.user?.full_name || 'Client'"
-                   class="w-14 h-14 rounded-full object-cover flex-shrink-0">
+                   [alt]="project. client?. user?.full_name || 'Client'"
+                   class="w-14 h-14 rounded-full object-cover flex-shrink-0"
+                   loading="lazy">
               <div class="ml-4">
-                <p class="font-semibold text-gray-900">{{ project.client?.user?.full_name }}</p>
+                <p class="font-semibold text-gray-900">{{ project.client?. user?.full_name }}</p>
                 <p *ngIf="project.client?.company_name" class="text-sm text-gray-500">
                   {{ project.client?.company_name }}
                 </p>
                 <p *ngIf="project.client?.user?.city || project.client?.user?.country"
                    class="text-sm text-gray-500 flex items-center mt-1">
                   <i class="fas fa-map-marker-alt mr-1. 5 text-gray-400"></i>
-                  {{ project.client?.user?.city }}{{ project.client?.user?.city && project.client?.user?.country ? ', ' : '' }}{{ project!.client?.user?.country }}
+                  {{ project.client?.user?.city }}{{ project.client?.user?.city && project.client?.user?.country ? ', ' : '' }}{{ project! .client?.user?. country }}
                 </p>
               </div>
             </div>
@@ -238,7 +347,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm text-gray-500">Durée estimée</p>
-                  <p class="font-semibold text-gray-900">{{ formatDuration(project.duration) }}</p>
+                  <p class="font-semibold text-gray-900">{{ formatDuration(project. duration) }}</p>
                 </div>
               </div>
 
@@ -290,7 +399,7 @@
     <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
       <div>
         <h2 class="text-xl font-bold text-gray-900">Soumettre votre proposition</h2>
-        <p class="text-sm text-gray-500 mt-1">Projet : {{ project?. title }}</p>
+        <p class="text-sm text-gray-500 mt-1">Projet : {{ project?.title }}</p>
       </div>
       <button (click)="closeProposalModal()"
               class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors duration-200">
@@ -311,7 +420,7 @@
             name="cover_letter"
             rows="6"
             placeholder="Présentez-vous et expliquez pourquoi vous êtes le candidat idéal pour ce projet.  Décrivez votre expérience pertinente et votre approche..."
-            [class]="'w-full px-4 py-3 border rounded-xl resize-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ' + (formErrors.cover_letter ? 'border-red-300 bg-red-50' : 'border-gray-300')"
+            [class]="'w-full px-4 py-3 border rounded-xl resize-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ' + (formErrors.cover_letter ?  'border-red-300 bg-red-50' : 'border-gray-300')"
           ></textarea>
           <div class="flex justify-between items-center mt-2">
             <p *ngIf="formErrors.cover_letter" class="text-red-600 text-sm">
@@ -369,15 +478,15 @@
                 name="proposed_duration"
                 min="1"
                 placeholder="Ex: 30"
-                [class]="'w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ' + (formErrors. proposed_duration ? 'border-red-300 bg-red-50' : 'border-gray-300')"
+                [class]="'w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ' + (formErrors.proposed_duration ?  'border-red-300 bg-red-50' : 'border-gray-300')"
               />
             </div>
-            <p *ngIf="formErrors. proposed_duration" class="text-red-600 text-sm mt-1">
+            <p *ngIf="formErrors.proposed_duration" class="text-red-600 text-sm mt-1">
               <i class="fas fa-exclamation-circle mr-1"></i>
               {{ formErrors.proposed_duration }}
             </p>
             <p class="text-gray-500 text-sm mt-1">
-              Durée estimée : {{ formatDuration(project! .duration) }}
+              Durée estimée : {{ formatDuration(project!. duration) }}
             </p>
           </div>
         </div>
@@ -395,7 +504,7 @@
       <button
         type="submit"
         (click)="submitProposal()"
-        [disabled]="submittingProposal || !isFormValid()"
+        [disabled]="submittingProposal || ! isFormValid()"
         class="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
         <i *ngIf="! submittingProposal" class="fas fa-paper-plane mr-2"></i>
         <i *ngIf="submittingProposal" class="fas fa-spinner fa-spin mr-2"></i>

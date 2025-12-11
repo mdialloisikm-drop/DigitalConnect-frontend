@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import {Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef} from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subject, takeUntil, filter, interval } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
@@ -19,13 +19,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   shouldDisplayNavbar = true;
   unreadMessagesCount = 0;
-  isAuthRoute = false; // 🔥 NOUVELLE PROPRIÉTÉ
+  isAuthRoute = false;
 
-  private readonly DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=User&background=3b82f6&color=fff&size=128';
+  // Modal de confirmation de déconnexion
+  showLogoutModal = false;
+  isLoggingOut = false;
+
   private readonly destroy$ = new Subject<void>();
   private readonly UNREAD_POLLING_INTERVAL = 30000;
 
-  // 🔥 ROUTES D'AUTHENTIFICATION - MISE À JOUR COMPLÈTE
   private readonly AUTH_ROUTES = [
     '/login',
     '/register',
@@ -40,18 +42,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly messageHttpService: MessageHttpService,
     private readonly fcmService: FcmService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.initializeAuthenticationListener();
     this.initializeRouteListener();
-    this.checkAuthRoute(); // 🔥 Vérifier la route initiale
+    this.checkAuthRoute();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    document.body.style.overflow = '';
   }
 
   @HostListener('document:click', ['$event'])
@@ -59,14 +63,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.closeUserMenuOnClickOutside(event);
   }
 
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.showLogoutModal) {
+      this.closeLogoutModal();
+    }
+  }
+
   getUserAvatar(): string {
     if (this.currentUser?.avatar) {
-      if (this.currentUser.avatar.startsWith('http://') || this.currentUser.avatar.startsWith('https://')) {
+      if (this.currentUser.avatar. startsWith('http')) {
         return this.currentUser.avatar;
       }
       return `http://localhost:8000/storage/avatars/${this.currentUser.avatar}`;
     }
-
     const name = this.currentUser?.full_name || this.currentUser?.email || 'User';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
   }
@@ -74,15 +84,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
   onImageError(event: Event): void {
     const imgElement = event.target as HTMLImageElement;
     const name = this.currentUser?.full_name || this.currentUser?.email || 'User';
-    imgElement.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
+    imgElement.src = `https://ui-avatars.com/api/? name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
   }
 
   isFreelance(): boolean {
-    return this.currentUser?.user_type === 'freelance';
+    return this. currentUser?.user_type === 'freelance';
   }
 
   isClient(): boolean {
-    return this.currentUser?.user_type === 'client';
+    return this. currentUser?.user_type === 'client';
   }
 
   isAdmin(): boolean {
@@ -95,50 +105,62 @@ export class NavbarComponent implements OnInit, OnDestroy {
       'client': 'Client',
       'admin': 'Administrateur'
     };
-    return this.currentUser?.user_type ? labels[this.currentUser.user_type] : 'Utilisateur';
+    return this.currentUser?.user_type ?  labels[this.currentUser.user_type] : 'Utilisateur';
   }
 
   getDashboardRoute(): string {
-    if (this.isFreelance()) {
-      return '/freelance/dashboard';
-    } else if (this.isClient()) {
-      return '/client/dashboard';
-    }
+    if (this.isFreelance()) return '/freelance/dashboard';
+    if (this.isClient()) return '/client/dashboard';
     return '/';
   }
 
   toggleMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
+    this. isMenuOpen = !this.isMenuOpen;
+    this.cdr.markForCheck();
   }
 
   toggleUserMenu(): void {
-    this.isUserMenuOpen = !this.isUserMenuOpen;
+    this.isUserMenuOpen = ! this.isUserMenuOpen;
+    this.cdr.markForCheck();
   }
 
   closeUserMenu(): void {
     this.isUserMenuOpen = false;
+    this.cdr.markForCheck();
   }
 
-  async logout(): Promise<void> {
-    if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      return;
-    }
+  openLogoutModal(): void {
+    this.showLogoutModal = true;
+    this.closeUserMenu();
+    this.isMenuOpen = false;
+    document.body.style.overflow = 'hidden';
+    this.cdr.markForCheck();
+  }
+
+  closeLogoutModal(): void {
+    this.showLogoutModal = false;
+    this.isLoggingOut = false;
+    document.body.style.overflow = '';
+    this.cdr.markForCheck();
+  }
+
+  async confirmLogout(): Promise<void> {
+    this.isLoggingOut = true;
+    this.cdr.markForCheck();
 
     try {
-      console.log('🔄 Suppression du token FCM...');
       await this.fcmService.deleteToken();
-      console.log('✅ Token FCM supprimé');
     } catch (error) {
-      console.warn('⚠️ Erreur lors de la suppression du token FCM (ignorée):', error);
+      console.warn('Erreur FCM ignorée:', error);
     }
 
     this.performLogout();
   }
 
-  // 🔥 MÉTHODE POUR VÉRIFIER SI ON EST SUR UNE ROUTE D'AUTHENTIFICATION
   private checkAuthRoute(): void {
-    const currentUrl = this.router.url.split('?')[0]; // Enlever les query params
+    const currentUrl = this.router.url. split('?')[0];
     this.isAuthRoute = this.AUTH_ROUTES.some(route => currentUrl.startsWith(route));
+    this.cdr.markForCheck();
   }
 
   private initializeAuthenticationListener(): void {
@@ -156,10 +178,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
           } else {
             this.unreadMessagesCount = 0;
           }
+          this.cdr.markForCheck();
         },
-        error: (error: Error) => {
-          console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+        error: () => {
           this.unreadMessagesCount = 0;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -172,12 +195,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         this.updateNavbarVisibility();
-        this.checkAuthRoute(); // 🔥 Vérifier la route à chaque navigation
+        this.checkAuthRoute();
       });
   }
 
   private initializeUnreadMessagesPolling(): void {
-    interval(this.UNREAD_POLLING_INTERVAL)
+    interval(this. UNREAD_POLLING_INTERVAL)
       .pipe(
         filter(() => this.isAuthenticated && !!this.currentUser),
         switchMap(() => this.messageHttpService.getUnreadCount()),
@@ -187,31 +210,30 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (count: number) => {
           this.unreadMessagesCount = count;
-        },
-        error: (error: Error) => {
-          console.error('Erreur lors de la récupération des messages non lus (polling):', error);
+          this.cdr.markForCheck();
         }
       });
   }
 
   private loadUnreadMessagesCount(): void {
-    if (!this.isAuthenticated || !this.currentUser) {
+    if (! this.isAuthenticated || !this.currentUser) {
       this.unreadMessagesCount = 0;
       return;
     }
 
-    this.messageHttpService.getUnreadCount()
+    this. messageHttpService.getUnreadCount()
       .pipe(
         map(response => response.count),
-        takeUntil(this.destroy$)
+        takeUntil(this. destroy$)
       )
       .subscribe({
         next: (count: number) => {
           this.unreadMessagesCount = count;
+          this.cdr.markForCheck();
         },
-        error: (error: Error) => {
-          console.error('Erreur lors de la récupération des messages non lus:', error);
+        error: () => {
           this.unreadMessagesCount = 0;
+          this. cdr.markForCheck();
         }
       });
   }
@@ -219,14 +241,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private updateNavbarVisibility(): void {
     const isAdminRoute = this.router.url.startsWith('/admin');
     const isAdmin = this.currentUser?.user_type === 'admin';
-
     this.shouldDisplayNavbar = !(isAdmin && isAdminRoute);
+    this. cdr.markForCheck();
   }
 
   private closeUserMenuOnClickOutside(event: Event): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('.relative')) {
+    if (!target.closest('.relative') && !this.showLogoutModal) {
       this.isUserMenuOpen = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -235,25 +258,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => this.handleLogoutSuccess(),
-        error: (error: Error) => this.handleLogoutError(error)
+        error: () => this.handleLogoutSuccess()
       });
   }
 
   private handleLogoutSuccess(): void {
-    this.closeAllMenus();
+    this.closeLogoutModal();
+    this. isMenuOpen = false;
+    this. isUserMenuOpen = false;
     this.unreadMessagesCount = 0;
+    this.cdr.markForCheck();
     this.router.navigate(['/']);
-  }
-
-  private handleLogoutError(error: Error): void {
-    console.error('Erreur lors de la déconnexion:', error);
-    this.closeAllMenus();
-    this.unreadMessagesCount = 0;
-    this.router.navigate(['/']);
-  }
-
-  private closeAllMenus(): void {
-    this.isMenuOpen = false;
-    this.isUserMenuOpen = false;
   }
 }

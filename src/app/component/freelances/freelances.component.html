@@ -1,0 +1,430 @@
+<div class="min-h-screen bg-accent">
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-r from-primary to-blue-600 text-white py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
+          Trouvez le <span class="text-yellow-300">Freelance</span> Idéal
+        </h1>
+        <p class="text-xl text-blue-100">
+          {{ total }} freelances qualifiés disponibles
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+
+      <!-- Filtres Sidebar -->
+      <aside class="lg:w-80 flex-shrink-0">
+        <!-- Toggle Filters Button (Mobile) -->
+        <button
+          (click)="toggleFilters()"
+          class="lg:hidden w-full bg-white text-secondary px-4 py-3 rounded-lg shadow-md mb-4 flex items-center justify-between font-semibold hover:bg-gray-50 transition-colors"
+        >
+          <span><i class="fas fa-filter mr-2"></i>Filtres</span>
+          <i [class]="showFilters ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+        </button>
+
+        <!-- Filters Panel -->
+        <div
+          [class.hidden]="!showFilters"
+          [class.block]="showFilters"
+          class="lg:block space-y-6"
+        >
+          <!-- Taux Horaire -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-bold text-secondary mb-4 flex items-center">
+              <i class="fas fa-dollar-sign mr-2 text-gray-500"></i>
+              Taux Horaire
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Minimum ($/h)</label>
+                <input
+                  type="number"
+                  [(ngModel)]="filters.min_rate"
+                  (change)="applyRateFilter()"
+                  placeholder="0"
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Maximum ($/h)</label>
+                <input
+                  type="number"
+                  [(ngModel)]="filters.max_rate"
+                  (change)="applyRateFilter()"
+                  placeholder="1000"
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Compétences -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-bold text-secondary mb-4 flex items-center">
+              <i class="fas fa-code mr-2 text-gray-500"></i>
+              Compétences
+            </h3>
+            <div *ngIf="availableFilters" class="space-y-2 max-h-64 overflow-y-auto">
+              <label
+                *ngFor="let skill of availableFilters.skills"
+                class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  [checked]="isSkillSelected(skill.id)"
+                  (change)="toggleSkill(skill.id)"
+                  class="w-4 h-4 text-gray-600 rounded focus:ring-gray-400 focus:ring-2"
+                />
+                <span class="ml-3 text-sm text-gray-700">{{ skill.name }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-bold text-secondary mb-4 flex items-center">
+              <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
+              Localisation
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Ville</label>
+                <input
+                  type="text"
+                  [(ngModel)]="filters.city"
+                  (input)="onSearchCity($any($event.target).value)"
+                  placeholder="Ex: Paris"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pays</label>
+                <select
+                  [(ngModel)]="filters.country"
+                  (change)="applyRateFilter()"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                >
+                  <option value="">Tous les pays</option>
+                  <option *ngFor="let country of availableFilters?.countries" [value]="country">
+                    {{ country }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reset Button -->
+          <button
+            (click)="resetFilters()"
+            class="w-full bg-red-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors shadow-md"
+          >
+            <i class="fas fa-redo mr-2"></i>Réinitialiser
+          </button>
+        </div>
+      </aside>
+
+      <!-- Freelances List -->
+      <main class="flex-1">
+        <!-- Loading -->
+        <div *ngIf="loading" class="flex justify-center items-center py-20">
+          <i class="fas fa-spinner fa-spin text-5xl text-gray-400"></i>
+        </div>
+
+        <!-- No Results -->
+        <div *ngIf="!loading && freelances.length === 0" class="text-center py-20">
+          <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+          <h3 class="text-2xl font-bold text-secondary mb-2">Aucun freelance trouvé</h3>
+          <p class="text-gray-600 mb-6">Essayez de modifier vos filtres de recherche</p>
+          <button
+            (click)="resetFilters()"
+            class="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+          >
+            Réinitialiser les filtres
+          </button>
+        </div>
+
+        <!-- Freelances Cards - Vertical Layout (1 card per row) -->
+        <div *ngIf="!loading && freelances.length > 0" class="space-y-4">
+          <div
+            *ngFor="let freelance of freelances"
+            (click)="openFreelanceModal(freelance.id)"
+            class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-200 hover:border-gray-400 p-6"
+          >
+            <!-- Card Content - Horizontal Layout -->
+            <div class="flex flex-col md:flex-row md:items-start gap-4">
+              <!-- Avatar -->
+              <img
+                [src]="getAvatarUrl(freelance.user?.avatar, freelance.user?.full_name)"
+                [alt]="freelance.user?.full_name"
+                class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+              />
+
+              <!-- Main Info -->
+              <div class="flex-1 min-w-0">
+                <!-- Name and Title -->
+                <div class="mb-2">
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    {{ freelance.user?.full_name }}
+                  </h3>
+                  <p class="text-gray-700 font-medium">
+                    {{ freelance.title }}
+                  </p>
+                  <p class="text-gray-500 text-sm">
+                    {{ freelance.user?.city || 'Non spécifiée' }}, {{ freelance.user?.country || 'N/A' }}
+                  </p>
+                </div>
+
+                <!-- Rate and Stats -->
+                <div class="flex flex-wrap items-center gap-4 mb-3 text-sm">
+                  <span class="font-semibold text-gray-900">
+                    ${{ freelance.hourly_rate }}/hr
+                  </span>
+                </div>
+
+                <!-- Compétences -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <span
+                    *ngFor="let skill of freelance.skills?.slice(0, 6)"
+                    class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full border border-gray-200"
+                  >
+                    {{ skill.name }}
+                  </span>
+                  <span
+                    *ngIf="freelance.skills && freelance.skills.length > 6"
+                    class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full border border-gray-200"
+                  >
+                    +{{ freelance.skills.length - 6 }}
+                  </span>
+                </div>
+
+                <!-- Description -->
+                <p class="text-gray-600 text-sm line-clamp-2">
+                  {{ freelance.description || 'Aucune description disponible' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="lastPage > 1" class="flex justify-center items-center gap-2 mt-8">
+            <button
+              (click)="goToPage(currentPage - 1)"
+              [disabled]="currentPage === 1"
+              [class.opacity-50]="currentPage === 1"
+              [class.cursor-not-allowed]="currentPage === 1"
+              class="px-4 py-2 bg-white text-secondary rounded-lg font-semibold hover:bg-gray-50 transition-colors shadow-md disabled:hover:bg-white"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <button
+              *ngFor="let page of visiblePages"
+              (click)="goToPage(page)"
+              [class.bg-gray-700]="page === currentPage"
+              [class.text-white]="page === currentPage"
+              [class.bg-white]="page !== currentPage"
+              [class.text-secondary]="page !== currentPage"
+              class="px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 hover:text-white transition-colors shadow-md"
+            >
+              {{ page }}
+            </button>
+
+            <button
+              (click)="goToPage(currentPage + 1)"
+              [disabled]="currentPage === lastPage"
+              [class.opacity-50]="currentPage === lastPage"
+              [class.cursor-not-allowed]="currentPage === lastPage"
+              class="px-4 py-2 bg-white text-secondary rounded-lg font-semibold hover:bg-gray-50 transition-colors shadow-md disabled:hover:bg-white"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal Détails Freelance -->
+  <div
+    *ngIf="showModal && selectedFreelance"
+    class="fixed inset-0 z-50 overflow-y-auto"
+    (click)="closeModal()"
+  >
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+      <!-- Overlay -->
+      <div class="fixed inset-0 bg-black bg-opacity-75 transition-opacity"></div>
+
+      <!-- Modal Content -->
+      <div
+        (click)="$event.stopPropagation()"
+        class="relative inline-block bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-4xl sm:w-full"
+      >
+        <!-- Close Button -->
+        <button
+          (click)="closeModal()"
+          class="absolute top-4 right-4 z-10 bg-white rounded-full p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors shadow-lg"
+        >
+          <i class="fas fa-times text-xl"></i>
+        </button>
+
+        <!-- Modal Body -->
+        <div class="max-h-[90vh] overflow-y-auto">
+          <!-- Header avec Avatar et Infos Principales -->
+          <div class="bg-gradient-to-r from-gray-700 to-gray-800 text-white p-8">
+            <div class="flex items-start gap-6">
+              <img
+                [src]="getAvatarUrl(selectedFreelance.freelance.user?.avatar)"
+                [alt]="selectedFreelance.freelance.user?.full_name"
+                class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl flex-shrink-0"
+              />
+              <div class="flex-1">
+                <h2 class="text-3xl font-bold mb-2">
+                  {{ selectedFreelance.freelance.user?.full_name }}
+                </h2>
+                <p class="text-xl text-gray-300 mb-3">
+                  {{ selectedFreelance.freelance.title }}
+                </p>
+                <div class="flex flex-wrap items-center gap-4 text-sm">
+                  <span class="flex items-center">
+                    <i class="fas fa-map-marker-alt mr-2"></i>
+                    {{ selectedFreelance.freelance.user?.city }}, {{ selectedFreelance.freelance.user?.country }}
+                  </span>
+                  <span class="flex items-center">
+                    <i class="fas fa-envelope mr-2"></i>
+                    {{ selectedFreelance.freelance.user?.email }}
+                  </span>
+                  <span
+                    *ngIf="selectedFreelance.freelance.user?.phone"
+                    class="flex items-center"
+                  >
+                    <i class="fas fa-phone mr-2"></i>
+                    {{ selectedFreelance.freelance.user?.phone }}
+                  </span>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-sm text-gray-300 mb-1">Taux horaire</p>
+                <p class="text-4xl font-bold">
+                  ${{ selectedFreelance.freelance.hourly_rate || 'N/A' }}
+                  <span class="text-lg">/hr</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="p-8 space-y-6">
+            <!-- Statistiques -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="bg-green-50 rounded-lg p-4 text-center">
+                <i class="fas fa-check-circle text-3xl text-green-600 mb-2"></i>
+                <p class="text-2xl font-bold text-secondary">
+                  {{ selectedFreelance.statistics.completed_projects }}
+                </p>
+                <p class="text-sm text-gray-600">Projets complétés</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <i class="fas fa-briefcase text-3xl text-gray-600 mb-2"></i>
+                <p class="text-2xl font-bold text-secondary">
+                  {{ selectedFreelance.statistics.active_projects }}
+                </p>
+                <p class="text-sm text-gray-600">Projets actifs</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <i class="fas fa-layer-group text-3xl text-gray-600 mb-2"></i>
+                <p class="text-2xl font-bold text-secondary">
+                  {{ selectedFreelance.statistics.total_projects }}
+                </p>
+                <p class="text-sm text-gray-600">Total projets</p>
+              </div>
+              <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                <i class="fas fa-star text-3xl text-yellow-500 mb-2"></i>
+                <p class="text-2xl font-bold text-secondary">
+                  {{ selectedFreelance.statistics.success_rate }}%
+                </p>
+                <p class="text-sm text-gray-600">Taux de réussite</p>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <h3 class="text-xl font-bold text-secondary mb-3 flex items-center">
+                <i class="fas fa-user mr-2 text-gray-500"></i>
+                À propos
+              </h3>
+              <p class="text-gray-700 leading-relaxed">
+                {{ selectedFreelance.freelance.description || 'Aucune description disponible' }}
+              </p>
+            </div>
+
+            <!-- Expérience -->
+            <div *ngIf="selectedFreelance.freelance.experience_years">
+              <h3 class="text-xl font-bold text-secondary mb-3 flex items-center">
+                <i class="fas fa-clock mr-2 text-gray-500"></i>
+                Expérience
+              </h3>
+              <p class="text-gray-700">
+                <span class="font-bold text-gray-900">{{ selectedFreelance.freelance.experience_years }}</span> années d'expérience
+              </p>
+            </div>
+
+            <!-- Compétences -->
+            <div *ngIf="selectedFreelance.freelance.skills && selectedFreelance.freelance.skills.length > 0">
+              <h3 class="text-xl font-bold text-secondary mb-3 flex items-center">
+                <i class="fas fa-code mr-2 text-gray-500"></i>
+                Compétences
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  *ngFor="let skill of selectedFreelance.freelance.skills"
+                  class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-full border border-gray-200"
+                >
+                  {{ skill.name }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Services -->
+            <div *ngIf="selectedFreelance.services && selectedFreelance.services.length > 0">
+              <h3 class="text-xl font-bold text-secondary mb-3 flex items-center">
+                <i class="fas fa-th-large mr-2 text-gray-500"></i>
+                Services proposés
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div
+                  *ngFor="let service of selectedFreelance.services"
+                  class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow border border-gray-100"
+                >
+                  <h4 class="font-bold text-secondary mb-2">{{ service.title }}</h4>
+                  <p class="text-sm text-gray-600 line-clamp-2">{{ service.description }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="flex gap-4 pt-6 border-t border-gray-200">
+              <button
+                class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-md"
+              >
+                <i class="fas fa-envelope mr-2"></i>Contacter
+              </button>
+              <button
+                class="flex-1 bg-secondary text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-md"
+              >
+                <i class="fas fa-briefcase mr-2"></i>Voir les services
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

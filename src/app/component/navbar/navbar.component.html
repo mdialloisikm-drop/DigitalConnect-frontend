@@ -1,136 +1,142 @@
-<nav *ngIf="shouldDisplayNavbar" class="bg-white shadow-lg sticky top-0 z-50">
+<nav *ngIf="shouldDisplayNavbar" class="bg-white shadow-lg sticky top-0 z-50 font-sans">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between h-16">
-      <!-- Logo Section -->
-      <div class="flex items-center">
+    <div class="flex justify-between h-16 items-center">
+
+      <div class="flex-shrink-0 flex items-center">
         <a routerLink="/" class="flex items-center space-x-2">
           <i class="fas fa-handshake text-primary text-2xl"></i>
           <span class="text-2xl font-bold text-secondary">Digital<span class="text-primary">Connect</span></span>
         </a>
       </div>
 
-      <!-- Desktop Navigation - 🔥 MASQUÉ SUR LES ROUTES D'AUTH -->
-      <div *ngIf="!isAuthRoute" class="hidden md:flex items-center space-x-8">
+      <div *ngIf="!isAuthRoute" class="hidden md:flex flex-1 items-center justify-center space-x-8">
         <a routerLink="/"
-           routerLinkActive="text-primary"
+           routerLinkActive="text-primary bg-blue-50/50"
            [routerLinkActiveOptions]="{exact: true}"
-           class="text-secondary hover:text-primary transition-colors duration-200 font-medium">
-          <i class="fas fa-home mr-2"></i>Accueil
+           class="text-secondary hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm lg:text-base flex items-center">
+          <i class="fas fa-home mr-2 text-lg"></i>Accueil
         </a>
+
         <a *ngIf="!isClient()"
            routerLink="/projects"
-           routerLinkActive="text-primary"
-           class="text-secondary hover:text-primary transition-colors duration-200 font-medium">
-          <i class="fas fa-project-diagram mr-2"></i>Projets
+           routerLinkActive="text-primary bg-blue-50/50"
+           class="text-secondary hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm lg:text-base flex items-center">
+          <i class="fas fa-project-diagram mr-2 text-lg"></i>Projets
         </a>
+
         <a *ngIf="!isFreelance()"
            routerLink="/services"
-           routerLinkActive="text-primary"
-           class="text-secondary hover:text-primary transition-colors duration-200 font-medium">
-          <i class="fas fa-briefcase mr-2"></i>Services
+           routerLinkActive="text-primary bg-blue-50/50"
+           class="text-secondary hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm lg:text-base flex items-center">
+          <i class="fas fa-briefcase mr-2 text-lg"></i>Services
         </a>
 
-        <!-- Option Messages pour utilisateurs connectés -->
-        <a *ngIf="isAuthenticated"
-           routerLink="/messages"
-           routerLinkActive="text-primary"
-           class="text-secondary hover:text-primary transition-colors duration-200 font-medium relative">
-          <i class="fas fa-envelope mr-2"></i>Messages
-          <span *ngIf="unreadMessagesCount > 0"
-                class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg animate-pulse">
-            {{ unreadMessagesCount > 99 ? '99+' : unreadMessagesCount }}
-          </span>
+        <a *ngIf="isClient()"
+           routerLink="/freelances"
+           routerLinkActive="text-primary bg-blue-50/50"
+           class="text-secondary hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm lg:text-base flex items-center">
+          <i class="fas fa-users mr-2 text-lg"></i>Freelances
         </a>
+      </div>
 
-        <!-- Authentication Actions -->
+      <div class="hidden md:flex items-center space-x-4 flex-shrink-0">
+
         <ng-container *ngIf="!isAuthenticated">
           <a routerLink="/login"
-             class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium shadow-md">
+             class="bg-primary text-white px-6 py-2.5 rounded-xl hover:bg-blue-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium shadow-md flex items-center">
             <i class="fas fa-sign-in-alt mr-2"></i>Connexion
           </a>
         </ng-container>
 
         <ng-container *ngIf="isAuthenticated">
+          <a routerLink="/messages"
+             class="relative p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-full transition-all duration-200 group"
+             title="Vos messages">
+            <i class="fa-solid fa-comment text-xl group-hover:scale-110 transition-transform duration-200"></i>
+
+            <span *ngIf="unreadMessagesCount > 0"
+                  class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-sm animate-pulse border-2 border-white">
+              {{ unreadMessagesCount > 9 ? '9+' : unreadMessagesCount }}
+            </span>
+          </a>
+
+          <div class="h-6 w-px bg-gray-200 mx-2"></div>
+
           <div class="relative">
             <button
               (click)="toggleUserMenu()"
-              class="flex items-center space-x-3 text-secondary hover:text-primary transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg px-2 py-1"
+              class="flex items-center space-x-2 text-secondary hover:text-primary transition-colors duration-200 focus:outline-none rounded-full p-1 hover:bg-gray-50 border border-transparent hover:border-gray-200"
             >
               <img
                 [src]="getUserAvatar()"
                 [alt]="currentUser?.full_name || 'Avatar utilisateur'"
-                class="w-9 h-9 rounded-full object-cover border-2 border-primary shadow-sm"
+                class="w-9 h-9 rounded-full object-cover border border-gray-200 shadow-sm"
                 (error)="onImageError($event)"
+                loading="lazy"
               >
-              <i [class]="isUserMenuOpen ? 'fas fa-chevron-up text-sm' : 'fas fa-chevron-down text-sm'"></i>
+              <i [class]="isUserMenuOpen ? 'fas fa-chevron-up text-xs text-gray-500' : 'fas fa-chevron-down text-xs text-gray-500'" class="mr-2"></i>
             </button>
 
-            <!-- User Dropdown Menu -->
             <div
               *ngIf="isUserMenuOpen"
-              class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 animate-fade-in"
+              class="absolute right-0 mt-3 w-72 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in origin-top-right ring-1 ring-black ring-opacity-5"
             >
-              <div class="px-4 py-3 border-b border-gray-200">
-                <div class="flex items-center space-x-3 mb-2">
+              <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+                <div class="flex items-center space-x-3">
                   <img
                     [src]="getUserAvatar()"
                     [alt]="currentUser?.full_name || 'Avatar utilisateur'"
-                    class="w-12 h-12 rounded-full object-cover border-2 border-primary"
+                    class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
                     (error)="onImageError($event)"
                   >
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-secondary truncate">{{ currentUser?.full_name }}</p>
+                    <p class="text-sm font-bold text-gray-900 truncate">{{ currentUser?.full_name }}</p>
                     <p class="text-xs text-gray-500 truncate">{{ currentUser?.email }}</p>
                   </div>
                 </div>
+<!--                <div class="mt-2 text-xs font-medium px-2 py-1 bg-blue-100 text-primary rounded-md inline-block">-->
+<!--                  {{ getUserTypeLabel() }}-->
+<!--                </div>-->
               </div>
 
-              <!-- Menu Mon espace pour les freelances -->
-              <a
-                *ngIf="isFreelance() || isClient()"
-                [routerLink]="getDashboardRoute()"
-                (click)="closeUserMenu()"
-                class="flex items-center px-4 py-2 text-sm text-secondary hover:bg-blue-50 hover:text-primary transition-colors duration-200"
-              >
-                <i class="fas fa-briefcase mr-3 w-4 text-primary"></i>
-                Mon espace
-              </a>
+              <div class="py-2">
+                <a
+                  *ngIf="isFreelance() || isClient()"
+                  [routerLink]="getDashboardRoute()"
+                  (click)="closeUserMenu()"
+                  class="flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors duration-200"
+                >
+                  <div class="w-8 flex justify-center"><i class="fas fa-th-large text-gray-400"></i></div>
+                  Mon tableau de bord
+                </a>
 
-              <a
-                *ngIf="isFreelance()"
-                routerLink="/freelance/my-proposals"
-                (click)="closeUserMenu()"
-                class="flex items-center px-4 py-2 text-sm text-secondary hover:bg-blue-50 hover:text-primary transition-colors duration-200"
-              >
-                <i class="fas fa-paper-plane mr-3 w-4 text-primary"></i>
-                Mes candidatures
-              </a>
+                <a
+                  *ngIf="isFreelance()"
+                  routerLink="/freelance/my-proposals"
+                  (click)="closeUserMenu()"
+                  class="flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors duration-200"
+                >
+                  <div class="w-8 flex justify-center"><i class="fas fa-paper-plane text-gray-400"></i></div>
+                  Mes candidatures
+                </a>
 
-              <a
-                routerLink="/profile"
-                (click)="closeUserMenu()"
-                class="flex items-center px-4 py-2 text-sm text-secondary hover:bg-blue-50 hover:text-primary transition-colors duration-200"
-              >
-                <i class="fas fa-user mr-3 w-4"></i>
-                Mon profil
-              </a>
+                <a
+                  routerLink="/profile"
+                  (click)="closeUserMenu()"
+                  class="flex items-center px-5 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors duration-200"
+                >
+                  <div class="w-8 flex justify-center"><i class="fas fa-user-circle text-gray-400"></i></div>
+                  Mon profil
+                </a>
+              </div>
 
-              <a
-                routerLink="/settings"
-                (click)="closeUserMenu()"
-                class="flex items-center px-4 py-2 text-sm text-secondary hover:bg-blue-50 hover:text-primary transition-colors duration-200"
-              >
-                <i class="fas fa-cog mr-3 w-4"></i>
-                Paramètres
-              </a>
-
-              <div class="border-t border-gray-200 my-2"></div>
+              <div class="border-t border-gray-100 my-1"></div>
 
               <button
-                (click)="logout()"
-                class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+                (click)="openLogoutModal()"
+                class="w-full flex items-center px-5 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 group"
               >
-                <i class="fas fa-sign-out-alt mr-3 w-4"></i>
+                <div class="w-8 flex justify-center"><i class="fas fa-sign-out-alt group-hover:translate-x-1 transition-transform"></i></div>
                 Déconnexion
               </button>
             </div>
@@ -138,106 +144,146 @@
         </ng-container>
       </div>
 
-      <!-- Mobile Menu Button - 🔥 MASQUÉ SUR LES ROUTES D'AUTH -->
       <div *ngIf="!isAuthRoute" class="md:hidden flex items-center">
-        <button (click)="toggleMenu()" class="text-secondary hover:text-primary focus:outline-none">
+        <a *ngIf="isAuthenticated" routerLink="/messages" class="mr-4 relative text-gray-500">
+          <i class="fa-solid fa-comment text-xl"></i>
+          <span *ngIf="unreadMessagesCount > 0"
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border-2 border-white">
+              {{ unreadMessagesCount > 9 ? '!' : unreadMessagesCount }}
+            </span>
+        </a>
+
+        <button (click)="toggleMenu()" class="text-secondary hover:text-primary focus:outline-none p-2 rounded-lg hover:bg-gray-100">
           <i [class]="isMenuOpen ? 'fas fa-times text-2xl' : 'fas fa-bars text-2xl'"></i>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Mobile Navigation Menu - 🔥 MASQUÉ SUR LES ROUTES D'AUTH -->
-  <div *ngIf="isMenuOpen && !isAuthRoute" class="md:hidden bg-white border-t border-gray-200">
-    <div class="px-4 pt-2 pb-4 space-y-3">
+  <div *ngIf="isMenuOpen && !isAuthRoute" class="md:hidden bg-white border-t border-gray-100 shadow-inner">
+    <div class="px-4 pt-4 pb-6 space-y-2">
       <a routerLink="/"
          (click)="toggleMenu()"
          routerLinkActive="text-primary bg-blue-50"
          [routerLinkActiveOptions]="{exact: true}"
-         class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
-        <i class="fas fa-home mr-2"></i>Accueil
+         class="block px-4 py-3 text-secondary hover:text-primary hover:bg-blue-50 rounded-xl transition-colors duration-200 font-medium">
+        <i class="fas fa-home mr-3 w-5"></i>Accueil
       </a>
       <a *ngIf="!isClient()"
          routerLink="/projects"
          (click)="toggleMenu()"
          routerLinkActive="text-primary bg-blue-50"
-         class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
-        <i class="fas fa-project-diagram mr-2"></i>Projets
+         class="block px-4 py-3 text-secondary hover:text-primary hover:bg-blue-50 rounded-xl transition-colors duration-200 font-medium">
+        <i class="fas fa-project-diagram mr-3 w-5"></i>Projets
       </a>
       <a *ngIf="!isFreelance()"
          routerLink="/services"
          (click)="toggleMenu()"
          routerLinkActive="text-primary bg-blue-50"
-         class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
-        <i class="fas fa-briefcase mr-2"></i>Services
+         class="block px-4 py-3 text-secondary hover:text-primary hover:bg-blue-50 rounded-xl transition-colors duration-200 font-medium">
+        <i class="fas fa-briefcase mr-3 w-5"></i>Services
       </a>
-
-      <!-- Option Messages mobile -->
-      <a *ngIf="isAuthenticated"
-         routerLink="/messages"
+      <a *ngIf="isClient()"
+         routerLink="/freelances"
          (click)="toggleMenu()"
          routerLinkActive="text-primary bg-blue-50"
-         class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium relative flex items-center">
-        <i class="fas fa-envelope mr-2"></i>Messages
-        <span *ngIf="unreadMessagesCount > 0"
-              class="ml-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 animate-pulse">
-          {{ unreadMessagesCount > 99 ? '99+' : unreadMessagesCount }}
-        </span>
+         class="block px-4 py-3 text-secondary hover:text-primary hover:bg-blue-50 rounded-xl transition-colors duration-200 font-medium">
+        <i class="fas fa-users mr-3 w-5"></i>Freelances
       </a>
 
-      <!-- Mobile Authentication Actions -->
       <ng-container *ngIf="!isAuthenticated">
-        <a routerLink="/login"
-           (click)="toggleMenu()"
-           class="block text-center bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium shadow-md">
-          <i class="fas fa-sign-in-alt mr-2"></i>Connexion
-        </a>
+        <div class="pt-4 mt-2 border-t border-gray-100">
+          <a routerLink="/login"
+             (click)="toggleMenu()"
+             class="block text-center bg-primary text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors duration-200 font-bold shadow-md">
+            <i class="fas fa-sign-in-alt mr-2"></i>Connexion
+          </a>
+        </div>
       </ng-container>
 
       <ng-container *ngIf="isAuthenticated">
-        <div class="border-t border-gray-200 pt-3 mt-3">
-          <div class="px-4 py-3 bg-blue-50 rounded-lg mb-3">
-            <div class="flex items-center space-x-3">
-              <img
-                [src]="getUserAvatar()"
-                [alt]="currentUser?.full_name || 'Avatar utilisateur'"
-                class="w-12 h-12 rounded-full object-cover border-2 border-primary"
-                (error)="onImageError($event)"
-              >
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-secondary truncate">{{ currentUser?.full_name || currentUser?.email }}</p>
-                <p class="text-xs text-gray-500">{{ getUserTypeLabel() }}</p>
-              </div>
+        <div class="border-t border-gray-100 pt-4 mt-4">
+          <div class="px-4 py-3 bg-gray-50 rounded-xl mb-4 border border-gray-100 flex items-center space-x-3">
+            <img
+              [src]="getUserAvatar()"
+              class="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
+              (error)="onImageError($event)"
+            >
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-gray-900 truncate">{{ currentUser?.full_name }}</p>
+<!--              <p class="text-xs text-gray-500">{{ getUserTypeLabel() }}</p>-->
             </div>
           </div>
 
-          <!-- Menu Mon espace pour les freelances en mobile -->
           <a
             *ngIf="isFreelance() || isClient()"
             [routerLink]="getDashboardRoute()"
             (click)="toggleMenu()"
-            class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
-            <i class="fas fa-briefcase mr-2 text-primary"></i>Mon espace
+            class="block px-4 py-3 text-secondary hover:text-primary hover:bg-blue-50 rounded-xl transition-colors duration-200 font-medium">
+            <i class="fas fa-th-large mr-3 w-5 text-gray-400"></i>Tableau de bord
           </a>
 
           <a routerLink="/profile"
              (click)="toggleMenu()"
-             class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
-            <i class="fas fa-user mr-2"></i>Mon profil
+             class="block px-4 py-3 text-secondary hover:text-primary hover:bg-blue-50 rounded-xl transition-colors duration-200 font-medium">
+            <i class="fas fa-user-circle mr-3 w-5 text-gray-400"></i>Mon profil
           </a>
 
-          <a routerLink="/settings"
+          <a routerLink="/messages"
              (click)="toggleMenu()"
-             class="block px-4 py-2 text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium">
-            <i class="fas fa-cog mr-2"></i>Paramètres
+             routerLinkActive="text-primary bg-blue-50"
+             class="block px-4 py-3 text-secondary hover:text-primary hover:bg-blue-50 rounded-xl transition-colors duration-200 font-medium flex justify-between items-center">
+            <span class="flex items-center"><i class="fa-solid fa-comment mr-3 w-5 text-gray-400"></i>Messages</span>
+            <span *ngIf="unreadMessagesCount > 0" class="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1">
+               {{ unreadMessagesCount }} new
+             </span>
           </a>
 
-          <button (click)="logout()"
-                  class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 font-medium mt-2">
-            <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+          <button (click)="openLogoutModal()"
+                  class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors duration-200 font-medium mt-2 flex items-center">
+            <i class="fas fa-sign-out-alt mr-3 w-5"></i>Déconnexion
           </button>
         </div>
       </ng-container>
     </div>
   </div>
 </nav>
+
+<div *ngIf="showLogoutModal"
+     class="fixed inset-0 z-[100] overflow-y-auto"
+     role="dialog"
+     aria-modal="true">
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+       (click)="closeLogoutModal()"></div>
+  <div class="flex min-h-full items-center justify-center p-4">
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all"
+         (click)="$event.stopPropagation()">
+      <div class="p-6 text-center">
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 mb-6">
+          <i class="fas fa-sign-out-alt text-red-500 text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Déconnexion</h3>
+        <p class="text-gray-500 mb-8">Êtes-vous sûr de vouloir vous déconnecter de votre compte ?</p>
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="closeLogoutModal()"
+            [disabled]="isLoggingOut"
+            class="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors font-semibold disabled:opacity-50"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            (click)="confirmLogout()"
+            [disabled]="isLoggingOut"
+            class="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors font-semibold disabled:opacity-50 flex items-center justify-center shadow-lg shadow-red-200"
+          >
+            <i *ngIf="isLoggingOut" class="fas fa-spinner fa-spin mr-2"></i>
+            {{ isLoggingOut ? '...' : 'Confirmer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -111,7 +111,7 @@ export class LoginComponent implements OnInit{
    */
   private handleLoginSuccess(): void {
     this.isLoading = false;
-    this.successMessage = 'Connexion réussie ! Redirection en cours...';
+    this.successMessage = 'Connexion réussie !';
 
     // Effacer le formulaire
     this.loginForm.reset();

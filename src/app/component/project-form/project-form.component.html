@@ -131,30 +131,76 @@
     </div>
 
 
-    <!-- Skills Selection -->
+    <!-- Skills Search and Selection -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-3">
         <i class="fas fa-cogs mr-2 text-primary"></i>
         Compétences requises
       </label>
-      <div *ngIf="skills.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-        <button *ngFor="let skill of skills"
-                type="button"
-                (click)="toggleSkill(skill.id)"
-                [class.bg-primary]="selectedSkills.includes(skill.id)"
-                [class.text-white]="selectedSkills.includes(skill.id)"
-                [class.bg-gray-100]="!selectedSkills.includes(skill.id)"
-                [class.text-gray-700]="!selectedSkills.includes(skill.id)"
-                class="px-3 py-2 rounded-lg text-sm font-medium hover:shadow-md transition-all duration-200">
-          {{ skill.name }}
-        </button>
+
+      <!-- Search Input -->
+      <div class="relative">
+        <div class="relative">
+          <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="text"
+                 [(ngModel)]="skillSearchTerm"
+                 [ngModelOptions]="{standalone: true}"
+                 (input)="onSkillSearch($event)"
+                 (blur)="closeSkillDropdown()"
+                 placeholder="Rechercher ou ajouter des compétences..."
+                 class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+        </div>
+
+        <!-- Hint Text -->
+        <p class="text-gray-500 text-xs mt-2 flex items-center gap-1">
+          <i class="fas fa-lightbulb"></i>
+          Pour de meilleurs résultats, ajoutez 3 à 5 compétences
+        </p>
+
+        <!-- Dropdown Results -->
+        <div *ngIf="showSkillDropdown && filteredSkills.length > 0"
+             class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+          <div *ngFor="let skill of filteredSkills"
+               (mousedown)="selectSkill(skill)"
+               class="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100 last:border-b-0">
+            <span class="text-gray-800">{{ skill.name }}</span>
+          </div>
+        </div>
+
+        <!-- No Results -->
+        <div *ngIf="showSkillDropdown && filteredSkills.length === 0 && skillSearchTerm.length > 0"
+             class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+          <div class="px-4 py-3 text-gray-500 text-sm">
+            <i class="fas fa-info-circle mr-2"></i>
+            Aucune compétence trouvée pour "{{ skillSearchTerm }}"
+          </div>
+        </div>
       </div>
-      <div *ngIf="skills.length === 0" class="text-gray-500 text-sm">
-        Aucune compétence disponible
+
+      <!-- Selected Skills -->
+      <div class="mt-4">
+        <p class="text-sm font-medium text-gray-700 mb-2">
+          Compétences sélectionnées ({{ selectedSkills.length }})
+        </p>
+
+        <div *ngIf="selectedSkills.length > 0" class="flex flex-wrap gap-2">
+          <div *ngFor="let skill of selectedSkills"
+               class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full text-sm font-medium">
+            <span>{{ skill.name }}</span>
+            <button type="button"
+                    (click)="removeSkill(skill)"
+                    class="hover:bg-blue-600 rounded-full p-1 transition-colors duration-150">
+              <i class="fas fa-times text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="selectedSkills.length === 0"
+             class="text-gray-500 text-sm italic bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
+          <i class="fas fa-info-circle mr-2"></i>
+          Aucune compétence sélectionnée. Utilisez la recherche ci-dessus pour ajouter des compétences.
+        </div>
       </div>
-      <p class="text-gray-500 text-sm mt-2">
-        {{ selectedSkills.length }} compétence(s) sélectionnée(s)
-      </p>
     </div>
 
     <!-- File Upload -->

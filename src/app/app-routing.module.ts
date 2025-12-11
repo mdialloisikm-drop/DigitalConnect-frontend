@@ -46,6 +46,7 @@ import {PendingProjectsComponent} from "./component/pending-projects-admin/pendi
 import {PendingServicesComponent} from "./component/pending-services/pending-services.component";
 import {ClientOrdersComponent} from "./component/client-orders/client-orders.component";
 import {ClientOrderDetailComponent} from "./component/client-order-detail/client-order-detail.component";
+import {FreelancesComponent} from "./component/freelances/freelances.component";
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -66,6 +67,12 @@ const routes: Routes = [
     component: ProfileComponent,
     canActivate: [AuthGuard],
     data: { title: 'Mon profil' }
+  },
+  {
+    path: 'freelances',
+    component: FreelancesComponent,
+    canActivate: [AuthGuard],
+    data: { title: 'Trouver des Freelances' }
   },
   // Admin routes
   {
