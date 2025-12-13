@@ -6,6 +6,7 @@ import {AuthService} from "../../services/auth.service";
 import {ProposalService} from "../../services/proposal.service";
 import {ProposalFormData} from "../../models/proposal";
 import {finalize, Subject, takeUntil} from "rxjs";
+import {User} from "../../models/user";
 
 @Component({
   selector: 'app-project-detail',
@@ -391,10 +392,21 @@ export class ProjectDetailComponent implements OnInit{
   /**
    * Retourne l'URL de l'image
    */
-  getImageUrl(path: string): string {
-    if (! path) return '';
-    if (path.startsWith('http')) return path;
-    return `http://localhost:8000/storage/${path}`;
+  getImageUrl(path: string | undefined, user: User | undefined): string {
+    const name = user?.full_name || 'User';
+
+    // Si pas de path ou path vide
+    if (!path || !path.trim()) {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
+    }
+
+    // Si c'est déjà une URL complète
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+
+    // Pour les avatars, ajouter le chemin complet
+    return `http://localhost:8000/storage/avatars/${path}`;
   }
 
   /**

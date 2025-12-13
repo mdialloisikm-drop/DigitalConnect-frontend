@@ -120,4 +120,18 @@ export class HomeComponent implements OnInit{
     }
     return 0;
   }
+
+  formatBudget(budget: number | string | undefined): string {
+    if (!budget) return 'À négocier';
+
+    const numericBudget = typeof budget === 'number'
+      ? budget
+      : parseFloat(budget.toString().replace(/[^\d.]/g, ''));
+
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(numericBudget) + ' $';
+  }
 }

@@ -79,9 +79,7 @@
         <div *ngFor="let project of recentProjects" class="flex flex-col bg-white rounded-2xl border border-gray-200 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
           <div class="p-6 flex-grow">
             <div class="flex justify-between items-start mb-4">
-              <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase tracking-wide">
-                {{project.category?.name || 'Projet'}}
-              </span>
+
               <span class="text-xs text-gray-400 flex items-center">
                 <i class="far fa-clock mr-1"></i> {{project.created_at | date:'dd/MM/yyyy'}}
               </span>
@@ -101,7 +99,7 @@
           <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
             <div>
               <p class="text-xs text-gray-500 font-medium uppercase">Budget</p>
-              <p class="text-lg font-bold text-primary">{{project.budget ? (project.budget | currency) : 'À négocier'}}</p>
+              <p class="text-lg font-bold text-primary">{{formatBudget(project.budget)}}</p>
             </div>
             <a [routerLink]="['/projects', project.id]" class="text-sm font-semibold text-secondary hover:text-primary">
               Détails <i class="fas fa-chevron-right ml-1"></i>

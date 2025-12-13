@@ -15,7 +15,7 @@ declare global {
   providedIn: 'root'
 })
 export class EchoService {
-  private echo: Echo<any> | null = null;
+  private echo:  Echo<any> | null = null;
   private connectionStatusSubject = new BehaviorSubject<'connected' | 'disconnected' | 'connecting'>('disconnected');
   public connectionStatus$: Observable<'connected' | 'disconnected' | 'connecting'> = this.connectionStatusSubject.asObservable();
 
@@ -24,7 +24,7 @@ export class EchoService {
   }
 
   /**
-   * ✅ CORRECTION : Configuration pour Laravel WebSockets local
+   * Configuration pour Laravel Reverb
    */
   public init(authToken: string): void {
     if (this.echo) {
@@ -35,19 +35,20 @@ export class EchoService {
     this.connectionStatusSubject.next('connecting');
 
     try {
-      // ✅ Configuration optimisée pour Laravel WebSockets
+      const useTLS = environment.reverb.scheme === 'https';
+
       const options = {
         broadcaster: 'pusher',
-        key: environment.websocket.key,
-        wsHost: environment.websocket.wsHost,
-        wsPort: environment.websocket.wsPort,
-        wssPort: environment.websocket.wssPort,
-        forceTLS: false,
-        encrypted: true,
+        key: environment.reverb.key,
+        wsHost: environment.reverb.host,
+        wsPort: environment.reverb.port,
+        wssPort: environment.reverb.port,
+        forceTLS: useTLS,
+        encrypted: useTLS,
         disableStats: true,
-        enabledTransports: ['ws', 'wss'],
-        cluster: environment.websocket.cluster,
-        authEndpoint: environment.websocket.authEndpoint,
+        enabledTransports: useTLS ? ['wss'] : ['ws'],
+        cluster: 'mt1',
+        authEndpoint: environment.reverb.authEndpoint,
         auth: {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -56,9 +57,11 @@ export class EchoService {
         },
       };
 
-      console.log('🔧 Configuration Echo:', {
+      console.log('🔧 Configuration Echo pour Reverb:', {
         wsHost: options.wsHost,
         wsPort: options.wsPort,
+        forceTLS: options. forceTLS,
+        enabledTransports: options.enabledTransports,
         authEndpoint: options.authEndpoint
       });
 
@@ -68,28 +71,27 @@ export class EchoService {
       const pusher = (this.echo as any).connector.pusher;
 
       pusher.connection.bind('connected', () => {
-        console.log('✅ WebSocket connecté');
+        console.log('✅ Reverb WebSocket connecté');
         this.connectionStatusSubject.next('connected');
       });
 
-      pusher.connection.bind('disconnected', () => {
-        console.log('🔌 WebSocket déconnecté');
+      pusher. connection.bind('disconnected', () => {
+        console.log('🔌 Reverb WebSocket déconnecté');
+        this.connectionStatusSubject. next('disconnected');
+      });
+
+      pusher.connection. bind('error', (error:  any) => {
+        console.error('❌ Erreur Reverb WebSocket:', error);
         this.connectionStatusSubject.next('disconnected');
       });
 
-      pusher.connection.bind('error', (error: any) => {
-        console.error('❌ Erreur WebSocket:', error);
-        this.connectionStatusSubject.next('disconnected');
+      pusher.connection. bind('state_change', (states: any) => {
+        console.log('🔄 État Reverb WebSocket:', states. previous, '→', states.current);
       });
 
-      // ✅ AJOUT : Logs pour debugging
-      pusher.connection.bind('state_change', (states: any) => {
-        console.log('🔄 État WebSocket:', states.previous, '→', states.current);
-      });
-
-      console.log('✅ Echo initialisé avec succès');
+      console.log('✅ Echo initialisé avec Reverb');
     } catch (error) {
-      console.error('❌ Erreur lors de l\'initialisation d\'Echo:', error);
+      console. error('❌ Erreur lors de l\'initialisation d\'Echo:', error);
       this.connectionStatusSubject.next('disconnected');
       throw error;
     }
@@ -97,22 +99,22 @@ export class EchoService {
 
   public getEcho(): Echo<any> {
     if (!this.echo) {
-      throw new Error('❌ Echo n\'est pas initialisé. Appelez init() d\'abord.');
+      throw new Error('❌ Echo n\'est pas initialisé.  Appelez init() d\'abord.');
     }
     return this.echo;
   }
 
   public disconnect(): void {
-    if (this.echo) {
+    if (this. echo) {
       this.echo.disconnect();
       this.echo = null;
-      this.connectionStatusSubject.next('disconnected');
+      this. connectionStatusSubject. next('disconnected');
       console.log('🔌 Echo déconnecté');
     }
   }
 
   public isConnected(): boolean {
-    return this.echo !== null && this.connectionStatusSubject.value === 'connected';
+    return this. echo !== null && this.connectionStatusSubject.value === 'connected';
   }
 
   public reconnect(authToken: string): void {
@@ -123,6 +125,6 @@ export class EchoService {
   }
 
   public getConnectionStatus(): 'connected' | 'disconnected' | 'connecting' {
-    return this.connectionStatusSubject.value;
+    return this. connectionStatusSubject. value;
   }
 }

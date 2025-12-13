@@ -71,6 +71,14 @@ export class ClientManageProjectComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Vérifier si le projet permet la modification des tâches
+   * Les tâches ne peuvent être modifiées que si le projet n'est pas en cours
+   */
+  canManageTasks(): boolean {
+    return this.project?.status !== 'in_progress';
+  }
+
+  /**
    * Charger les données du projet
    */
   private loadProjectData(): void {
@@ -140,6 +148,11 @@ export class ClientManageProjectComponent implements OnInit, OnDestroy {
    * Ouvrir le formulaire de tâche pour ajout
    */
   openAddTaskForm(): void {
+    if (!this.canManageTasks()) {
+      this.errorMessage = 'Impossible de modifier les tâches pour un projet en cours.';
+      return;
+    }
+
     this.isEditingTask = false;
     this.currentTaskId = null;
     this.taskForm = {
@@ -154,6 +167,11 @@ export class ClientManageProjectComponent implements OnInit, OnDestroy {
    * Ouvrir le formulaire de tâche pour modification
    */
   openEditTaskForm(task: Task): void {
+    if (!this.canManageTasks()) {
+      this.errorMessage = 'Impossible de modifier les tâches pour un projet en cours.';
+      return;
+    }
+
     this.isEditingTask = true;
     this.currentTaskId = task.id || null;
     this.taskForm = {
@@ -182,6 +200,11 @@ export class ClientManageProjectComponent implements OnInit, OnDestroy {
    * Sauvegarder une tâche (ajout ou modification)
    */
   saveTask(): void {
+    if (!this.canManageTasks()) {
+      this.errorMessage = 'Impossible de modifier les tâches pour un projet en cours.';
+      return;
+    }
+
     if (!this.taskForm.title.trim()) {
       this.errorMessage = 'Le titre de la tâche est requis.';
       return;
@@ -227,6 +250,11 @@ export class ClientManageProjectComponent implements OnInit, OnDestroy {
    * Supprimer une tâche
    */
   deleteTask(taskId: number): void {
+    if (!this.canManageTasks()) {
+      this.errorMessage = 'Impossible de supprimer les tâches pour un projet en cours.';
+      return;
+    }
+
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
       return;
     }

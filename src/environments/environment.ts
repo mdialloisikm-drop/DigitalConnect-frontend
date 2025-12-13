@@ -20,16 +20,12 @@ export const environment = {
   firebase: {
     vapidKey: 'BGIGwJVQFcJ-pYyBPvGuFajO0uXrcn7u_WZw4elWpI7AzT-dplu242NqF0v7xZtqEIuldYlqIfY6wW-4y_q-4jk',
   },
-
-
-  websocket: {
-    key: 'rkj4nj5mszzp1bitzy9n',
-    wsHost: '127.0.0.1',
-    wsPort: 6001,
-    wssPort: 6001,
-    forceTLS: false,
-    cluster: 'mt1',
-    authEndpoint: 'http://localhost:8000/broadcasting/auth'
+  reverb: {
+    key: 'a5lacmcsftbjdvpmcdvd',
+    host: '127.0.0.1',
+    port: 8080,
+    scheme: 'http',
+    authEndpoint: 'http://127.0.0.1:8000/broadcasting/auth'
   },
 
 

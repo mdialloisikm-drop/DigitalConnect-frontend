@@ -310,24 +310,19 @@
               Client
             </h3>
             <div class="flex items-center">
-              <div *ngIf="! project. client?. user?. avatar"
-                   class="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
-                {{ getClientInitials() }}
-              </div>
-              <img *ngIf="project.client?.user?.avatar"
-                   [src]="getImageUrl(project.client! .user! .avatar! )"
-                   [alt]="project. client?. user?.full_name || 'Client'"
+              <img [src]="getImageUrl(project.client?.user?.avatar, project.client?.user)"
+                   [alt]="project.client?.user?.full_name || 'Client'"
                    class="w-14 h-14 rounded-full object-cover flex-shrink-0"
                    loading="lazy">
               <div class="ml-4">
-                <p class="font-semibold text-gray-900">{{ project.client?. user?.full_name }}</p>
+                <p class="font-semibold text-gray-900">{{ project.client?.user?.full_name }}</p>
                 <p *ngIf="project.client?.company_name" class="text-sm text-gray-500">
                   {{ project.client?.company_name }}
                 </p>
                 <p *ngIf="project.client?.user?.city || project.client?.user?.country"
                    class="text-sm text-gray-500 flex items-center mt-1">
-                  <i class="fas fa-map-marker-alt mr-1. 5 text-gray-400"></i>
-                  {{ project.client?.user?.city }}{{ project.client?.user?.city && project.client?.user?.country ? ', ' : '' }}{{ project! .client?.user?. country }}
+                  <i class="fas fa-map-marker-alt mr-1.5 text-gray-400"></i>
+                  {{ project.client?.user?.city }}{{ project.client?.user?.city && project.client?.user?.country ? ', ' : '' }}{{ project!.client?.user?.country }}
                 </p>
               </div>
             </div>

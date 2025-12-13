@@ -151,4 +151,14 @@ export class PendingProjectDetailsComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/admin/projects/pending']);
   }
+
+  formatCurrency(amount: number | string): string {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      currencyDisplay: 'narrowSymbol'
+    }).format(numAmount);
+  }
 }

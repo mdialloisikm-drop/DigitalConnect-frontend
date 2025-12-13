@@ -10,7 +10,7 @@
         <!-- Avatar avec photo -->
         <img
           *ngIf="hasAvatar(getOtherUser())"
-          [src]="getOtherUser()?.avatar"
+          [src]="getUserAvatar(getOtherUser())"
           [alt]="getOtherUser()?.full_name"
           class="avatar-image"
         />
@@ -72,7 +72,7 @@
             <!-- Avatar avec photo -->
             <img
               *ngIf="hasAvatar(message.sender)"
-              [src]="message.sender.avatar"
+              [src]="getUserAvatar(message.sender)"
               [alt]="message.sender.full_name"
               class="avatar-image-small"
             />
@@ -93,7 +93,9 @@
             </div>
 
             <!-- Contenu du message -->
-            <div class="message-bubble" [class.own]="isOwnMessage(message)">
+            <div class="message-bubble"
+                 [class.own]="isOwnMessage(message)"
+                 [class.sending]="isMessageSending(message)">
               <!-- Message texte -->
               <div class="message-text" *ngIf="message.message_type === 'text'">
                 {{ message.content }}
@@ -103,7 +105,7 @@
               <div class="message-file" *ngIf="message.message_type === 'file'">
                 <i class="fas fa-file file-icon"></i>
                 <span class="file-name">{{ getFileName(message.content) }}</span>
-                <a [href]="message.content" target="_blank" class="file-download">
+                <a [href]="message.content" target="_blank" class="file-download" *ngIf="!isMessageSending(message)">
                   <i class="fas fa-download"></i>
                 </a>
               </div>
@@ -112,20 +114,25 @@
               <div class="message-voice" *ngIf="message.message_type === 'voice'">
                 <i class="fas fa-microphone voice-icon"></i>
                 <span>Message vocal</span>
-                <audio [src]="message.content" controls class="voice-player"></audio>
+                <audio [src]="message.content" controls class="voice-player" *ngIf="!isMessageSending(message)"></audio>
               </div>
             </div>
 
             <!-- Heure et statut -->
             <div class="message-meta">
               <span class="message-time">{{ formatTime(message.created_at) }}</span>
-              <i
-                *ngIf="isOwnMessage(message)"
-                class="fas message-status"
-                [class.fa-check]="!message.is_read"
-                [class.fa-check-double]="message.is_read"
-                [class.read]="message.is_read">
-              </i>
+              <!-- ✅ Afficher l'indicateur d'envoi ou le statut de lecture -->
+              <ng-container *ngIf="isOwnMessage(message)">
+                <i *ngIf="isMessageSending(message)"
+                   class="fas fa-clock message-status"
+                   title="Envoi en cours..."></i>
+                <i *ngIf="!isMessageSending(message) && !message.is_read"
+                   class="fas fa-check message-status"
+                   title="Envoyé"></i>
+                <i *ngIf="!isMessageSending(message) && message.is_read"
+                   class="fas fa-check-double message-status read"
+                   title="Lu"></i>
+              </ng-container>
             </div>
           </div>
         </div>
@@ -160,7 +167,10 @@
       style="display: none;"
     />
 
-    <button class="attach-btn" (click)="openFileSelector()" title="Joindre un fichier">
+    <button class="attach-btn"
+            (click)="openFileSelector()"
+            title="Joindre un fichier"
+            [disabled]="isSending">
       <i class="fas fa-paperclip"></i>
     </button>
 
@@ -177,7 +187,8 @@
     <button
       class="send-btn"
       (click)="sendMessage()"
-      [disabled]="!messageContent.trim() || isSending">
+      [disabled]="!messageContent.trim() || isSending"
+      [title]="isSending ? 'Envoi en cours...' : 'Envoyer le message'">
       <i
         class="fas"
         [class.fa-paper-plane]="!isSending"

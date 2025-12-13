@@ -4,13 +4,11 @@ export interface Environment {
   firebase: {
     vapidKey: string;
   };
-  websocket: {
+  reverb: {
     key: string;
-    wsHost: string;
-    wsPort: number;
-    wssPort: number;
-    forceTLS: boolean;
-    cluster: string;
+    host: string;
+    port: number;
+    scheme: 'http' | 'https';
     authEndpoint: string;
   };
 }

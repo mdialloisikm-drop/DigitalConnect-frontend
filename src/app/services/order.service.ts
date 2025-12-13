@@ -28,7 +28,7 @@ export class OrderService {
     formData.append('service_offer_id', serviceOfferId.toString());
 
     if (requirements && requirements.trim()) {
-      formData.append('requirements', requirements. trim());
+      formData.append('requirements', requirements.trim());
     }
 
     // Ajouter les fichiers joints (max 5)
@@ -40,7 +40,7 @@ export class OrderService {
 
     this.loadingSubject$.next(true);
 
-    return this. http.post<{ message: string; order: Order }>(this.apiUrl, formData). pipe(
+    return this.http.post<{ message: string; order: Order }>(this.apiUrl, formData).pipe(
       tap(() => {
         this.invalidateCache();
         this.loadingSubject$.next(false);
@@ -267,22 +267,26 @@ export class OrderService {
   }
 
   /**
-   * Upload un livrable (freelance)
+   * Upload un livrable fichier (freelance)
+   * CORRECTION: Utilisation de la bonne route sans paramètres superflus
    */
   uploadDeliverable(orderId: number, file: File): Observable<{ message: string }> {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('file_type', 'deliverable');
+    formData.append('deliverables[]', file);
 
     return this.http.post<{ message: string }>(
-      `${environment.apiUrl}/attachments`,
-      formData,
-      {
-        params: {
-          attachable_type: 'Order',
-          attachable_id: orderId.toString()
-        }
-      }
+      `${environment.apiUrl}/orders/${orderId}/deliverables`,
+      formData
+    );
+  }
+
+  /**
+   * Ajouter un lien comme livrable (freelance)
+   */
+  addDeliverableLink(orderId: number, name: string, url: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${environment.apiUrl}/orders/${orderId}/deliverables/link`,
+      { name, url }
     );
   }
 
@@ -302,7 +306,7 @@ export class OrderService {
     return this.http.put<{ message: string; order: Order }>(
       `${this.apiUrl}/${id}/accept`,
       {}
-    ). pipe(
+    ).pipe(
       tap(() => {
         this.invalidateCache();
       }),
@@ -314,7 +318,7 @@ export class OrderService {
    * Demander une révision (client)
    */
   requestRevision(id: number, revisionNotes: string): Observable<{ message: string; order: Order }> {
-    return this. http.put<{ message: string; order: Order }>(
+    return this.http.put<{ message: string; order: Order }>(
       `${this.apiUrl}/${id}/revision`,
       { revision_notes: revisionNotes }
     ).pipe(

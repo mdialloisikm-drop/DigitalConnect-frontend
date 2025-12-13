@@ -11,7 +11,7 @@
 
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-3xl font-bold text-secondary mb-2">CMD-Nᵒ00{{ order?.id }}</h1>
+        <h1 class="text-3xl font-bold text-secondary mb-2">CMD-N°00{{ order?.id }}</h1>
         <span
           *ngIf="order"
           [class]="getStatusClass(order.status)"
@@ -28,12 +28,14 @@
           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors duration-200 flex items-center"
         >
           <i class="fas fa-check mr-2"></i>
+          Accepter
         </button>
         <button
           (click)="refuseOrder()"
           class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors duration-200 flex items-center"
         >
           <i class="fas fa-times mr-2"></i>
+          Refuser
         </button>
       </div>
     </div>
@@ -106,7 +108,6 @@
         <div class="mb-6 pb-6 border-b border-gray-200">
           <h2 class="text-xl font-bold text-secondary mb-4">Service commandé</h2>
           <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-            <!-- CORRECTION: Vérification complète avec && pour éviter les erreurs undefined -->
             <div *ngIf="hasServiceImage(order)" class="flex-shrink-0">
               <img
                 [src]="getServiceImageUrl(order)"
@@ -129,12 +130,11 @@
                 <span class="text-gray-700">
                   <i class="fas fa-clock mr-1 text-orange-600"></i>
                   {{ order.service_offer?.delivery_days || 0 }} jour{{ (order.service_offer?.delivery_days || 0) > 1 ? 's' : '' }}
-<!--                  {{ formatDeliveryDays(order) }}-->
                 </span>
                 <span class="text-gray-700">
-          <i class="fas fa-redo mr-1 text-purple-600"></i>
+                  <i class="fas fa-redo mr-1 text-purple-600"></i>
                   {{ order.service_offer?.number_of_revisions || 0 }} révision{{ (order.service_offer?.number_of_revisions || 0) > 1 ? 's' : '' }}
-        </span>
+                </span>
               </div>
             </div>
           </div>
@@ -206,56 +206,121 @@
       <!-- Tab: Livrables -->
       <div *ngIf="activeTab === 'deliverables'" class="p-6">
         <!-- Upload Section -->
-        <div *ngIf="canUploadDeliverables()" class="mb-6 p-6 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg">
-          <h3 class="text-lg font-bold text-secondary mb-4">
-            <i class="fas fa-cloud-upload-alt mr-2 text-primary"></i>
-            Téléverser des livrables
-          </h3>
+        <div *ngIf="canUploadDeliverables()" class="mb-6 space-y-4">
+          <!-- Upload de fichiers -->
+          <div class="p-6 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg">
+            <h3 class="text-lg font-bold text-secondary mb-4">
+              <i class="fas fa-cloud-upload-alt mr-2 text-primary"></i>
+              Ajouter des fichiers
+            </h3>
 
-          <div class="mb-4">
-            <input
-              type="file"
-              id="fileInput"
-              (change)="onFileSelected($event)"
-              multiple
-              class="hidden"
-            />
-            <label
-              for="fileInput"
-              class="inline-block bg-white border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-200 font-medium"
-            >
-              <i class="fas fa-paperclip mr-2"></i>
-              Choisir des fichiers
-            </label>
-          </div>
-
-          <div *ngIf="selectedFiles.length > 0" class="mb-4">
-            <p class="font-medium text-gray-700 mb-2">Fichiers sélectionnés :</p>
-            <ul class="space-y-2">
-              <li *ngFor="let file of selectedFiles" class="flex items-center gap-2 text-sm text-gray-600">
-                <i class="fas fa-file"></i>
-                {{ file.name }} ({{ formatFileSize(file.size) }})
-              </li>
-            </ul>
-          </div>
-
-          <button
-            (click)="uploadDeliverables()"
-            [disabled]="selectedFiles.length === 0 || isUploading"
-            class="bg-primary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            <i [class]="isUploading ? 'fas fa-spinner fa-spin mr-2' : 'fas fa-upload mr-2'"></i>
-            {{ isUploading ? 'Upload en cours...' : 'Téléverser' }}
-          </button>
-
-          <div *ngIf="isUploading" class="mt-4">
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div
-                class="bg-primary h-2 rounded-full transition-all duration-300"
-                [style.width.%]="uploadProgress"
-              ></div>
+            <div class="mb-4">
+              <input
+                type="file"
+                id="fileInput"
+                (change)="onFileSelected($event)"
+                multiple
+                class="hidden"
+              />
+              <label
+                for="fileInput"
+                class="inline-block bg-white border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-200 font-medium"
+              >
+                <i class="fas fa-paperclip mr-2"></i>
+                Choisir des fichiers
+              </label>
             </div>
-            <p class="text-sm text-gray-600 mt-2">{{ uploadProgress }}% complété</p>
+
+            <div *ngIf="selectedFiles.length > 0" class="mb-4">
+              <p class="font-medium text-gray-700 mb-2">Fichiers sélectionnés :</p>
+              <ul class="space-y-2">
+                <li *ngFor="let file of selectedFiles" class="flex items-center gap-2 text-sm text-gray-600">
+                  <i class="fas fa-file"></i>
+                  {{ file.name }} ({{ formatFileSize(file.size) }})
+                </li>
+              </ul>
+            </div>
+
+            <button
+              (click)="uploadDeliverables()"
+              [disabled]="selectedFiles.length === 0 || isUploading"
+              class="bg-primary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              <i [class]="isUploading ? 'fas fa-spinner fa-spin mr-2' : 'fas fa-upload mr-2'"></i>
+              {{ isUploading ? 'Upload en cours...' : 'Téléverser' }}
+            </button>
+
+            <div *ngIf="isUploading" class="mt-4">
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  class="bg-primary h-2 rounded-full transition-all duration-300"
+                  [style.width.%]="uploadProgress"
+                ></div>
+              </div>
+              <p class="text-sm text-gray-600 mt-2">{{ uploadProgress }}% complété</p>
+            </div>
+          </div>
+
+          <!-- Ajouter un lien -->
+          <div class="p-6 bg-green-50 border-2 border-dashed border-green-300 rounded-lg">
+            <h3 class="text-lg font-bold text-secondary mb-4">
+              <i class="fas fa-link mr-2 text-green-600"></i>
+              Ajouter un lien
+            </h3>
+
+            <button
+              *ngIf="!showLinkForm"
+              (click)="toggleLinkForm()"
+              class="bg-white border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
+            >
+              <i class="fas fa-plus mr-2"></i>
+              Ajouter un lien
+            </button>
+
+            <div *ngIf="showLinkForm" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Nom du lien
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="linkName"
+                  placeholder="Ex: Maquette Figma"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  URL
+                </label>
+                <input
+                  type="url"
+                  [(ngModel)]="linkUrl"
+                  placeholder="https://..."
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+
+              <div class="flex gap-3">
+                <button
+                  (click)="addLink()"
+                  [disabled]="!linkName.trim() || !linkUrl.trim() || isUploading"
+                  class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <i class="fas fa-check mr-2"></i>
+                  Ajouter
+                </button>
+                <button
+                  (click)="toggleLinkForm()"
+                  [disabled]="isUploading"
+                  class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+                >
+                  <i class="fas fa-times mr-2"></i>
+                  Annuler
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -276,21 +341,32 @@
               class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200"
             >
               <div class="flex items-center gap-4 flex-1">
-                <i [class]="'fas ' + getFileIcon(deliverable.file_name) + ' text-3xl'"></i>
+                <i [class]="'fas ' + getFileIcon(deliverable) + ' text-3xl'"></i>
                 <div class="flex-1">
                   <p class="font-medium text-secondary">{{ deliverable.file_name }}</p>
                   <p class="text-sm text-gray-600">
-                    Ajouté le {{ formatDate(deliverable.created_at) }}
+                    <span class="mr-3">
+                      <i class="fas fa-calendar mr-1"></i>
+                      Ajouté le {{ formatDate(deliverable.created_at) }}
+                    </span>
+                    <span
+                      [class]="deliverable.format === 'link' ? 'text-blue-600' : 'text-gray-600'"
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                      [ngClass]="deliverable.format === 'link' ? 'bg-blue-100' : 'bg-gray-100'"
+                    >
+                      <i [class]="deliverable.format === 'link' ? 'fas fa-link mr-1' : 'fas fa-file mr-1'"></i>
+                      {{ deliverable.format === 'link' ? 'Lien' : 'Fichier' }}
+                    </span>
                   </p>
                 </div>
               </div>
               <div class="flex gap-2">
                 <button
-                  (click)="downloadFile(deliverable.file_path)"
+                  (click)="downloadFile(deliverable)"
                   class="text-primary hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                  title="Télécharger"
+                  [title]="deliverable.format === 'link' ? 'Ouvrir le lien' : 'Télécharger'"
                 >
-                  <i class="fas fa-download"></i>
+                  <i [class]="deliverable.format === 'link' ? 'fas fa-external-link-alt' : 'fas fa-download'"></i>
                 </button>
                 <button
                   *ngIf="canUploadDeliverables()"

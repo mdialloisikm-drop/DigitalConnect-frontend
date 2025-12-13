@@ -9,6 +9,8 @@ export interface Deliverable {
   id: number;
   file_name: string;
   file_path: string;
+  url?: string;
+  format: 'file' | 'link';
   file_size?: number;
   created_at: string;
 }
@@ -24,7 +26,12 @@ export class FreelanceOrderDetailComponent implements OnInit{
   errorMessage = '';
   activeTab: 'details' | 'deliverables' = 'details';
 
-  // Pour les livrables
+  // Pour l'ajout de lien
+  showLinkForm = false;
+  linkName = '';
+  linkUrl = '';
+
+  // Pour les livrables fichiers
   selectedFiles: File[] = [];
   isUploading = false;
   uploadProgress = 0;
@@ -108,6 +115,45 @@ export class FreelanceOrderDetailComponent implements OnInit{
   }
 
   /**
+   * Afficher/masquer le formulaire de lien
+   */
+  toggleLinkForm(): void {
+    this.showLinkForm = !this.showLinkForm;
+    if (!this.showLinkForm) {
+      this.linkName = '';
+      this.linkUrl = '';
+    }
+  }
+
+  /**
+   * Ajouter un lien comme livrable
+   */
+  addLink(): void {
+    if (!this.order || !this.linkName.trim() || !this.linkUrl.trim()) {
+      alert('Veuillez remplir tous les champs du lien.');
+      return;
+    }
+
+    this.isUploading = true;
+
+    this.orderService.addDeliverableLink(this.order.id, this.linkName, this.linkUrl).subscribe({
+      next: () => {
+        this.isUploading = false;
+        this.linkName = '';
+        this.linkUrl = '';
+        this.showLinkForm = false;
+        this.loadOrder(this.order!.id);
+        alert('Lien ajouté avec succès !');
+      },
+      error: (error) => {
+        console.error('Erreur ajout lien:', error);
+        this.isUploading = false;
+        alert(error.error?.error || 'Erreur lors de l\'ajout du lien');
+      }
+    });
+  }
+
+  /**
    * Sélectionner des fichiers à uploader
    */
   onFileSelected(event: Event): void {
@@ -118,7 +164,7 @@ export class FreelanceOrderDetailComponent implements OnInit{
   }
 
   /**
-   * Uploader les livrables
+   * Uploader les livrables fichiers
    */
   uploadDeliverables(): void {
     if (!this.order || this.selectedFiles.length === 0) {
@@ -127,14 +173,15 @@ export class FreelanceOrderDetailComponent implements OnInit{
 
     this.isUploading = true;
     let uploadedCount = 0;
+    const totalFiles = this.selectedFiles.length;
 
-    this.selectedFiles.forEach((file, index) => {
+    this.selectedFiles.forEach((file) => {
       this.orderService.uploadDeliverable(this.order!.id, file).subscribe({
         next: () => {
           uploadedCount++;
-          this.uploadProgress = Math.round((uploadedCount / this.selectedFiles.length) * 100);
+          this.uploadProgress = Math.round((uploadedCount / totalFiles) * 100);
 
-          if (uploadedCount === this.selectedFiles.length) {
+          if (uploadedCount === totalFiles) {
             this.isUploading = false;
             this.selectedFiles = [];
             this.uploadProgress = 0;
@@ -143,12 +190,15 @@ export class FreelanceOrderDetailComponent implements OnInit{
             // Reset file input
             const fileInput = document.getElementById('fileInput') as HTMLInputElement;
             if (fileInput) fileInput.value = '';
+
+            alert('Fichiers uploadés avec succès !');
           }
         },
         error: (error) => {
           console.error('Erreur upload:', error);
           this.isUploading = false;
-          alert(`Erreur lors de l'upload de ${file.name}`);
+          this.uploadProgress = 0;
+          alert(`Erreur lors de l'upload de ${file.name}: ${error.error?.error || error.message}`);
         }
       });
     });
@@ -167,6 +217,7 @@ export class FreelanceOrderDetailComponent implements OnInit{
         if (this.order) {
           this.loadOrder(this.order.id);
         }
+        alert('Livrable supprimé avec succès !');
       },
       error: (error) => {
         console.error('Erreur:', error);
@@ -256,7 +307,6 @@ export class FreelanceOrderDetailComponent implements OnInit{
 
   /**
    * Vérifier si la commande a des livrables
-   * CORRECTION: Ajout de vérification pour éviter undefined
    */
   hasDeliverables(): boolean {
     const orderWithDeliverables = this.order as (Order & { deliverables?: Deliverable[] }) | null;
@@ -265,7 +315,6 @@ export class FreelanceOrderDetailComponent implements OnInit{
 
   /**
    * Obtenir les livrables
-   * CORRECTION: Gestion propre des undefined
    */
   getDeliverables(): Deliverable[] {
     const orderWithDeliverables = this.order as (Order & { deliverables?: Deliverable[] }) | null;
@@ -273,10 +322,14 @@ export class FreelanceOrderDetailComponent implements OnInit{
   }
 
   /**
-   * Télécharger un fichier
+   * Télécharger un fichier ou ouvrir un lien
    */
-  downloadFile(filePath: string): void {
-    window.open(filePath, '_blank');
+  downloadFile(deliverable: Deliverable): void {
+    if (deliverable.format === 'link' && deliverable.url) {
+      window.open(deliverable.url, '_blank');
+    } else if (deliverable.file_path) {
+      window.open(deliverable.file_path, '_blank');
+    }
   }
 
   /**
@@ -291,10 +344,14 @@ export class FreelanceOrderDetailComponent implements OnInit{
   }
 
   /**
-   * Obtenir l'icône du fichier
+   * Obtenir l'icône du fichier/lien
    */
-  getFileIcon(fileName: string): string {
-    const extension = fileName.split('.').pop()?.toLowerCase();
+  getFileIcon(deliverable: Deliverable): string {
+    if (deliverable.format === 'link') {
+      return 'fa-link text-blue-600';
+    }
+
+    const extension = deliverable.file_name.split('.').pop()?.toLowerCase();
     const iconMap: { [key: string]: string } = {
       pdf: 'fa-file-pdf text-red-600',
       doc: 'fa-file-word text-blue-600',
@@ -346,16 +403,6 @@ export class FreelanceOrderDetailComponent implements OnInit{
   }
 
   /**
-   * Récupère l'URL d'une image
-   */
-  // getImageUrl(path: string): string {
-  //   if (path.startsWith('http')) {
-  //     return path;
-  //   }
-  //   return `http://localhost:8000/storage/${path}`;
-  // }
-
-  /**
    * Récupère le titre du service
    */
   getServiceTitle(order: Order): string {
@@ -366,7 +413,7 @@ export class FreelanceOrderDetailComponent implements OnInit{
    * Récupère le délai de livraison formaté
    */
   formatDeliveryDays(order: Order): string {
-    const days = order.service_offer?.delivery_days ??  0;
+    const days = order.service_offer?.delivery_days ?? 0;
     return `${days} jour${days > 1 ? 's' : ''}`;
   }
 
@@ -374,7 +421,7 @@ export class FreelanceOrderDetailComponent implements OnInit{
    * Récupère le nombre de révisions formaté
    */
   formatRevisions(order: Order): string {
-    const revisions = order.service_offer?.number_of_revisions ??  0;
+    const revisions = order.service_offer?.number_of_revisions ?? 0;
     return `${revisions} révision${revisions > 1 ? 's' : ''}`;
   }
 

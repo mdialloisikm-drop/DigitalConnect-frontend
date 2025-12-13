@@ -87,7 +87,7 @@ export class ConversationComponent implements OnInit, OnDestroy {
 
     this.realtimeService.joinConversation(this.conversationId);
 
-    // ✅ S'abonner aux nouveaux messages
+    // ✅ S'abonner aux nouveaux messages avec gestion optimisée
     const newMessageSub = this.realtimeService.newMessage$.subscribe((incomingEvent) => {
       if (!incomingEvent) return;
 
@@ -96,16 +96,29 @@ export class ConversationComponent implements OnInit, OnDestroy {
       if (message && message.conversation_id === this.conversationId) {
         console.log('📨 Message reçu temps réel:', message);
 
-        // ✅ Vérifier doublons
-        const exists = this.messages.find(m => m.id === message.id);
-        if (!exists) {
+        // ✅ Vérifier si le message existe déjà (éviter doublons)
+        const existingMessageIndex = this.messages.findIndex(m =>
+          m.id === message.id ||
+          (m.content === message.content &&
+            m.sender_id === message.sender_id &&
+            Math.abs(new Date(m.created_at).getTime() - new Date(message.created_at).getTime()) < 2000)
+        );
+
+        if (existingMessageIndex === -1) {
+          // ✅ Nouveau message - l'ajouter
           this.messages.push(message);
           this.scrollToBottom();
 
-          // ✅ Marquer comme lu automatiquement si ce n'est pas notre message
-          if (message.sender_id !== this.currentUserId) {
+          // ✅ Marquer comme lu si ce n'est pas notre message
+          if (message.sender_id !== this.currentUserId && !message.is_read) {
             this.markMessageAsRead(message.id);
           }
+        } else {
+          // ✅ Message existant - le mettre à jour (cas où on a créé un message optimiste)
+          this.messages[existingMessageIndex] = {
+            ...this.messages[existingMessageIndex],
+            ...message
+          };
         }
       }
     });
@@ -162,7 +175,7 @@ export class ConversationComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         this.scrollToBottom();
 
-        // ✅ CORRECTION: Marquer tous comme lus dès l'entrée
+        // ✅ Marquer tous comme lus dès l'entrée
         this.markAllAsRead();
 
         console.log('✅ Messages chargés:', this.messages.length);
@@ -177,33 +190,69 @@ export class ConversationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * ✅ CORRECTION: Envoyer message SANS reload
+   * ✅ AMÉLIORATION: Envoi optimiste du message (affichage immédiat)
    */
   public sendMessage(): void {
     if (!this.messageContent.trim() || this.isSending) return;
 
-    this.isSending = true;
-    const content = this.messageContent;
+    const content = this.messageContent.trim();
     this.messageContent = ''; // ✅ Vider immédiatement pour UX fluide
+    this.isSending = true;
 
+    // ✅ OPTIMISTIC UI: Créer un message temporaire immédiatement
+    const optimisticMessage: Message = {
+      id: Date.now(), // ID temporaire unique
+      conversation_id: this.conversationId,
+      sender_id: this.currentUserId,
+      sender: {
+        id: this.currentUserId,
+        full_name: this.currentUserName,
+        email: this.authService.currentUserValue?.email || '',
+        avatar: this.authService.currentUserValue?.avatar || null,
+        user_type: this.authService.currentUserValue?.user_type || 'client'
+      },
+      content: content,
+      message_type: 'text',
+      is_read: false,
+      read_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      _sending: true // ✅ Flag pour indiquer que le message est en cours d'envoi
+    } as any;
+
+    // ✅ Ajouter immédiatement le message à l'interface
+    this.messages.push(optimisticMessage);
+    this.scrollToBottom();
+
+    // ✅ Envoyer le message au serveur
     const sub = this.messageHttpService.sendTextMessage(this.conversationId, content).subscribe({
       next: (response) => {
-        console.log('✅ Message envoyé');
+        console.log('✅ Message envoyé avec succès');
 
-        // ✅ Ajouter seulement si toOthers() est utilisé côté serveur
-        const exists = this.messages.find(m => m.id === response.data.id);
-        if (!exists) {
-          this.messages.push(response.data);
-          this.scrollToBottom();
+        // ✅ Remplacer le message optimiste par le message réel du serveur
+        const optimisticIndex = this.messages.findIndex(m => m.id === optimisticMessage.id);
+        if (optimisticIndex !== -1) {
+          this.messages[optimisticIndex] = response.data;
         }
 
         this.isSending = false;
         this.stopTyping();
       },
       error: (error) => {
-        console.error('❌ Erreur envoi:', error);
-        this.messageContent = content; // ✅ Restaurer en cas d'erreur
+        console.error('❌ Erreur envoi message:', error);
+
+        // ✅ Retirer le message optimiste en cas d'erreur
+        const optimisticIndex = this.messages.findIndex(m => m.id === optimisticMessage.id);
+        if (optimisticIndex !== -1) {
+          this.messages.splice(optimisticIndex, 1);
+        }
+
+        // ✅ Restaurer le contenu dans le champ
+        this.messageContent = content;
         this.isSending = false;
+
+        // ✅ Afficher une notification d'erreur (optionnel)
+        alert('Erreur lors de l\'envoi du message. Veuillez réessayer.');
       }
     });
 
@@ -249,13 +298,21 @@ export class ConversationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * ✅ CORRECTION: Marquer tous comme lus dès l'entrée
+   * ✅ Marquer tous comme lus dès l'entrée
    */
   private markAllAsRead(): void {
     this.messageHttpService.markAllAsRead(this.conversationId).subscribe({
       next: (response) => {
         if (response.count > 0) {
           console.log(`✅ ${response.count} message(s) marqué(s) comme lu(s)`);
+
+          // ✅ Mettre à jour localement tous les messages reçus comme lus
+          this.messages.forEach(msg => {
+            if (msg.sender_id !== this.currentUserId) {
+              msg.is_read = true;
+              msg.read_at = new Date().toISOString();
+            }
+          });
         }
       },
       error: (error) => {
@@ -289,13 +346,19 @@ export class ConversationComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * ✅ AMÉLIORATION: Scroll plus fluide avec requestAnimationFrame
+   */
   private scrollToBottom(): void {
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       if (this.messagesContainer) {
         const element = this.messagesContainer.nativeElement;
-        element.scrollTop = element.scrollHeight;
+        element.scrollTo({
+          top: element.scrollHeight,
+          behavior: 'smooth'
+        });
       }
-    }, 100);
+    });
   }
 
   public getOtherUser(): User | null {
@@ -328,6 +391,17 @@ export class ConversationComponent implements OnInit, OnDestroy {
     return !!(user && user.avatar && user.avatar.trim() !== '');
   }
 
+  public getUserAvatar(user: User | null): string {
+    if (user?.avatar) {
+      if (user.avatar.startsWith('http://') || user.avatar.startsWith('https://')) {
+        return user.avatar;
+      }
+      return `http://localhost:8000/storage/avatars/${user.avatar}`;
+    }
+    const name = user?.full_name || 'User';
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
+  }
+
   public isOwnMessage(message: Message): boolean {
     return message.sender_id === this.currentUserId;
   }
@@ -341,31 +415,70 @@ export class ConversationComponent implements OnInit, OnDestroy {
     this.fileInput.nativeElement.click();
   }
 
+  /**
+   * ✅ AMÉLIORATION: Envoi de fichier avec UI optimiste
+   */
   public onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file: File | null = input.files ? input.files[0] : null;
     if (file) {
       this.sendFileMessage(file);
     }
+    // ✅ Réinitialiser l'input pour permettre le même fichier
+    input.value = '';
   }
 
   private sendFileMessage(file: File): void {
     this.isSending = true;
 
+    // ✅ OPTIMISTIC UI pour fichier
+    const optimisticMessage: Message = {
+      id: Date.now(),
+      conversation_id: this.conversationId,
+      sender_id: this.currentUserId,
+      sender: {
+        id: this.currentUserId,
+        full_name: this.currentUserName,
+        email: this.authService.currentUserValue?.email || '',
+        avatar: this.authService.currentUserValue?.avatar || null,
+        user_type: this.authService.currentUserValue?.user_type || 'client'
+      },
+      content: JSON.stringify({ name: file.name, size: file.size }),
+      message_type: 'file',
+      is_read: false,
+      read_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      _sending: true
+    } as any;
+
+    this.messages.push(optimisticMessage);
+    this.scrollToBottom();
+
     const sub = this.messageHttpService.sendFileMessage(this.conversationId, file).subscribe({
       next: (response) => {
-        console.log('✅ Fichier envoyé');
-        const exists = this.messages.find(m => m.id === response.data.id);
-        if (!exists) {
-          this.messages.push(response.data);
-          this.scrollToBottom();
+        console.log('✅ Fichier envoyé avec succès');
+
+        // ✅ Remplacer le message optimiste
+        const optimisticIndex = this.messages.findIndex(m => m.id === optimisticMessage.id);
+        if (optimisticIndex !== -1) {
+          this.messages[optimisticIndex] = response.data;
         }
+
         this.isSending = false;
         this.stopTyping();
       },
       error: (error) => {
         console.error('❌ Erreur envoi fichier:', error);
+
+        // ✅ Retirer le message optimiste
+        const optimisticIndex = this.messages.findIndex(m => m.id === optimisticMessage.id);
+        if (optimisticIndex !== -1) {
+          this.messages.splice(optimisticIndex, 1);
+        }
+
         this.isSending = false;
+        alert('Erreur lors de l\'envoi du fichier. Veuillez réessayer.');
       }
     });
 
@@ -415,5 +528,15 @@ export class ConversationComponent implements OnInit, OnDestroy {
     } catch {
       return 'Fichier';
     }
+  }
+
+  /**
+   * ✅ NOUVEAU: Vérifier si un message est en cours d'envoi
+   */
+  /**
+   * ✅ NOUVEAU: Vérifier si un message est en cours d'envoi
+   */
+  public isMessageSending(message: Message): boolean {
+    return !!(message as any)._sending;
   }
 }

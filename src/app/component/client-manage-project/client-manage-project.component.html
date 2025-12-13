@@ -266,15 +266,25 @@
           <div *ngIf="activeTab === 'tasks'">
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900">Gestion des tâches</h2>
-              <button (click)="openAddTaskForm()"
+              <!-- Le bouton d'ajout n'est visible que si le projet n'est PAS en cours -->
+              <button *ngIf="canManageTasks()"
+                      (click)="openAddTaskForm()"
                       class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2">
                 <i class="fas fa-plus"></i>
                 Nouvelle tâche
               </button>
             </div>
 
+            <!-- Message d'information pour les projets en cours -->
+            <div *ngIf="!canManageTasks()" class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-center">
+                <i class="fas fa-info-circle text-blue-600 text-xl mr-3"></i>
+                <p class="text-blue-800">Vous ne pouvez plus ajouté, ni modifié, ni supprimé les tâches puisque le projet est en cours</p>
+              </div>
+            </div>
+
             <!-- Formulaire d'ajout/modification de tâche -->
-            <div *ngIf="showTaskForm" class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div *ngIf="showTaskForm && canManageTasks()" class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
               <h3 class="text-lg font-semibold text-gray-900 mb-4">
                 {{ isEditingTask ? 'Modifier la tâche' : 'Nouvelle tâche' }}
               </h3>
@@ -365,7 +375,8 @@
                       </span>
                     </div>
                   </div>
-                  <div class="flex gap-2 ml-4">
+                  <!-- Les boutons d'action ne sont visibles que si le projet n'est PAS en cours -->
+                  <div *ngIf="canManageTasks()" class="flex gap-2 ml-4">
                     <button (click)="openEditTaskForm(task)"
                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
                             title="Modifier">
@@ -467,9 +478,6 @@
                       <p class="font-medium text-gray-900">{{ deliverable.file_name }}</p>
                       <p class="text-sm text-gray-500">
                         Ajouté le {{ formatDate(deliverable.created_at) }}
-<!--                        <span *ngIf="deliverable.format === 'file' && deliverable.file_size">-->
-<!--                          • {{ formatFileSize(deliverable.file_size) }}-->
-<!--                        </span>-->
                       </p>
                     </div>
                   </div>
