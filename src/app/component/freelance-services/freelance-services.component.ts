@@ -582,20 +582,33 @@ export class FreelanceServicesComponent implements OnInit, OnDestroy {
     return formData;
   }
 
-  // ==================== UTILITAIRES ====================
-
+  /**
+   * Obtenir l'image principale du service (URL S3)
+   */
   getServiceImage(service: Service): string {
     if (service.images && service.images.length > 0) {
-      return this.getImageUrl(service.images[0].image_path);
+      return this.getImageUrl(service.images[0]);
     }
     return 'https://via.placeholder.com/400x300?text=Service';
   }
 
-  getImageUrl(path: string): string {
-    if (path.startsWith('http')) {
-      return path;
+  /**
+   * Obtenir l'URL d'une image (URL S3 depuis le backend)
+   */
+  getImageUrl(image: any): string {
+    if (!image) return '';
+
+    // Utiliser image_url retourné par le backend (URL S3)
+    if (typeof image === 'object' && image.image_url) {
+      return image.image_url;
     }
-    return `http://localhost:8000/storage/${path}`;
+
+    // Fallback pour les anciens chemins (si nécessaire)
+    if (typeof image === 'string') {
+      if (image.startsWith('http')) return image;
+    }
+
+    return '';
   }
 
   getStatusBadge(status: string): { class: string; label: string } {

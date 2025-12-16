@@ -302,16 +302,30 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
 
   // ==================== UTILITAIRES ====================
 
-  getImageUrl(path: string): string {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    return `http://localhost:8000/storage/${path}`;
+  getImageUrl(image: any): string {
+    if (!image) return '';
+    // Utiliser image_url retourné par le backend (URL S3)
+    if (typeof image === 'object' && image.image_url) {
+      return image.image_url;
+    }
+    // Fallback pour string (ancien format)
+    if (typeof image === 'string') {
+      if (image.startsWith('http')) return image;
+    }
+    return '';
   }
 
-  getAvatarUrl(avatar: string): string {
-    if (!avatar) return '';
-    if (avatar.startsWith('http')) return avatar;
-    return `http://localhost:8000/storage/avatars/${avatar}`;
+  getAvatarUrl(user: any): string {
+    if (!user) return '';
+    // Utiliser avatar_url retourné par le backend (URL S3)
+    if (user.avatar_url) {
+      return user.avatar_url;
+    }
+    // Fallback
+    if (user.avatar && user.avatar.startsWith('http')) {
+      return user. avatar;
+    }
+    return '';
   }
 
   getFirstLetter(name?: string): string {

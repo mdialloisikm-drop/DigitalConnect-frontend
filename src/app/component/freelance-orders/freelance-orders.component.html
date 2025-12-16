@@ -182,7 +182,7 @@
           <div class="flex items-start gap-4">
             <div *ngIf="hasServiceImage(order)" class="flex-shrink-0">
               <img
-                [src]="getServiceImageUrl(order)"
+                [src]="order.service_offer?.service?.images![0].image_url"
                 [alt]="getServiceTitle(order)"
                 class="w-16 h-16 rounded-lg object-cover"
               />
@@ -226,12 +226,6 @@
               {{ formatDate(order.due_date) }}
             </p>
           </div>
-<!--          <div class="text-right">-->
-<!--            <button class="text-blue-600 hover:text-blue-700 font-medium flex items-center">-->
-<!--              Voir détails-->
-<!--              <i class="fas fa-arrow-right ml-2"></i>-->
-<!--            </button>-->
-<!--          </div>-->
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import {Service} from "../../models/service";
 import {finalize, Subject, takeUntil} from "rxjs";
 import {Router} from "@angular/router";
 import {AdminModerationService} from "../../services/admin-moderation.service";
+import {ServiceImage} from "../../models/service_image";
 
 @Component({
   selector: 'app-pending-services',
@@ -117,40 +118,40 @@ export class PendingServicesComponent implements OnInit, OnDestroy {
     return this. currentImageIndex[serviceId] || 0;
   }
 
-  // ==================== UTILITAIRES ====================
-
   /**
-   * Obtenir l'URL d'une image
+   * Obtenir l'URL d'une image (URL S3 depuis le backend)
    */
-  getImageUrl(path: string): string {
-    if (!path) return 'https://via.placeholder.com/400x300? text=Service';
-    if (path.startsWith('http')) return path;
-    return `http://localhost:8000/storage/${path}`;
+  getImageUrl(image: ServiceImage | string): string {
+    if (!image) return '';
+
+    // Si c'est un string (path)
+    if (typeof image === 'string') {
+      if (image.startsWith('http')) return image;
+      return 'https://via.placeholder.com/400x300?text=Service';
+    }
+
+    // Si c'est un objet ServiceImage avec image_url (URL S3)
+    if (image.image_url) {
+      return image.image_url;
+    }
+
+    // Fallback pour image_path
+    if (image.image_path && image.image_path.startsWith('http')) {
+      return image.image_path;
+    }
+
+    return '';
   }
 
   /**
-   * Obtenir l'image principale du service
+   * Obtenir l'image principale du service (URL S3)
    */
   getServiceImage(service: Service, index?: number): string {
     const imageIndex = index !== undefined ? index : this.getCurrentImageIndex(service.id);
     if (service.images && service.images.length > 0 && service.images[imageIndex]) {
-      return this.getImageUrl(service.images[imageIndex]. image_path);
+      return this.getImageUrl(service.images[imageIndex]);
     }
     return 'https://via.placeholder.com/400x300?text=Service';
-  }
-
-  /**
-   * Obtenir l'avatar du freelance
-   */
-  getAvatarUrl(avatar: string | undefined, userName?: string): string {
-    if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
-      return avatar;
-    }
-    if (avatar) {
-      return `http://localhost:8000/storage/avatars/${avatar}`;
-    }
-    const name = userName || 'User';
-    return `https://ui-avatars.com/api/? name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
   }
 
   /**

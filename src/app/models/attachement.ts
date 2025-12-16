@@ -11,6 +11,7 @@ export interface Attachement {
   file_type: AttachmentType;
   file_name: string;
   file_path: string | null;
+  file_url?: string;
   url: string | null;
   format: AttachmentFormat;
   created_at: string;

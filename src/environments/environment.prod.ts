@@ -1,5 +1,4 @@
 import { initializeApp } from "firebase/app";
-import { Environment } from "./environment.interface";
 
 // Configuration Firebase
 const firebaseConfig = {
@@ -17,18 +16,17 @@ export const firebaseApp = initializeApp(firebaseConfig);
 // Configuration de l'environnement de production
 export const environment = {
   production: true,
-  apiUrl: 'http://127.0.0.1:8000/api/v1',
-
+  apiUrl: 'https://api.digitalconnects.live/api/v1',
   // Configuration Firebase Cloud Messaging
   firebase: {
     vapidKey: 'BGIGwJVQFcJ-pYyBPvGuFajO0uXrcn7u_WZw4elWpI7AzT-dplu242NqF0v7xZtqEIuldYlqIfY6wW-4y_q-4jk'
   },
 
   reverb: {
-    key: 'a5lacmcsftbjdvpmcdvd',
-    host:  '127.0.0.1',
-    port: 8080,
-    scheme: 'http',
-    authEndpoint: 'http://127.0.0.1:8000/broadcasting/auth'
+    key: 'egMjAAkvX5AN48Eqz7z5',
+    host: 'ws-a099a723-fdb7-4da2-a4b7-d5e65124ea04-reverb.laravel.cloud',
+    port: 443,
+    scheme: 'https',
+    authEndpoint: 'https://digitalconnect-backend-development-mr1vru.laravel.cloud/api/v1/broadcasting/auth'
   },
 };

@@ -108,4 +108,25 @@ export class ActiveContractsComponent implements OnInit, OnDestroy {
       currencyDisplay: 'narrowSymbol'
     }).format(amount);
   }
+
+  /**
+   * Obtenir les initiales d'un nom complet
+   * Exemple: "Modou Ndiaye" -> "MN"
+   */
+  getInitials(fullName?: string): string {
+    if (!fullName) return '??';
+
+    const names = fullName.trim().split(' ');
+
+    if (names.length === 1) {
+      // Si un seul nom, prendre les 2 premières lettres
+      return names[0].substring(0, 2).toUpperCase();
+    }
+
+    // Prendre la première lettre de chaque nom (max 2)
+    return names
+      .slice(0, 2)
+      .map(name => name.charAt(0).toUpperCase())
+      .join('');
+  }
 }

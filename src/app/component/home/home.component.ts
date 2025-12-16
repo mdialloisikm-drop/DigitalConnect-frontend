@@ -85,14 +85,21 @@ export class HomeComponent implements OnInit{
     this.loading = false;
   }
 
-  getImageUrl(path: string | undefined | null): string {
-    if (!path) {
+  // getImageUrl(path: string | undefined | null): string {
+  //   if (!path) {
+  //     return '';
+  //   }
+  //   if (path.startsWith('http')) {
+  //     return path;
+  //   }
+  //   return `http://localhost:8000/storage/${path}`;
+  // }
+
+  getImageUrl(url: string | undefined | null): string {
+    if (!url) {
       return '';
     }
-    if (path.startsWith('http')) {
-      return path;
-    }
-    return `http://localhost:8000/storage/${path}`;
+    return url;
   }
 
   toggleFaq(index: number) {

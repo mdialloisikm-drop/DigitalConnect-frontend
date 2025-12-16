@@ -79,10 +79,25 @@ export class ServicesComponent implements OnInit {
     this.filteredServices = [... this.services];
   }
 
-  getImageUrl(path: string): string {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    return `http://localhost:8000/storage/${path}`;
+  // getImageUrl(path: string): string {
+  //   if (!path) return '';
+  //   if (path.startsWith('http')) return path;
+  //   return `http://localhost:8000/storage/${path}`;
+  // }
+
+  getImageUrl(image:  any): string {
+    if (! image) return '';
+    // Utiliser image_url retourné par le backend (URL S3)
+    if (image.image_url) {
+      return image. image_url;
+    }
+    // Fallback pour les anciens chemins
+    if (image.image_path) {
+      if (image.image_path.startsWith('http')) {
+        return image.image_path;
+      }
+    }
+    return '';
   }
 
   getAvatarUrl(avatar: string): string {

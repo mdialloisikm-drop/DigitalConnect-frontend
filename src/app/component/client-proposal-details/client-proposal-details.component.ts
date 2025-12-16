@@ -385,17 +385,4 @@ export class ClientProposalDetailsComponent implements OnInit, OnDestroy {
     return skill. id || index;
   }
 
-  /**
-   * Obtenir l'avatar du freelance
-   */
-  getFreelanceAvatar(proposal: ProposalWithActions): string {
-    if (proposal.freelance?.user?.avatar) {
-      if (proposal.freelance.user. avatar.startsWith('http')) {
-        return proposal.freelance. user.avatar;
-      }
-      return `http://localhost:8000/storage/avatars/${proposal.freelance.user.avatar}`;
-    }
-    const name = proposal.freelance?.user?. full_name || 'User';
-    return `https://ui-avatars.com/api/? name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
-  }
 }

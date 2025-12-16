@@ -70,21 +70,6 @@ export class PendingProjectDetailsComponent implements OnInit {
     });
   }
 
-  getAvatarUrl(avatar: string | undefined, userName?: string): string {
-    // Si l'avatar existe et est une URL complète
-    if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
-      return avatar;
-    }
-
-    // Si l'avatar existe et est un nom de fichier
-    if (avatar) {
-      return `http://localhost:8000/storage/avatars/${avatar}`;
-    }
-
-    // Sinon, générer un avatar par défaut avec UI Avatars
-    const name = userName || 'User';
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
-  }
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {

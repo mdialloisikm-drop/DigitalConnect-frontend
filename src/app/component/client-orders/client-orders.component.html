@@ -193,7 +193,7 @@
           <div class="flex items-start gap-4">
             <div *ngIf="hasServiceImage(order)" class="flex-shrink-0">
               <img
-                [src]="getServiceImageUrl(order)"
+                [src]="order.service_offer?.service?.images![0].image_url"
                 [alt]="getServiceTitle(order)"
                 class="w-16 h-16 rounded-lg object-cover"
               />

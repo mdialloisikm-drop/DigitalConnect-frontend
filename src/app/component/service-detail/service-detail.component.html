@@ -39,7 +39,7 @@
             <!-- Image principale -->
             <div class="relative h-[400px] lg:h-[500px] bg-gray-100 overflow-hidden group">
               <img *ngIf="service.images && service.images.length > 0"
-                   [src]="getImageUrl(service.images[currentImageIndex]. image_path)"
+                   [src]="getImageUrl(service.images[currentImageIndex])"
                    [alt]="service.title"
                    class="w-full h-full object-cover transition-opacity duration-300">
               <div *ngIf="! service.images || service.images. length === 0"
@@ -83,7 +83,7 @@
                         (click)="selectImage(i)"
                         class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all"
                         [ngClass]="i === currentImageIndex ? 'border-primary ring-2 ring-primary/30' : 'border-transparent hover:border-gray-300'">
-                  <img [src]="getImageUrl(image. image_path)"
+                  <img [src]="getImageUrl(image)"
                        [alt]="service.title"
                        class="w-full h-full object-cover">
                 </button>
@@ -111,11 +111,11 @@
 
             <!-- Profil freelance -->
             <div class="flex items-start gap-4 mb-6 pb-6 border-b border-gray-100">
-              <img *ngIf="service.freelance.user?.avatar"
-                   [src]="getAvatarUrl(service.freelance.user?.avatar || '')"
+              <img *ngIf="service.freelance.user?.avatar_url"
+                   [src]="getAvatarUrl(service.freelance.user)"
                    [alt]="service.freelance.user?.full_name || 'Freelance'"
                    class="w-16 h-16 rounded-full object-cover border-2 border-gray-100">
-              <div *ngIf="!service.freelance.user?.avatar"
+              <div *ngIf="!service.freelance.user?.avatar_url"
                    class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl">
                 {{ getFirstLetter(service.freelance.user?.full_name) }}
               </div>
@@ -173,11 +173,11 @@
 
               <!-- Freelance mini -->
               <div class="flex items-center mt-4">
-                <img *ngIf="service.freelance.user?.avatar"
-                     [src]="getAvatarUrl(service.freelance.user?.avatar || '')"
+                <img *ngIf="service.freelance.user?.avatar_url"
+                     [src]="getAvatarUrl(service.freelance.user)"
                      [alt]="service.freelance.user?.full_name || 'Freelance'"
                      class="w-8 h-8 rounded-full object-cover mr-2">
-                <div *ngIf="!service.freelance.user?.avatar"
+                <div *ngIf="!service.freelance.user?.avatar_url"
                      class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm mr-2">
                   {{ getFirstLetter(service.freelance.user?.full_name) }}
                 </div>
@@ -305,7 +305,7 @@
       <div *ngIf="service && selectedOffer" class="mb-6 p-4 bg-gray-50 rounded-xl">
         <div class="flex items-start gap-4">
           <img *ngIf="service.images && service.images.length > 0"
-               [src]="getImageUrl(service.images[0].image_path)"
+               [src]="getImageUrl(service.images[0])"
                [alt]="service.title"
                class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
           <div class="flex-1 min-w-0">

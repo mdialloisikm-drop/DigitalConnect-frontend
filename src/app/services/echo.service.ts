@@ -60,7 +60,7 @@ export class EchoService {
       console.log('🔧 Configuration Echo pour Reverb:', {
         wsHost: options.wsHost,
         wsPort: options.wsPort,
-        forceTLS: options. forceTLS,
+        forceTLS: options.forceTLS,
         enabledTransports: options.enabledTransports,
         authEndpoint: options.authEndpoint
       });

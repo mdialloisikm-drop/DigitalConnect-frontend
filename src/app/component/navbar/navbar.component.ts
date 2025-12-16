@@ -71,12 +71,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   getUserAvatar(): string {
+    // Utiliser avatar_url retourné par le backend (URL S3 complète)
+    if (this.currentUser?.avatar_url) {
+      return this.currentUser.avatar_url;
+    }
+
+    // Fallback:  si avatar existe mais pas avatar_url (ancienne donnée)
     if (this.currentUser?.avatar) {
-      if (this.currentUser.avatar. startsWith('http')) {
+      if (this.currentUser.avatar.startsWith('http')) {
         return this.currentUser.avatar;
       }
-      return `http://localhost:8000/storage/avatars/${this.currentUser.avatar}`;
     }
+
+    // Fallback:  générer un avatar par défaut
     const name = this.currentUser?.full_name || this.currentUser?.email || 'User';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=128`;
   }
@@ -99,14 +106,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     return this.currentUser?.user_type === 'admin';
   }
 
-  getUserTypeLabel(): string {
-    const labels: Record<string, string> = {
-      'freelance': 'Freelance',
-      'client': 'Client',
-      'admin': 'Administrateur'
-    };
-    return this.currentUser?.user_type ?  labels[this.currentUser.user_type] : 'Utilisateur';
-  }
 
   getDashboardRoute(): string {
     if (this.isFreelance()) return '/freelance/dashboard';

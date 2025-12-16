@@ -147,15 +147,27 @@
               <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3">Client</h3>
               <div class="bg-gray-50 rounded-lg p-4">
                 <div class="flex items-center mb-3">
-                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
-                    <span class="text-white font-bold text-base sm:text-lg">{{ contract.client?. user?.full_name?. charAt(0) }}</span>
+                  <!-- Avatar avec image S3 ou initiales -->
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+                    <img
+                      *ngIf="contract.client?.user?.avatar_url"
+                      [src]="contract.client?.user?.avatar_url"
+                      [alt]="contract.client?.user?.full_name || 'Client'"
+                      class="w-full h-full rounded-full object-cover"
+                    />
+                    <div
+                      *ngIf="!contract.client?.user?.avatar_url"
+                      class="w-full h-full rounded-full bg-primary flex items-center justify-center text-white font-semibold text-base sm:text-lg"
+                    >
+                      {{ getInitials(contract.client?.user?.full_name) }}
+                    </div>
                   </div>
                   <div class="min-w-0">
-                    <p class="font-semibold text-gray-900 truncate">{{ contract.client?. user?.full_name }}</p>
+                    <p class="font-semibold text-gray-900 truncate">{{ contract.client?.user?.full_name }}</p>
                     <p class="text-sm text-gray-600 truncate">{{ contract.client?.user?.email }}</p>
                   </div>
                 </div>
-                <div *ngIf="contract.client?. company_name" class="text-sm text-gray-600">
+                <div *ngIf="contract.client?.company_name" class="text-sm text-gray-600">
                   <i class="fas fa-building mr-2"></i>{{ contract.client?.company_name }}
                 </div>
               </div>
@@ -165,7 +177,7 @@
             <div class="mb-6" *ngIf="contract.project?. skills?.length">
               <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3">Compétences requises</h3>
               <div class="flex flex-wrap gap-2">
-                <span *ngFor="let skill of contract. project.skills"
+                <span *ngFor="let skill of contract.project.skills"
                       class="bg-blue-100 text-primary px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                   {{ skill. name }}
                 </span>
@@ -389,10 +401,9 @@
                       <i class="fas fa-external-link-alt sm:mr-2"></i>
                       <span class="hidden sm:inline">Ouvrir</span>
                     </a>
-                    <a *ngIf="deliverable. format === 'file' && deliverable.file_path"
-                       [href]="deliverable.file_path"
-                       download
-                       class="bg-primary hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm flex-shrink-0">
+                    <a *ngIf="deliverable.format === 'file' && deliverable.file_path"
+                       (click)="downloadFile(deliverable.file_url, deliverable.file_name)"
+                       class="bg-primary hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm flex-shrink-0 cursor-pointer">
                       <i class="fas fa-download sm:mr-2"></i>
                       <span class="hidden sm:inline">Télécharger</span>
                     </a>

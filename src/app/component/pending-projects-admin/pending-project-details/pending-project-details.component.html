@@ -37,7 +37,7 @@
 
       <!-- Informations du client -->
       <div class="flex items-center mb-6 pb-6 border-b border-gray-200">
-        <img [src]="getAvatarUrl(project.client?.user?.avatar)"
+        <img [src]="project.client?.user?.avatar_url"
              [alt]="project.client?.user?.full_name"
              class="w-16 h-16 rounded-full object-cover mr-4"
              onerror="this.src='assets/images/default-avatar.png'">

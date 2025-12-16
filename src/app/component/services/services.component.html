@@ -52,7 +52,7 @@
         <!-- Image du service -->
         <div class="h-48 bg-gray-100 overflow-hidden relative">
           <img *ngIf="service.images && service.images.length > 0"
-               [src]="getImageUrl(service.images[0]. image_path)"
+               [src]="getImageUrl(service.images[0])"
                [alt]="service.title"
                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
           <div *ngIf="!service.images || service.images.length === 0"

@@ -123,7 +123,7 @@
           <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
             <div *ngIf="hasServiceImage(order)" class="flex-shrink-0">
               <img
-                [src]="getServiceImageUrl(order)"
+                [src]="order.service_offer?.service?.images![0].image_url"
                 [alt]="getServiceTitle(order)"
                 class="w-20 h-20 rounded-lg object-cover"
               />
@@ -234,7 +234,7 @@
             class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200"
           >
             <div class="flex items-center gap-4 flex-1">
-              <i [class]="'fas ' + getFileIcon(deliverable. file_name) + ' text-3xl'"></i>
+              <i [class]="'fas ' + getFileIcon(deliverable.file_name) + ' text-3xl'"></i>
               <div class="flex-1">
                 <p class="font-medium text-secondary">{{ deliverable.file_name }}</p>
                 <p class="text-sm text-gray-600">

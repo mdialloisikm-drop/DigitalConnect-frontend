@@ -8,6 +8,7 @@ export interface User {
   email_verified_at: string | null;
   phone?: string;
   avatar?: string;
+  avatar_url?:  string;
   city?: string;
   country?: string;
   user_type: 'admin' | 'client' | 'freelance';

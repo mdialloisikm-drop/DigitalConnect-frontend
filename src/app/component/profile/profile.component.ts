@@ -100,11 +100,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
       return this.previewUrl;
     }
 
-    if (this.currentUser?.avatar) {
-      if (this.currentUser.avatar.startsWith('http://') || this.currentUser.avatar.startsWith('https://')) {
-        return this.currentUser.avatar;
+    if (this.currentUser?.avatar_url) {
+      if (this.currentUser.avatar_url.startsWith('http://') || this.currentUser.avatar_url.startsWith('https://')) {
+        return this.currentUser.avatar_url;
       }
-      return `http://localhost:8000/storage/avatars/${this.currentUser.avatar}`;
     }
 
     const name = this.currentUser?.full_name || this.currentUser?.email || 'User';

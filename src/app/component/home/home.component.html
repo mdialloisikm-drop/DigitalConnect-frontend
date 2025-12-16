@@ -153,7 +153,8 @@
         <div *ngFor="let service of recentServices" class="bg-white rounded-xl shadow-sm hover:shadow-2xl transition-all duration-300 group overflow-hidden">
           <div class="h-48 overflow-hidden relative bg-gray-200">
             <div class="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10"></div>
-            <img *ngIf="service.images?.length" [src]="getImageUrl(service.images?.[0]?.image_path)" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+<!--            <img *ngIf="service.images?.length" [src]="getImageUrl(service.images?.[0]?.image_path)" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">-->
+            <img *ngIf="service.images?.length" [src]="service.images?.[0]?. image_url" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
             <div *ngIf="!service.images?.length" class="w-full h-full flex items-center justify-center text-gray-400">
               <i class="fas fa-image text-4xl"></i>
             </div>
@@ -161,7 +162,8 @@
 
           <div class="p-6 relative">
             <div class="absolute -top-10 right-6 w-16 h-16 rounded-full border-4 border-white bg-white shadow-md overflow-hidden">
-              <img *ngIf="service.freelance.user?.avatar" [src]="getImageUrl(service.freelance.user?.avatar)" class="w-full h-full object-cover">
+<!--              <img *ngIf="service.freelance.user?.avatar" [src]="getImageUrl(service.freelance.user?.avatar)" class="w-full h-full object-cover">-->
+              <img *ngIf="service.freelance.user?.avatar_url" [src]="service.freelance.user?.avatar_url" class="w-full h-full object-cover">
               <div *ngIf="!service.freelance.user?.avatar" class="w-full h-full bg-primary flex items-center justify-center text-white font-bold text-xl">
                 {{service.freelance.user?.full_name?.charAt(0) || 'F'}}
               </div>

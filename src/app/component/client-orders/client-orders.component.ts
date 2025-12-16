@@ -307,16 +307,6 @@ export class ClientOrdersComponent implements OnInit, OnDestroy {
     return ! !(order.service_offer?.service?.images && order.service_offer. service.images.length > 0);
   }
 
-  /**
-   * Récupère l'URL de la première image du service
-   */
-  getServiceImageUrl(order: Order): string {
-    if (this.hasServiceImage(order)) {
-      const imagePath = order.service_offer!.service!.images![0].image_path;
-      return this.getImageUrl(imagePath);
-    }
-    return 'https://via.placeholder.com/100x100? text=Service';
-  }
 
   /**
    * Récupère le délai de livraison formaté

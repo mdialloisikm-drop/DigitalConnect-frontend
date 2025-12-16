@@ -21,6 +21,7 @@ export class ContractDetailsComponent implements OnInit, OnDestroy {
   isLoading = true;
   errorMessage = '';
   successMessage = '';
+  isDownloading = false;
 
   // Tâches
   tasks: Task[] = [];
@@ -447,4 +448,92 @@ export class ContractDetailsComponent implements OnInit, OnDestroy {
   trackByDeliverableId(index: number, deliverable: Attachement): number {
     return deliverable.id || index;
   }
+
+  /**
+   * Télécharger un fichier sans redirection
+   */
+  downloadFile(fileUrl: string | undefined, fileName: string | undefined): void {
+    // Vérifier que les paramètres sont valides
+    if (!fileUrl) {
+      console.error('URL du fichier manquante');
+      return;
+    }
+
+    const safeName = fileName || 'fichier';
+
+    event?.preventDefault();
+
+    // Pour les fichiers S3 avec CORS
+    if (fileUrl.includes('s3.amazonaws.com') || fileUrl.includes('s3')) {
+      this.downloadFromS3(fileUrl, safeName);
+    } else {
+      // Téléchargement direct
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = safeName;
+      link.target = '_blank';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  /**
+   * Télécharger depuis S3 avec gestion CORS
+   */
+  private downloadFromS3(fileUrl: string, fileName: string): void {
+    fetch(fileUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/octet-stream',
+      },
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Erreur réseau');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Nettoyer après un délai pour assurer le téléchargement
+        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+      })
+      .catch(error => {
+        console.error('Erreur lors du téléchargement:', error);
+        // Fallback : ouvrir dans un nouvel onglet
+        window.open(fileUrl, '_blank');
+      });
+  }
+
+  /**
+   * Obtenir les initiales d'un nom complet
+   * Exemple: "Modou Ndiaye" -> "MN"
+   */
+  getInitials(fullName?: string): string {
+    if (!fullName) return '??';
+
+    const names = fullName.trim().split(' ');
+
+    if (names.length === 1) {
+      // Si un seul nom, prendre les 2 premières lettres
+      return names[0].substring(0, 2).toUpperCase();
+    }
+
+    // Prendre la première lettre de chaque nom (max 2)
+    return names
+      .slice(0, 2)
+      .map(name => name.charAt(0).toUpperCase())
+      .join('');
+  }
+
 }

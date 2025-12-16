@@ -207,7 +207,7 @@
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div *ngFor="let image of selectedService.images" class="relative aspect-square group">
             <img
-              [src]="getImageUrl(image.image_path)"
+              [src]="getImageUrl(image.image_url)"
               [alt]="selectedService.title"
               class="w-full h-full object-cover rounded-lg"
             />

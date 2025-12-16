@@ -2,83 +2,164 @@
   <div class="max-w-2xl w-full">
     <!-- Card Container -->
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
-      <!-- Header with Success Icon -->
-      <div class="bg-transparent px-8 py-12">
+
+      <!-- ✅ État : Vérification en cours -->
+      <div *ngIf="isVerifying" class="px-8 py-12">
         <div class="flex justify-center mb-6">
           <div class="bg-white rounded-full p-6 shadow-lg">
-            <i class="fas fa-envelope-open-text text-blue-500 text-5xl"></i>
+            <i class="fas fa-spinner fa-spin text-blue-500 text-5xl"></i>
           </div>
         </div>
-
         <h2 class="text-center text-3xl font-bold text-black mb-3">
-          Inscription réussie !
+          Vérification en cours...
         </h2>
+        <p class="text-center text-gray-600">
+          Veuillez patienter pendant que nous vérifions votre email.
+        </p>
       </div>
 
-      <!-- Content -->
-      <div class="px-8 py-12">
-        <!-- Main Message -->
-        <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
-          <div class="flex items-start">
-            <div class="flex-shrink-0">
-              <i class="fas fa-info-circle text-blue-500 text-2xl mt-1"></i>
-            </div>
-            <div class="ml-4">
-              <h3 class="text-lg font-bold text-blue-900 mb-2">
-                Vérifiez votre adresse email
-              </h3>
-              <p class="text-blue-800 leading-relaxed">
-                Un email de confirmation vient d'être envoyé à votre adresse email.
-                Veuillez cliquer sur le lien contenu dans l'email pour activer votre compte.
-              </p>
-            </div>
+      <!-- ✅ État : Vérification réussie -->
+      <div *ngIf="verificationSuccess" class="px-8 py-12">
+        <div class="flex justify-center mb-6">
+          <div class="bg-white rounded-full p-6 shadow-lg">
+            <i class="fas fa-check-circle text-green-500 text-5xl"></i>
           </div>
         </div>
+        <h2 class="text-center text-3xl font-bold text-black mb-3">
+          Email vérifié avec succès !
+        </h2>
+        <div class="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6">
+          <p class="text-green-800 text-center">
+            Votre adresse email a été vérifiée. Vous allez être redirigé vers la page de connexion...
+          </p>
+        </div>
+        <div class="text-center">
+          <button
+            (click)="goToLogin()"
+            class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all duration-200"
+          >
+            <i class="fas fa-sign-in-alt mr-2"></i>
+            Se connecter maintenant
+          </button>
+        </div>
+      </div>
 
-
-        <!-- Help Section -->
-        <div class="mt-8">
-          <!-- Success Message -->
-          <div *ngIf="resendMessage" class="mb-4 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg animate-slide-down">
-            <div class="flex items-start">
-              <i class="fas fa-check-circle text-green-500 mt-0.5 mr-3 flex-shrink-0"></i>
-              <p class="text-green-700 text-sm">{{ resendMessage }}</p>
-            </div>
+      <!-- ✅ État : Erreur de vérification -->
+      <div *ngIf="verificationError && !isVerifying" class="px-8 py-12">
+        <div class="flex justify-center mb-6">
+          <div class="bg-white rounded-full p-6 shadow-lg">
+            <i class="fas fa-exclamation-circle text-red-500 text-5xl"></i>
           </div>
-
-          <!-- Error Message -->
-          <div *ngIf="resendError" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg animate-slide-down">
-            <div class="flex items-start">
-              <i class="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-3 flex-shrink-0"></i>
-              <p class="text-red-700 text-sm">{{ resendError }}</p>
-            </div>
-          </div>
-
-          <!-- Resend Button -->
-          <div class="text-center">
-            <p class="text-gray-600 text-sm mb-3">
-              Vous n'avez pas reçu l'email ?
-            </p>
+        </div>
+        <h2 class="text-center text-3xl font-bold text-black mb-3">
+          Erreur de vérification
+        </h2>
+        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-6">
+          <p class="text-red-800 text-center">
+            {{ verificationError }}
+          </p>
+        </div>
+        <div class="text-center space-y-3">
+          <button
+            (click)="resendVerificationEmail()"
+            [disabled]="!canResend || isResending"
+            class="inline-flex items-center px-6 py-3 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i *ngIf="!isResending" class="fas fa-redo mr-2"></i>
+            <i *ngIf="isResending" class="fas fa-spinner fa-spin mr-2"></i>
+            <span *ngIf="!countdown">{{ isResending ? 'Envoi en cours...' : 'Renvoyer l\'email' }}</span>
+            <span *ngIf="countdown">Renvoyer dans {{ countdown }}s</span>
+          </button>
+          <div>
             <button
-              (click)="resendVerificationEmail()"
-              [disabled]="!canResend || isResending"
-              class="inline-flex items-center px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              (click)="goToLogin()"
+              class="text-gray-600 hover:text-primary transition-colors"
             >
-              <i *ngIf="!isResending" class="fas fa-redo mr-2"></i>
-              <i *ngIf="isResending" class="fas fa-spinner fa-spin mr-2"></i>
-              <span *ngIf="!countdown">{{ isResending ? 'Envoi en cours...' : 'Renvoyer l\'email' }}</span>
-              <span *ngIf="countdown">Renvoyer dans {{ countdown }}s</span>
+              Retour à la connexion
             </button>
           </div>
+        </div>
+      </div>
 
-          <!-- Contact Support -->
-          <div class="text-center mt-4">
-            <p class="text-gray-500 text-xs">
-              Problème persistant ?
-              <a href="mailto:support@digitalconnects.live" class="text-primary hover:underline">
-                Contactez le support
-              </a>
-            </p>
+      <!-- ✅ État : Page après inscription (pas de token dans l'URL) -->
+      <div *ngIf="!token && !isVerifying && !verificationSuccess && !verificationError">
+        <!-- Header with Success Icon -->
+        <div class="bg-transparent px-8 py-12">
+          <div class="flex justify-center mb-6">
+            <div class="bg-white rounded-full p-6 shadow-lg">
+              <i class="fas fa-envelope-open-text text-blue-500 text-5xl"></i>
+            </div>
+          </div>
+
+          <h2 class="text-center text-3xl font-bold text-black mb-3">
+            Inscription réussie !
+          </h2>
+        </div>
+
+        <!-- Content -->
+        <div class="px-8 py-12">
+          <!-- Main Message -->
+          <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-500 text-2xl mt-1"></i>
+              </div>
+              <div class="ml-4">
+                <h3 class="text-lg font-bold text-blue-900 mb-2">
+                  Vérifiez votre adresse email
+                </h3>
+                <p class="text-blue-800 leading-relaxed">
+                  Un email de confirmation vient d'être envoyé à votre adresse email.
+                  Veuillez cliquer sur le lien contenu dans l'email pour activer votre compte.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Help Section -->
+          <div class="mt-8">
+            <!-- Success Message -->
+            <div *ngIf="resendMessage" class="mb-4 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg animate-slide-down">
+              <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 mt-0.5 mr-3 flex-shrink-0"></i>
+                <p class="text-green-700 text-sm">{{ resendMessage }}</p>
+              </div>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="resendError" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg animate-slide-down">
+              <div class="flex items-start">
+                <i class="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-3 flex-shrink-0"></i>
+                <p class="text-red-700 text-sm">{{ resendError }}</p>
+              </div>
+            </div>
+
+            <!-- Resend Button -->
+            <div class="text-center">
+              <p class="text-gray-600 text-sm mb-3">
+                Vous n'avez pas reçu l'email ?
+              </p>
+              <button
+                (click)="resendVerificationEmail()"
+                [disabled]="!canResend || isResending"
+                class="inline-flex items-center px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <i *ngIf="!isResending" class="fas fa-redo mr-2"></i>
+                <i *ngIf="isResending" class="fas fa-spinner fa-spin mr-2"></i>
+                <span *ngIf="!countdown">{{ isResending ? 'Envoi en cours...' : 'Renvoyer l\'email' }}</span>
+                <span *ngIf="countdown">Renvoyer dans {{ countdown }}s</span>
+              </button>
+            </div>
+
+            <!-- Contact Support -->
+            <div class="text-center mt-4">
+              <p class="text-gray-500 text-xs">
+                Problème persistant ?
+                <a href="mailto:support@digitalconnects.live" class="text-primary hover:underline">
+                  Contactez le support
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </div>

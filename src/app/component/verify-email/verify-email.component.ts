@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {AuthService} from "../../services/auth.service";
 
 @Component({
@@ -9,6 +9,11 @@ import {AuthService} from "../../services/auth.service";
 })
 export class VerifyEmailComponent implements OnInit {
   email: string = '';
+  token: string = '';
+  isVerifying = false;
+  verificationSuccess = false;
+  verificationError = '';
+
   isResending = false;
   resendMessage = '';
   resendError = '';
@@ -16,18 +21,59 @@ export class VerifyEmailComponent implements OnInit {
   countdown = 0;
 
   constructor(
+    private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    // ✅ Récupérer l'email depuis localStorage
-    this.email = localStorage.getItem('pending_verification_email') || '';
+    // ✅ Récupérer l'email et le token depuis les paramètres de l'URL
+    this.route.queryParams.subscribe(params => {
+      this.email = params['email'] || '';
+      this.token = params['token'] || '';
 
-    if (!this.email) {
-      // Si pas d'email, rediriger vers l'inscription
-      this.router.navigate(['/register']);
-    }
+      // Si email et token sont présents, vérifier automatiquement
+      if (this.email && this.token) {
+        this.verifyEmailAutomatically();
+      } else {
+        // Sinon, récupérer l'email depuis localStorage (page après inscription)
+        this.email = localStorage.getItem('pending_verification_email') || '';
+
+        if (!this.email) {
+          // Si pas d'email, rediriger vers l'inscription
+          this.router.navigate(['/register']);
+        }
+      }
+    });
+  }
+
+  /**
+   * ✅ Vérification automatique de l'email
+   */
+  private verifyEmailAutomatically(): void {
+    this.isVerifying = true;
+    this.verificationError = '';
+
+    this.authService.verifyEmail({ email: this.email, token: this.token }).subscribe({
+      next: (response) => {
+        this.isVerifying = false;
+        this.verificationSuccess = true;
+
+        // Nettoyer le localStorage
+        localStorage.removeItem('pending_verification_email');
+
+        // Rediriger vers la page de connexion après 3 secondes
+        setTimeout(() => {
+          this.router.navigate(['/login'], {
+            queryParams: { verified: 'true' }
+          });
+        }, 3000);
+      },
+      error: (error) => {
+        this.isVerifying = false;
+        this.verificationError = error.error || 'Impossible de vérifier l\'email';
+      }
+    });
   }
 
   /**

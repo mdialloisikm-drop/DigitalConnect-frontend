@@ -491,8 +491,8 @@
                     <span>Ouvrir</span>
                   </a>
 
-                  <a *ngIf="deliverable.format === 'file' && deliverable.file_path"
-                     [href]="deliverable.file_path"
+                  <a *ngIf="deliverable.format === 'file' && deliverable.file_url"
+                     [href]="deliverable.file_url"
                      download
                      class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
                     <i class="fas fa-download"></i>
