@@ -509,4 +509,16 @@ export class ClientManageProjectComponent implements OnInit, OnDestroy {
     };
     return badges[status] || { class: 'bg-gray-100 text-gray-800', label: status };
   }
+
+  /**
+   * Obtenir les statistiques des tâches
+   */
+  getTaskStats() {
+    return {
+      total: this.tasks.length,
+      completed: this.tasks.filter(t => t.status === 'completed').length,
+      pending: this.tasks.filter(t => t.status === 'pending').length,
+      inProgress: this.tasks.filter(t => t.status === 'in_progress').length
+    };
+  }
 }
